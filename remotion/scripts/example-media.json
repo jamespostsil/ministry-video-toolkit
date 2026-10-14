@@ -1,0 +1,199 @@
+{
+ "_comment": "The example's media, attached to a GitHub release (see scripts/make-example-media.mjs). These are a real video's footage and photos, and are NOT covered by the toolkit's MIT licence: see examples/MEDIA-NOTICE.md.",
+ "repo": "jamespostsil/ministry-video-toolkit",
+ "tag": "example-media-v1",
+ "files": [
+  {
+   "asset": "dedications__dinka-cam.jpg",
+   "dest": "dedications/dinka-cam.jpg",
+   "bytes": 252941,
+   "sha256": "ba3ed8e000f0d764871b0b1fb0313c806ac7d82d8307bb0f2ee849205f054859"
+  },
+  {
+   "asset": "dedications__fur.jpg",
+   "dest": "dedications/fur.jpg",
+   "bytes": 179278,
+   "sha256": "a029f0dcaa54d07138671fa87e5bf81e9038bd8490f30de29aba41b1328c5aed"
+  },
+  {
+   "asset": "dedications__ikizu.jpg",
+   "dest": "dedications/ikizu.jpg",
+   "bytes": 254905,
+   "sha256": "ecc4dcfd7ce24306ff45953e34bf857ba1a42e10c995314ade7a5bdda110be15"
+  },
+  {
+   "asset": "dedications__kwaya.jpg",
+   "dest": "dedications/kwaya.jpg",
+   "bytes": 249152,
+   "sha256": "e0a4131c02c23bc75c53dd406f4c0dd0a917849fc91805c1113b790c7c1895eb"
+  },
+  {
+   "asset": "dedications__mankon.jpg",
+   "dest": "dedications/mankon.jpg",
+   "bytes": 272350,
+   "sha256": "e75aa96225e22833bda3a0d01d4b290e99e7ae8e2e7bfad05d05f3794929145c"
+  },
+  {
+   "asset": "dedications__nobonob.jpg",
+   "dest": "dedications/nobonob.jpg",
+   "bytes": 269657,
+   "sha256": "4c805496260ce25c12afedb2bfd57b76a87a0f6d6a137b65327e09eb3996b180"
+  },
+  {
+   "asset": "dedications__saliba.jpg",
+   "dest": "dedications/saliba.jpg",
+   "bytes": 820222,
+   "sha256": "f8aed63caa0c353f794fd8f181ef9f309c19595fbc9ad431c9ddd0e8e9c58a60"
+  },
+  {
+   "asset": "dedications__upper-pokomo.jpg",
+   "dest": "dedications/upper-pokomo.jpg",
+   "bytes": 1125336,
+   "sha256": "e76a438cdf901abec916bef7134473f4e8527de2e27930892b933f8a3eda583d"
+  },
+  {
+   "asset": "dedications__waata.jpg",
+   "dest": "dedications/waata.jpg",
+   "bytes": 278158,
+   "sha256": "956858745051b6747b028d8c1498b47bd5f517d016c997955ae5e7d08406e5e5"
+  },
+  {
+   "asset": "dedications__zanaki.jpg",
+   "dest": "dedications/zanaki.jpg",
+   "bytes": 255412,
+   "sha256": "4573158b8f6fe30a0d14296cd928a2ea29738a86e8430391d2e1ba1fa34627ff"
+  },
+  {
+   "asset": "dedications__zinza.jpg",
+   "dest": "dedications/zinza.jpg",
+   "bytes": 65485,
+   "sha256": "669f4d1e05d857ec1bb71e087c595d40c4bbafbcb7e7fd9173e609eed64b7eaa"
+  },
+  {
+   "asset": "endframe__background.png",
+   "dest": "endframe/background.png",
+   "bytes": 978765,
+   "sha256": "4121dca7c68bac1f818f803396d7d080c362ffbe3e54e28e86255f3b39524493"
+  },
+  {
+   "asset": "endframe__photo.png",
+   "dest": "endframe/photo.png",
+   "bytes": 846047,
+   "sha256": "8caabf088b23277327a4fa477652bd2fac7ad616717cb908259bb34028439fa2"
+  },
+  {
+   "asset": "endframe__qr.png",
+   "dest": "endframe/qr.png",
+   "bytes": 7620,
+   "sha256": "08098ac13cff5995747daced4271b0b282f91c00518f7c8e252d6635cfd02dad"
+  },
+  {
+   "asset": "endframe__wycliffe-logo-white.png",
+   "dest": "endframe/wycliffe-logo-white.png",
+   "bytes": 22480,
+   "sha256": "830dcbe20d577d6f9bb090c962a0cfd3d1f144972b2cd238b18dfd1fb7e33506"
+  },
+  {
+   "asset": "footage.mp4",
+   "dest": "footage.mp4",
+   "bytes": 65522161,
+   "sha256": "127050f16164476fa3bcde78b4d9c7ff0021d3727dd806d795b0ec4401af2266"
+  },
+  {
+   "asset": "photos__charlie-farnell.jpg",
+   "dest": "photos/charlie-farnell.jpg",
+   "bytes": 146453,
+   "sha256": "02ed4bd2c915f07b87bcfa4fa7bce1bbd26cfab3796322478594f0e7315ae483"
+  },
+  {
+   "asset": "photos__charlie-peggy-family.jpg",
+   "dest": "photos/charlie-peggy-family.jpg",
+   "bytes": 1374107,
+   "sha256": "62ba02cc3b3dfb9e7a27e4a2bda7373fc6eba335d089087666325123673116a2"
+  },
+  {
+   "asset": "photos__chatbot-fieldworks.png",
+   "dest": "photos/chatbot-fieldworks.png",
+   "bytes": 58277,
+   "sha256": "61455a54ed4ee7b05c2d2fc63562b8589befa70898630537264dbe9149e67e75"
+  },
+  {
+   "asset": "photos__chatbot-language-technology.png",
+   "dest": "photos/chatbot-language-technology.png",
+   "bytes": 74835,
+   "sha256": "e7fe87fb64b92dd83d0e347c4894e9e4f9e378327cb68e1ebb21a54a624ba7cf"
+  },
+  {
+   "asset": "photos__chatbot-ptxprint.png",
+   "dest": "photos/chatbot-ptxprint.png",
+   "bytes": 53853,
+   "sha256": "c6702977ff4052a2a5e6287b36e02e5e1ed27f9f211ad6989e59a8b7685a7344"
+  },
+  {
+   "asset": "photos__james-superpowered.jpg",
+   "dest": "photos/james-superpowered.jpg",
+   "bytes": 190549,
+   "sha256": "94b918bdd2b581909be8ed27c925e602ba8c10001bd32621c04b0b6863837d6e"
+  },
+  {
+   "asset": "photos__peggy-ann-farnell.jpg",
+   "dest": "photos/peggy-ann-farnell.jpg",
+   "bytes": 208045,
+   "sha256": "8aed3a161cd44c17cf203cbda7c87b13de4e52de2eb745785f3a05f29ef26382"
+  },
+  {
+   "asset": "photos__post-family-charlie.jpg",
+   "dest": "photos/post-family-charlie.jpg",
+   "bytes": 329251,
+   "sha256": "5255b44988518ca7348985d24fad5d6e456652885025287943f4f87044c8ea4d"
+  },
+  {
+   "asset": "photos__web-punjabi.png",
+   "dest": "photos/web-punjabi.png",
+   "bytes": 224561,
+   "sha256": "62027674d9fd95eb1af8dbab2f724843f67188589d037dfe55590b33e8d33910"
+  },
+  {
+   "asset": "photos__web-russian.png",
+   "dest": "photos/web-russian.png",
+   "bytes": 234074,
+   "sha256": "32c4c61cb6d34e72b396d2f0fbc2a828c300bc6d3afd0302a18e7adbb552cff1"
+  },
+  {
+   "asset": "photos__web-vietnamese.png",
+   "dest": "photos/web-vietnamese.png",
+   "bytes": 241520,
+   "sha256": "6cdc7e6fc44e0803d34b83336b8519b07a564816f60e63688fcf31310c72ac67"
+  },
+  {
+   "asset": "title-still.jpg",
+   "dest": "title-still.jpg",
+   "bytes": 750474,
+   "sha256": "2f47aab06000eedd018d5760a4ba5bc05896035facf35f5f32b79d8704216b52"
+  },
+  {
+   "asset": "work__blog-post.png",
+   "dest": "work/blog-post.png",
+   "bytes": 3154443,
+   "sha256": "3ec93b95b5980ce3ab3c49dd1eecf5416b116a3574d753dc90c8a968410d5ab5"
+  },
+  {
+   "asset": "work__brochure-flyer.png",
+   "dest": "work/brochure-flyer.png",
+   "bytes": 557440,
+   "sha256": "35c646b21d44bfa38f7b968cb99813cb29dca9f41bf1ecb9d612b7287937b85e"
+  },
+  {
+   "asset": "work__social-media-post.png",
+   "dest": "work/social-media-post.png",
+   "bytes": 1023134,
+   "sha256": "1b13f379c34170fa6268d4936c83ed2c298e51e425898afec5b6f80bff103277"
+  },
+  {
+   "asset": "work__travel-report.png",
+   "dest": "work/travel-report.png",
+   "bytes": 1074764,
+   "sha256": "294d43a7693fb94eb005e8e166b7a884be5e31236f71bdf763cf0dcd218bc8a6"
+  }
+ ]
+}

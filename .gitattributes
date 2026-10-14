@@ -1,0 +1,5 @@
+# Consistent line endings for everyone, whatever their platform or git settings.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary

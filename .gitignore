@@ -1,0 +1,22 @@
+node_modules/
+out/
+
+# Media lives with each video, not in the repo
+remotion/public/base/
+remotion/public/images/
+remotion/public/audio/
+# The example's downloaded media (npm run example:media)
+remotion/public/_example/media/
+*.mp4
+*.mov
+*.m4a
+*.wav
+
+# API keys for transcription (scripts/transcribe.mjs)
+.env
+# Your own videos stay on your machine: every project folder except the
+# example is ignored, so beat plans, photo lists and transcripts can't be
+# pushed by accident. (Projects are found automatically; see
+# src/projects/index.ts.)
+remotion/src/projects/*/
+!remotion/src/projects/_example/

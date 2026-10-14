@@ -1,0 +1,48 @@
+{
+  "name": "ministry-video-toolkit",
+  "version": "1.0.0",
+  "description": "Turn a talking-head recording and a script into a finished ministry-update video",
+  "repository": {},
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.524",
+    "@remotion/fonts": "4.0.524",
+    "@remotion/media": "4.0.524",
+    "@remotion/tailwind-v4": "4.0.524",
+    "@remotion/zod-types": "4.0.524",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.524",
+    "tailwindcss": "4.0.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.524",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.19.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "doctor": "node scripts/doctor.mjs",
+    "example:media": "node scripts/make-example-media.mjs",
+    "new": "node scripts/new-project.mjs",
+    "footage": "node scripts/build-footage.mjs",
+    "transcribe": "node scripts/transcribe.mjs",
+    "studio": "remotion studio",
+    "still": "node scripts/still.mjs",
+    "render": "node scripts/render-final.mjs",
+    "typecheck": "tsc",
+    "upgrade": "remotion upgrade"
+  },
+  "//sideEffects": "MUST list the fonts module as well as CSS. With only \"*.css\" the bundler tree-shakes the side-effect-only `import \"./fonts\"` and every render silently falls back to Times New Roman. See docs/gotchas.md #1.",
+  "sideEffects": [
+    "*.css",
+    "**/fonts.ts"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

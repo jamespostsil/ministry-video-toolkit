@@ -1,0 +1,49 @@
+{
+  "id": "Example",
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "titleCardSeconds": 3.4,
+  "endingSeconds": 7.5,
+  "footage": {
+    "src": "_example/media/footage.mp4",
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 206.433
+  },
+  "titleStill": "_example/media/title-still.jpg",
+  "music": { "src": "_example/media/music.m4a" },
+  "footagePrep": {
+    "source": null,
+    "segments": [
+      [1.5, 47.52],
+      [50.952, 130.813],
+      [131.812, 190.062],
+      [190.938, 206.619],
+      [208.6, 216.8]
+    ],
+    "crossfadeSeconds": 0.4,
+    "notes": [
+      "The example's footage downloads ready-cut, so there is no source to rebuild from. These are the real segments it was cut with, kept as a worked example.",
+      "1.5s in: trims a 2.33s silent smile before the first word to 0.83s, keeping the intake breath so the start reads as the speaker beginning, not a jump cut.",
+      "47.52-50.952: a 5.23s teleprompter pause at a speaker handover, cut to about 1.4s.",
+      "130.813-131.812: a 2.60s pause at a handover, cut to 1.2s.",
+      "190.062-190.938: a 2.28s pause at a handover, cut to 1.0s.",
+      "206.619-208.6: a 4.18s pause after the ask, cut to 1.8s: deliberately the longest kept pause, so the ask lands. The in-point sits at 208.6 rather than 208.438 to push a 19ms mouth click early into the dissolve, where it is quiet."
+    ]
+  },
+  "titleCard": {
+    "eyebrow": "WYCLIFFE BIBLE TRANSLATORS",
+    "title": "Ministry Update",
+    "byline": "James & Christina Post",
+    "date": "September 2026"
+  },
+  "thumbnail": {
+    "eyebrow": "WYCLIFFE BIBLE TRANSLATORS",
+    "titleLines": ["MINISTRY", "UPDATE"],
+    "byline": "James & Christina Post",
+    "date": "September 2026",
+    "objectPosition": "0% 50%"
+  },
+  "overlaySafeArea": { "right": 960, "bottom": 410 }
+}

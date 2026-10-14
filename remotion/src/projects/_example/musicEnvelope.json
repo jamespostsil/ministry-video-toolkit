@@ -1,0 +1,6 @@
+{
+  "_comment": "Music-bed gain settings. The curve itself is computed from this project's timings by src/lib/musicCurve.mjs, so re-cutting the footage needs no changes here. Any key below overrides that default; delete a key to use the default. For a hand-drawn curve, add \"points\": [[absoluteSeconds, gain], ...] instead.",
+  "titleGain": 1.0,
+  "speechGain": 0.065,
+  "endingGain": 0.45
+}

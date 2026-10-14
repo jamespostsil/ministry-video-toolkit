@@ -1,0 +1,40 @@
+import type { Beat } from "../../lib/beatTypes";
+import json from "./project.json";
+import { PARTNER } from "./partner";
+
+// Your beat plan: what appears on screen, and when. A starter with a few
+// beats over your footage; add more as you go. For every beat type in use,
+// with real timings and the reasoning behind them, read
+// src/projects/_example/beats.ts and examples/example-script.md.
+//
+// TIMING: every beat except `opening` is in seconds into the FOOTAGE (the
+// clock of `npm run transcribe -- <project>`), not into the finished video.
+// The engine adds the title card's length for you.
+//
+// Your own photos go in public/images/<your-project>/ and are referred to as
+// "images/<your-project>/photo.jpg".
+
+export const BEATS: Beat[] = [
+  // Title card, over your footage's first frame. Its text is titleCard in
+  // project.json.
+  { kind: "opening", start: 0, end: json.titleCardSeconds, src: json.titleStill },
+
+  // A name plate while you introduce yourself. Time it to your own words.
+  { kind: "heading", start: 1.5, end: 6.5, title: "Your Name Here", subtitle: "Your Organization" },
+
+  // A section heading. Copy this for each part of your video.
+  { kind: "heading", start: 12, end: 17, title: "Section Heading" },
+
+  // Examples of photo beats, ready to un-comment once you have photos:
+  // { kind: "cover", start: 20, end: 26, src: "images/my-video/landscape.jpg", caption: "Where it was taken" },
+  // { kind: "blur", start: 26, end: 31, src: "images/my-video/portrait.jpg" },
+  // { kind: "slider", start: 40, end: 55, title: "Title", photos: [ { src: "images/my-video/1.jpg", caption: "Caption" } ] },
+
+  // The closing frame, after the footage ends. Its content is partner.ts.
+  {
+    kind: "ending",
+    start: json.footage.durationSeconds,
+    end: json.footage.durationSeconds + json.endingSeconds,
+    partner: PARTNER,
+  },
+];
