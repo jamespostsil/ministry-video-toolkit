@@ -23,7 +23,7 @@ come first: a reviewer should never be the one who finds a defect).
 
 ## What the reviewer can do
 
-- **Pin a note to a spot:** pause, click the picture, type. The note opens right there on the video (no mode
+- **Pin a note to a spot:** pause (Space plays and pauses; before the first play, a click plays), click the picture, type. The note opens right there on the video (no mode
   button, no separate tab), its number shows on the picture around that moment, and it is listed in that
   moment's sentence row. Clicking the number jumps back to it. "Delete pin" removes it.
 - **Script / On screen notes** on every sentence, and one box for anything else.
