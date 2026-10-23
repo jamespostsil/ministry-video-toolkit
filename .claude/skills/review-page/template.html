@@ -17,6 +17,7 @@ video{width:100%;max-height:calc(100vh - 110px);background:#000;border-radius:6p
 .overlay[hidden]{display:none}
 .hint{font-size:.85rem;color:var(--muted)}
 .pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--pin);color:var(--pin-fg);font:700 13px/28px var(--ui);text-align:center;box-shadow:0 0 0 3px #fff;cursor:pointer;border:0;padding:0}
+.arrows{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
 .pop{position:absolute;z-index:3;width:min(300px,80%);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0/.35);padding:10px;display:grid;gap:8px;border:2px solid var(--pin)}
 .pop label.f{color:var(--fg);font-weight:700;margin:0}.pop .link{color:var(--fg)}.pop textarea{background:var(--panel);border-color:var(--muted)}
 .pop .row-actions{display:flex;gap:8px;justify-content:flex-end}
@@ -123,14 +124,14 @@ v.addEventListener("timeupdate", () => {
 });
 
 // ---- pins: pause, click the picture, type. The note shows on the video at that spot and in that sentence's row.
-let pins = []; // {id, t, x, y, text}  x, y: 0..1 of the picture
+let pins = []; // {id, t, x, y, text, kind?: "arrow", x2, y2}  x, y: 0..1 of the picture; an arrow points from x, y to x2, y2
 const picRect = () => { const r = v.getBoundingClientRect(), fr = frame.getBoundingClientRect(), vw = v.videoWidth || 16, vh = v.videoHeight || 9;
   const k = Math.min(r.width / vw, r.height / vh), w = vw * k, h = vh * k; // the picture inside the element (letterboxing aside)
   return { left: r.left - fr.left + (r.width - w) / 2, top: r.top - fr.top + (r.height - h) / 2, w, h }; };
 const pinNum = (p) => pins.indexOf(p) + 1;
 let started = false; // before the first play, a click on the picture plays it, as on any video
 v.addEventListener("play", () => { started = true; });
-const showOverlay = () => { overlay.hidden = !v.paused; $("hint").textContent = !started ? "Space or a click plays the video. Pause it, then click the picture to pin a note to that spot." : v.paused ? "Click the picture to pin a note to that spot. Space plays." : "Space pauses. Then click the picture to pin a note to that spot."; };
+const showOverlay = () => { overlay.hidden = !v.paused; $("hint").textContent = !started ? "Space or a click plays the video. Pause it, then click the picture to pin a note, or drag to draw an arrow." : v.paused ? "Click the picture to pin a note, or drag to draw an arrow to the spot. Space plays." : "Space pauses. Then click the picture to pin a note, or drag to draw an arrow."; };
 // Space plays and pauses, except while typing
 document.addEventListener("keydown", (e) => { if (e.code !== "Space" || e.target.closest("textarea,input,button,[contenteditable]")) return; e.preventDefault(); closePop(); if (v.paused) v.play().catch(() => {}); else v.pause(); });
 v.addEventListener("pause", showOverlay); v.addEventListener("play", () => { closePop(); showOverlay(); }); v.addEventListener("loadedmetadata", () => { showOverlay(); drawPins(); });
@@ -140,7 +141,7 @@ function openPop(p) {
   closePop(); const r = picRect();
   pop = document.createElement("div"); pop.className = "pop";
   pop.innerHTML = '<label class="f" style="margin:0">Note ' + pinNum(p) + ' at ' + fmt(p.t) + '</label><textarea placeholder="What should change here?"></textarea>' +
-    '<div class="row-actions"><button type="button" class="link del">Delete pin</button><button type="button" class="btn primary done">Done</button></div>';
+    '<div class="row-actions"><button type="button" class="link del">Delete note</button><button type="button" class="btn primary done">Done</button></div>';
   const ta = pop.querySelector("textarea"); ta.value = p.text;
   ta.addEventListener("input", () => { p.text = ta.value; schedulePin(p); renderRowPins(); });
   ta.addEventListener("keydown", (e) => { if (e.key === "Escape") closePop(); });
@@ -152,23 +153,57 @@ function openPop(p) {
   pop.style.top = Math.max(4, y + 18 + ph > frame.clientHeight - 52 ? y - ph - 18 : y + 18) + "px";
   ta.focus();
 }
-overlay.addEventListener("click", (e) => {
+// a click pins a note; a drag (more than 10 px) draws an arrow from where it starts to where it ends
+const toPic = (e) => { const r = picRect(), fr = frame.getBoundingClientRect(); return { x: (e.clientX - fr.left - r.left) / r.w, y: (e.clientY - fr.top - r.top) / r.h }; };
+const clamp01 = (n) => Math.max(0, Math.min(1, n));
+let drag = null;
+overlay.addEventListener("pointerdown", (e) => {
   if (!started) { v.play().catch(() => {}); return; }
-  const r = picRect(), fr = frame.getBoundingClientRect();
-  const x = (e.clientX - fr.left - r.left) / r.w, y = (e.clientY - fr.top - r.top) / r.h;
-  if (x < 0 || x > 1 || y < 0 || y > 1) return;
+  const q = toPic(e);
+  if (q.x < 0 || q.x > 1 || q.y < 0 || q.y > 1) return;
   if (pop) { closePop(); return; } // a click outside an open note just closes it
-  const p = { id: "p" + Date.now(), t: Math.round(v.currentTime * 100) / 100, x, y, text: "" };
+  drag = { x: q.x, y: q.y, x2: q.x, y2: q.y, sx: e.clientX, sy: e.clientY, moved: false };
+  overlay.setPointerCapture(e.pointerId); e.preventDefault();
+});
+overlay.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const q = toPic(e); drag.x2 = clamp01(q.x); drag.y2 = clamp01(q.y);
+  drag.moved = drag.moved || Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 10;
+  drawPins(drag.moved ? { kind: "arrow", ...drag } : null);
+});
+overlay.addEventListener("pointerup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  const p = { id: "p" + Date.now(), t: Math.round(v.currentTime * 100) / 100, x: d.x, y: d.y, text: "" };
+  if (d.moved) Object.assign(p, { kind: "arrow", x2: d.x2, y2: d.y2 });
   pins.push(p); pins.sort((a, b) => a.t - b.t); drawPins(); renderRowPins(); openPop(p);
 });
+overlay.addEventListener("pointercancel", () => { drag = null; drawPins(); });
 const timers = new Map();
 const schedulePin = (p) => { clearTimeout(timers.get(p.id)); timers.set(p.id, setTimeout(() => savePin(p), 700)); };
 function removePin(p) { pins = pins.filter((x) => x !== p); drawPins(); renderRowPins(); dropPin(p); }
-function drawPins() {
-  frame.querySelectorAll(".pin").forEach((n) => n.remove());
+const SVGNS = "http://www.w3.org/2000/svg";
+function arrowInto(svg, r, a) {
+  // a white edge under the coloured line and head, so it shows on light and dark pictures
+  const x1 = r.left + a.x * r.w, y1 = r.top + a.y * r.h, x2 = r.left + a.x2 * r.w, y2 = r.top + a.y2 * r.h;
+  const ang = Math.atan2(y2 - y1, x2 - x1), L = 18, W = 0.5, bx = x2 - L * Math.cos(ang), by = y2 - L * Math.sin(ang);
+  const head = [[x2, y2], [x2 - L * Math.cos(ang - W), y2 - L * Math.sin(ang - W)], [x2 - L * Math.cos(ang + W), y2 - L * Math.sin(ang + W)]].map((q) => q.join(",")).join(" ");
+  for (const [stroke, wd] of [["#fff", 8], ["var(--pin)", 4]]) {
+    const ln = document.createElementNS(SVGNS, "line");
+    Object.entries({ x1, y1, x2: bx, y2: by }).forEach(([k, val]) => ln.setAttribute(k, val));
+    ln.setAttribute("stroke-linecap", "round"); ln.style.stroke = stroke; ln.style.strokeWidth = wd; svg.appendChild(ln);
+    const pg = document.createElementNS(SVGNS, "polygon"); pg.setAttribute("points", head); pg.style.fill = stroke === "#fff" ? "var(--pin)" : "var(--pin)";
+    pg.style.stroke = stroke; pg.style.strokeWidth = stroke === "#fff" ? 4 : 0; pg.setAttribute("stroke-linejoin", "round"); svg.appendChild(pg);
+  }
+}
+function drawPins(preview) {
+  frame.querySelectorAll(".pin,.arrows").forEach((n) => n.remove());
   const r = picRect();
+  const svg = document.createElementNS(SVGNS, "svg"); svg.setAttribute("class", "arrows"); frame.appendChild(svg);
+  if (preview) arrowInto(svg, r, preview);
   for (const p of pins) {
     if (Math.abs(v.currentTime - p.t) > 1.5) continue;
+    if (p.kind === "arrow") arrowInto(svg, r, p);
     const b = document.createElement("button"); b.type = "button"; b.className = "pin"; b.textContent = pinNum(p); b.title = p.text || "Note " + pinNum(p);
     b.style.left = r.left + p.x * r.w + "px"; b.style.top = r.top + p.y * r.h + "px";
     b.onclick = (e) => { e.stopPropagation(); v.pause(); openPop(p); };
@@ -181,7 +216,7 @@ function renderRowPins() {
     // empty pins still being typed show too, so the row matches the video
     const s = sentenceAt(p.t), box = el[s.id].querySelector(".pins"), d = document.createElement("div"); d.className = "pinnote";
     d.innerHTML = '<button type="button" class="pn" title="Show this spot"></button><div><div class="when"></div><div class="pt"></div></div>';
-    d.querySelector(".pn").textContent = pinNum(p); d.querySelector(".when").textContent = "On the picture at " + fmt(p.t);
+    d.querySelector(".pn").textContent = pinNum(p); d.querySelector(".when").textContent = (p.kind === "arrow" ? "Arrow on the picture at " : "On the picture at ") + fmt(p.t);
     d.querySelector(".pt").textContent = p.text || "(no text yet)";
     d.querySelector(".pn").onclick = () => { v.pause(); v.currentTime = p.t; setTimeout(() => { drawPins(); openPop(p); }, 120); };
     box.appendChild(d);
@@ -190,7 +225,7 @@ function renderRowPins() {
 window.addEventListener("resize", () => { closePop(); drawPins(); });
 v.addEventListener("seeked", drawPins);
 
-// ---- saving: sentences-v<N>/<id> {id, text, script, screen, ok}, pins-v<N>/<pin id> {t, x, y, text, sentence}, notes-v<N>/overall {text}
+// ---- saving: sentences-v<N>/<id> {id, text, script, screen, ok}, pins-v<N>/<pin id> {t, x, y, text, sentence, kind?: "arrow", x2, y2}, notes-v<N>/overall {text}
 (async () => {
   const db = await claude.use("db"); if (!db) { off.hidden = false; return; }
   const col = db.collection("sentences-v" + V), pcol = db.collection("pins-v" + V), all = db.collection("notes-v" + V);
@@ -198,7 +233,7 @@ v.addEventListener("seeked", drawPins);
   const saveRow = async (s, sv) => { const k = key(s.id); sv.textContent = "…";
     try { await col.doc(k).set({ id: s.id, text: s.text, ...cache[k] }); sv.textContent = "saved"; } catch (e) { sv.textContent = "not saved"; failed(); } };
   saveOk = (id, on) => { const s = S.find((x) => x.id === id), k = key(id); cache[k].ok = on; saveRow(s, el[id].querySelector(".save")); };
-  savePin = async (p) => { try { await pcol.doc(p.id).set({ t: p.t, x: p.x, y: p.y, text: p.text, sentence: sentenceAt(p.t).id }); } catch (e) { failed(); } };
+  savePin = async (p) => { try { await pcol.doc(p.id).set({ t: p.t, x: p.x, y: p.y, text: p.text, sentence: sentenceAt(p.t).id, ...(p.kind === "arrow" ? { kind: "arrow", x2: p.x2, y2: p.y2 } : {}) }); } catch (e) { failed(); } };
   dropPin = async (p) => { try { await pcol.doc(p.id).delete(); } catch (e) { failed(); } };
   for (const s of S) {
     const k = key(s.id), d = el[s.id], sv = d.querySelector(".save"); cache[k] = {};
@@ -215,7 +250,7 @@ v.addEventListener("seeked", drawPins);
   all.onSnapshot((snap) => { for (const d of snap.docs) if (d.id === "overall" && document.activeElement !== na) na.value = (d.data() || {}).text || ""; });
   pcol.onSnapshot((snap) => { const open = pop && document.activeElement && pop.contains(document.activeElement);
     const mine = new Map(pins.map((p) => [p.id, p]));
-    pins = snap.docs.map((d) => { const x = d.data() || {}, m = mine.get(d.id); return m && open ? m : { id: d.id, t: x.t, x: x.x, y: x.y, text: x.text || "" }; })
+    pins = snap.docs.map((d) => { const x = d.data() || {}, m = mine.get(d.id); return m && open ? m : { id: d.id, t: x.t, x: x.x, y: x.y, text: x.text || "", ...(x.kind === "arrow" ? { kind: "arrow", x2: x.x2, y2: x.y2 } : {}) }; })
       .concat(pins.filter((p) => !snap.docs.some((d) => d.id === p.id) && p.text === "")) // a pin still being typed
       .filter((p) => typeof p.t === "number").sort((a, b) => a.t - b.t);
     drawPins(); renderRowPins(); });

@@ -27,7 +27,7 @@ ministry videos, are this toolkit's own.
 
 ## What the reviewer can do
 
-- **Pin a note to a spot:** pause (Space plays and pauses; before the first play, a click plays), click the picture, type. The note opens right there on the video (no mode
+- **Pin a note to a spot:** pause (Space plays and pauses; before the first play, a click plays), click the picture (or drag to draw an arrow to the spot), type. The note opens right there on the video (no mode
   button, no separate tab), its number shows on the picture around that moment, and it is listed in that
   moment's sentence row. Clicking the number jumps back to it. "Delete pin" removes it.
 - **Script / On screen notes** on every sentence, and one box for anything else.
@@ -39,7 +39,7 @@ ministry videos, are this toolkit's own.
 
 Every write goes to the artifact's db (read it with the ArtifactData tool):
 - `sentences-v<N>/<sentence id with dots as dashes>`: `{id, text, script, screen, ok}`
-- `pins-v<N>/<pin id>`: `{t, x, y, text, sentence}` (x, y: 0 to 1 across the picture; `sentence`: the one
+- `pins-v<N>/<pin id>`: `{t, x, y, text, sentence}`, plus `kind: "arrow", x2, y2` (the tip) for an arrow (x, y: 0 to 1 across the picture; `sentence`: the one
   playing at `t`). To see what a pin points at, take the frame at `t` and look at (x, y).
 - `notes-v<N>/overall`: `{text}`
 
