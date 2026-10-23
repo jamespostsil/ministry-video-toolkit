@@ -103,7 +103,9 @@ From the `remotion/` folder:
    so headings never darken anyone's face (the `beat-library` skill explains
    how).
 7. **Preview, render, check.** `npm run studio`, then
-   `npm run render -- my-video`, then go through the `review` skill.
+   `npm run render -- my-video`, then go through the `review` skill, then
+   send it for review on a `review-page` (the script itself is approved earlier,
+   on a `storyboard` page).
 8. **Make the thumbnail.** `npm run still -- my-video thumbnail` writes
    `out/my-video-Thumbnail.png`. Save it next to the finished video.
 
@@ -162,11 +164,13 @@ this folder; they are also plain Markdown, worth reading yourself.
 | Skill | Covers |
 |---|---|
 | `footage-prep` | Trimming the opening hold and teleprompter pauses; where it is safe to cut |
+| `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each line, editable wording, notes, Approve |
 | `script-to-beats` | Turning a script with images into a timed beat plan |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `render` | Rendering and the audio mix |
 | `review` | Checking a render: flashes at cuts, audio clicks, sync, legibility, QR scanning |
+| `review-page` | The page a reviewer watches a version on: notes per sentence, notes pinned to a spot on the picture, what changed, Looks good |
 | `thumbnail` | The YouTube thumbnail |
 
 [docs/finding-music.md](docs/finding-music.md) covers free places to get music

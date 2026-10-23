@@ -1,0 +1,217 @@
+<title>__TITLE__</title>
+<style>
+/* Video review page: the video on the left (pause it and click the picture to pin a note on that spot), one row
+   per narration sentence on the right with Script and On-screen notes. Change boxes mark what changed in this
+   version; "Looks good" folds a change and takes it out of Previous / Next. Everything saves to the page's db. */
+:root{--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--hl:#eef0e6;--chg-bg:#fff3d6;--chg-line:#d9a72a;--chg-fg:#4a3a0c;--field:#fbfaf8;--pin:#d64a3a;--pin-fg:#fff;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#f07a6b;--pin-fg:#151412;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#f07a6b;--pin-fg:#151412;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--ui);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:1.35rem;margin:0 0 12px;font-weight:700;text-wrap:balance}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,430px);gap:16px;align-items:start}
+.vid{position:sticky;top:8px;min-width:0;display:grid;gap:6px}
+.frame{position:relative}
+video{width:100%;max-height:calc(100vh - 110px);background:#000;border-radius:6px;display:block}
+.overlay{position:absolute;left:0;right:0;top:0;bottom:52px;cursor:crosshair}
+.overlay[hidden]{display:none}
+.hint{font-size:.85rem;color:var(--muted)}
+.pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--pin);color:var(--pin-fg);font:700 13px/28px var(--ui);text-align:center;box-shadow:0 0 0 3px #fff;cursor:pointer;border:0;padding:0}
+.pop{position:absolute;z-index:3;width:min(300px,80%);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0/.25);padding:8px;display:grid;gap:6px}
+.pop .row-actions{display:flex;gap:8px;justify-content:flex-end}
+.side{height:calc(100vh - 80px);overflow-y:auto;padding-right:4px;min-width:0}
+.row{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:10px;scroll-margin-top:48px}
+.row.on{background:var(--hl);border-color:var(--accent)}
+.row.flash{outline:2px solid var(--chg-line);outline-offset:1px}
+.top{display:flex;gap:10px;align-items:flex-start}
+.time{flex:none;font:600 .85rem var(--ui);font-variant-numeric:tabular-nums;background:var(--accent);color:var(--accent-fg);border:0;border-radius:4px;padding:4px 8px;cursor:pointer}
+.txt{min-width:0;font-weight:600}
+label.f{display:block;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:8px 0 3px}
+textarea{width:100%;min-height:2.4em;field-sizing:content;resize:vertical;font:inherit;font-size:.95rem;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.save{font-size:.75rem;color:var(--muted);min-height:1em}
+.chg{margin-top:8px;background:var(--chg-bg);border:1px solid var(--chg-line);color:var(--chg-fg);border-radius:4px;padding:6px 8px;font-size:.9rem}
+.chg label.ok{display:inline-flex;gap:6px;align-items:center;margin-top:6px;font-size:.85rem;font-weight:600;cursor:pointer}
+.chg label.ok input{width:1.05em;height:1.05em;accent-color:var(--accent);margin:0}
+.chg.done{background:transparent;border-style:dashed;display:flex;gap:10px;align-items:center}
+.chg.done .ctext{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75}.chg.done label.ok{margin:0;flex:none}
+.pins{display:grid;gap:6px;margin-top:8px}
+.pinnote{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:start}
+.pinnote .pn{width:24px;height:24px;border-radius:50%;background:var(--pin);color:var(--pin-fg);font:700 12px/24px var(--ui);text-align:center;border:0;padding:0;cursor:pointer}
+.pinnote .when{font-size:.78rem;color:var(--muted)}
+.link{font:600 .8rem var(--ui);background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+.btn{font:600 .85rem var(--ui);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:4px;padding:5px 10px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.cnav{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;background:var(--bg);padding:0 0 8px}
+.cnav button{font:600 .85rem var(--ui);background:var(--chg-bg);color:var(--chg-fg);border:1px solid var(--chg-line);border-radius:4px;padding:5px 10px;cursor:pointer}
+.cnav button:disabled{opacity:.4;cursor:default}.cnav span{font-size:.85rem;color:var(--muted)}
+.off{color:var(--muted);font-size:.9rem;margin:0 0 10px}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}.vid{position:static}.side{height:auto;overflow:visible}video{max-height:none}}
+</style>
+<h1>__TITLE__</h1>
+<div class="wrap">
+  <div class="vid">
+    <div id="gen" class="chg" hidden></div>
+    <div class="frame" id="frame">
+      <video id="v" controls preload="metadata" src="__VIDEO__"></video>
+      <div class="overlay" id="overlay" aria-label="Click the spot your note is about" hidden></div>
+    </div>
+    <div class="hint" id="hint">Pause the video, then click anywhere on the picture to pin a note to that spot.</div>
+  </div>
+  <div class="side" id="side">
+    <div class="cnav" id="cnav" hidden><button type="button" id="cprev">&#9664; Previous change</button><button type="button" id="cnext">Next change &#9654;</button><span id="ccount" aria-live="polite"></span></div>
+    <div class="row"><label class="f" for="n-all" style="margin-top:0">Anything else about the video</label><textarea id="n-all"></textarea><div class="save" id="s-all"></div></div>
+    <p class="off" id="off" hidden>Notes can't be saved in this view: open the published link while signed in.</p>
+    <div id="rows"></div>
+  </div>
+</div>
+<script>
+const D = __DATA__;
+const S = D.sentences, C = D.changes || {}, V = D.version;
+if (D.general) { const g = document.getElementById("gen"); g.hidden = false; g.textContent = D.general; }
+const $ = (id) => document.getElementById(id);
+const rows = $("rows"), side = $("side"), v = $("v"), off = $("off"), frame = $("frame"), overlay = $("overlay");
+const key = (id) => String(id).split(".").join("-"), fmt = (t) => { t = Math.floor(t); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+const sentenceAt = (t) => { let b = S[0]; for (const s of S) if (t >= s.t - 0.3) b = s; return b; };
+const el = {};
+let navUpd = () => {}, saveOk = () => {}, savePin = () => {}, dropPin = () => {};
+const isOk = {};
+for (const s of S) {
+  const k = key(s.id), d = document.createElement("div"); d.className = "row"; d.dataset.k = k;
+  d.innerHTML = '<div class="top"><button class="time" type="button"></button><div class="txt"></div></div>' +
+    '<label class="f" for="sc-' + k + '">Script</label><textarea id="sc-' + k + '" data-f="script"></textarea>' +
+    '<label class="f" for="on-' + k + '">On screen</label><textarea id="on-' + k + '" data-f="screen"></textarea><div class="pins"></div><div class="save"></div>';
+  d.querySelector(".time").textContent = fmt(s.t);
+  d.querySelector(".txt").textContent = s.text;
+  if (C[s.id]) {
+    const c = document.createElement("div"); c.className = "chg";
+    c.innerHTML = '<div class="ctext"></div><label class="ok"><input type="checkbox"> Looks good</label>';
+    c.querySelector(".ctext").textContent = C[s.id]; c.querySelector(".ctext").title = C[s.id];
+    d.querySelector(".top").after(c);
+    const cb = c.querySelector("input"); cb.onchange = () => { setOk(s.id, cb.checked); saveOk(s.id, cb.checked); };
+  }
+  d.querySelector(".time").onclick = () => { v.currentTime = Math.max(0, s.t - 0.2); v.play().catch(() => {}); };
+  rows.appendChild(d); el[s.id] = d;
+}
+const setOk = (id, on) => { isOk[id] = on; const r = el[id]; r.querySelector(".chg").classList.toggle("done", on); r.querySelector(".chg input").checked = on; navUpd(); };
+
+// ---- Previous / Next change (only the changes not marked "Looks good"); no wrap-around
+let cur = null;
+const chgAll = S.filter((s) => C[s.id]), live = () => chgAll.filter((c) => !isOk[c.id]);
+if (chgAll.length) {
+  $("cnav").hidden = false;
+  const bp = $("cprev"), bn = $("cnext"), cc = $("ccount");
+  const upd = () => { const L = live(), pos = cur ? S.findIndex((s) => s.id === cur) : -1;
+    bn.disabled = !L.some((c) => S.indexOf(c) > pos); bp.disabled = !L.some((c) => S.indexOf(c) < pos);
+    const here = L.findIndex((c) => c.id === cur);
+    cc.textContent = !L.length ? "All changes look good" : here >= 0 ? "Change " + (here + 1) + " of " + L.length : L.length + (L.length > 1 ? " changes to check" : " change to check"); };
+  navUpd = upd;
+  const go = (dir) => { const L = live(), pos = cur ? S.findIndex((s) => s.id === cur) : -1;
+    const s = dir > 0 ? L.find((c) => S.indexOf(c) > pos) : [...L].reverse().find((c) => S.indexOf(c) < pos); if (!s) return;
+    v.currentTime = Math.max(0, s.t - 0.2); v.play().catch(() => {}); const r = el[s.id];
+    if (cur && cur !== s.id) el[cur].classList.remove("on"); cur = s.id; r.classList.add("on"); r.scrollIntoView({ block: "start", behavior: "smooth" });
+    r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 1200); upd(); };
+  bn.onclick = () => go(1); bp.onclick = () => go(-1); v.addEventListener("timeupdate", upd); upd();
+}
+v.addEventListener("timeupdate", () => {
+  const best = sentenceAt(v.currentTime);
+  if (best && best.id !== cur) { if (cur) el[cur].classList.remove("on"); cur = best.id; el[cur].classList.add("on");
+    const r = el[cur], top = r.getBoundingClientRect().top - side.getBoundingClientRect().top + side.scrollTop;
+    if (side.scrollHeight > side.clientHeight && (top < side.scrollTop || top > side.scrollTop + side.clientHeight - r.offsetHeight)) side.scrollTo({ top: Math.max(0, top - 8), behavior: "smooth" }); }
+  drawPins();
+});
+
+// ---- pins: pause, click the picture, type. The note shows on the video at that spot and in that sentence's row.
+let pins = []; // {id, t, x, y, text}  x, y: 0..1 of the picture
+const picRect = () => { const r = v.getBoundingClientRect(), fr = frame.getBoundingClientRect(), vw = v.videoWidth || 16, vh = v.videoHeight || 9;
+  const k = Math.min(r.width / vw, r.height / vh), w = vw * k, h = vh * k; // the picture inside the element (letterboxing aside)
+  return { left: r.left - fr.left + (r.width - w) / 2, top: r.top - fr.top + (r.height - h) / 2, w, h }; };
+const pinNum = (p) => pins.indexOf(p) + 1;
+const showOverlay = () => { overlay.hidden = !v.paused; $("hint").textContent = v.paused ? "Click the picture to pin a note to that spot, or press play to go on." : "Pause the video, then click anywhere on the picture to pin a note to that spot."; };
+v.addEventListener("pause", showOverlay); v.addEventListener("play", () => { closePop(); showOverlay(); }); v.addEventListener("loadedmetadata", () => { showOverlay(); drawPins(); });
+let pop = null;
+const closePop = () => { if (pop) { pop.remove(); pop = null; } };
+function openPop(p) {
+  closePop(); const r = picRect();
+  pop = document.createElement("div"); pop.className = "pop";
+  pop.innerHTML = '<label class="f" style="margin:0">Note ' + pinNum(p) + ' at ' + fmt(p.t) + '</label><textarea placeholder="What should change here?"></textarea>' +
+    '<div class="row-actions"><button type="button" class="link del">Delete pin</button><button type="button" class="btn primary done">Done</button></div>';
+  const ta = pop.querySelector("textarea"); ta.value = p.text;
+  ta.addEventListener("input", () => { p.text = ta.value; schedulePin(p); renderRowPins(); });
+  ta.addEventListener("keydown", (e) => { if (e.key === "Escape") closePop(); });
+  pop.querySelector(".done").onclick = closePop;
+  pop.querySelector(".del").onclick = () => { removePin(p); closePop(); };
+  frame.appendChild(pop);
+  const x = r.left + p.x * r.w, y = r.top + p.y * r.h, pw = pop.offsetWidth, ph = pop.offsetHeight, fw = frame.clientWidth;
+  pop.style.left = Math.max(4, Math.min(fw - pw - 4, x + 18)) + "px";
+  pop.style.top = Math.max(4, y + 18 + ph > frame.clientHeight - 52 ? y - ph - 18 : y + 18) + "px";
+  ta.focus();
+}
+overlay.addEventListener("click", (e) => {
+  const r = picRect(), fr = frame.getBoundingClientRect();
+  const x = (e.clientX - fr.left - r.left) / r.w, y = (e.clientY - fr.top - r.top) / r.h;
+  if (x < 0 || x > 1 || y < 0 || y > 1) return;
+  if (pop) { closePop(); return; } // a click outside an open note just closes it
+  const p = { id: "p" + Date.now(), t: Math.round(v.currentTime * 100) / 100, x, y, text: "" };
+  pins.push(p); pins.sort((a, b) => a.t - b.t); drawPins(); renderRowPins(); openPop(p);
+});
+const timers = new Map();
+const schedulePin = (p) => { clearTimeout(timers.get(p.id)); timers.set(p.id, setTimeout(() => savePin(p), 700)); };
+function removePin(p) { pins = pins.filter((x) => x !== p); drawPins(); renderRowPins(); dropPin(p); }
+function drawPins() {
+  frame.querySelectorAll(".pin").forEach((n) => n.remove());
+  const r = picRect();
+  for (const p of pins) {
+    if (Math.abs(v.currentTime - p.t) > 1.5) continue;
+    const b = document.createElement("button"); b.type = "button"; b.className = "pin"; b.textContent = pinNum(p); b.title = p.text || "Note " + pinNum(p);
+    b.style.left = r.left + p.x * r.w + "px"; b.style.top = r.top + p.y * r.h + "px";
+    b.onclick = (e) => { e.stopPropagation(); v.pause(); openPop(p); };
+    frame.appendChild(b);
+  }
+}
+function renderRowPins() {
+  for (const s of S) el[s.id].querySelector(".pins").innerHTML = "";
+  for (const p of pins) {
+    // empty pins still being typed show too, so the row matches the video
+    const s = sentenceAt(p.t), box = el[s.id].querySelector(".pins"), d = document.createElement("div"); d.className = "pinnote";
+    d.innerHTML = '<button type="button" class="pn" title="Show this spot"></button><div><div class="when"></div><div class="pt"></div></div>';
+    d.querySelector(".pn").textContent = pinNum(p); d.querySelector(".when").textContent = "On the picture at " + fmt(p.t);
+    d.querySelector(".pt").textContent = p.text || "(no text yet)";
+    d.querySelector(".pn").onclick = () => { v.pause(); v.currentTime = p.t; setTimeout(() => { drawPins(); openPop(p); }, 120); };
+    box.appendChild(d);
+  }
+}
+window.addEventListener("resize", () => { closePop(); drawPins(); });
+v.addEventListener("seeked", drawPins);
+
+// ---- saving: sentences-v<N>/<id> {id, text, script, screen, ok}, pins-v<N>/<pin id> {t, x, y, text, sentence}, notes-v<N>/overall {text}
+(async () => {
+  const db = await claude.use("db"); if (!db) { off.hidden = false; return; }
+  const col = db.collection("sentences-v" + V), pcol = db.collection("pins-v" + V), all = db.collection("notes-v" + V);
+  const cache = {}, failed = () => { off.hidden = false; };
+  const saveRow = async (s, sv) => { const k = key(s.id); sv.textContent = "…";
+    try { await col.doc(k).set({ id: s.id, text: s.text, ...cache[k] }); sv.textContent = "saved"; } catch (e) { sv.textContent = "not saved"; failed(); } };
+  saveOk = (id, on) => { const s = S.find((x) => x.id === id), k = key(id); cache[k].ok = on; saveRow(s, el[id].querySelector(".save")); };
+  savePin = async (p) => { try { await pcol.doc(p.id).set({ t: p.t, x: p.x, y: p.y, text: p.text, sentence: sentenceAt(p.t).id }); } catch (e) { failed(); } };
+  dropPin = async (p) => { try { await pcol.doc(p.id).delete(); } catch (e) { failed(); } };
+  for (const s of S) {
+    const k = key(s.id), d = el[s.id], sv = d.querySelector(".save"); cache[k] = {};
+    for (const ta of d.querySelectorAll("textarea")) ta.addEventListener("input", () => { clearTimeout(timers.get(ta)); sv.textContent = "…";
+      timers.set(ta, setTimeout(() => { cache[k][ta.dataset.f] = ta.value; saveRow(s, sv); }, 700)); });
+  }
+  const na = $("n-all"), sa = $("s-all");
+  na.addEventListener("input", () => { clearTimeout(timers.get(na)); sa.textContent = "…";
+    timers.set(na, setTimeout(async () => { try { await all.doc("overall").set({ text: na.value }); sa.textContent = "saved"; } catch (e) { sa.textContent = "not saved"; failed(); } }, 700)); });
+  col.onSnapshot((snap) => { for (const d of snap.docs) { const k = d.id, x = d.data() || {}; cache[k] = Object.assign({}, x); delete cache[k].id; delete cache[k].text;
+    const row = rows.querySelector('[data-k="' + k + '"]'); if (!row) continue;
+    for (const ta of row.querySelectorAll("textarea")) if (document.activeElement !== ta) ta.value = x[ta.dataset.f] || "";
+    const s = S.find((y) => key(y.id) === k); if (s && C[s.id]) setOk(s.id, !!x.ok); } });
+  all.onSnapshot((snap) => { for (const d of snap.docs) if (d.id === "overall" && document.activeElement !== na) na.value = (d.data() || {}).text || ""; });
+  pcol.onSnapshot((snap) => { const open = pop && document.activeElement && pop.contains(document.activeElement);
+    const mine = new Map(pins.map((p) => [p.id, p]));
+    pins = snap.docs.map((d) => { const x = d.data() || {}, m = mine.get(d.id); return m && open ? m : { id: d.id, t: x.t, x: x.x, y: x.y, text: x.text || "" }; })
+      .concat(pins.filter((p) => !snap.docs.some((d) => d.id === p.id) && p.text === "")) // a pin still being typed
+      .filter((p) => typeof p.t === "number").sort((a, b) => a.t - b.t);
+    drawPins(); renderRowPins(); });
+})().catch(() => { off.hidden = false; });
+</script>
