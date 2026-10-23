@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
 /* Shared storyboard page (training-video-core rule G15). Layout: slim header in the product's colour; big shot with boxes on the left (note, back/next, thumbnail strip); a sidebar of editable lines grouped by shot that scrolls on its own */
-:root{--bg:#f4f5f6;--surface:#fff;--text:#1c2430;--muted:#566272;--border:#d9dee4;--accent:{{ACCENT}};--accent-soft:#fbeee3;--now:#fdf3e7;--changed:#2f5f74;--upd:#b38600;--upd-text:#5c4500;--ins:#ffe98a;--del:#a33a3a;--box:#d64f3a;--hero-bg:{{HERO}};--hero-text:#fff;--hero-dim:#fbe3d2;--shade:rgba(16,20,26,.86);
+:root{--bg:#f4f5f6;--surface:#fff;--text:#1c2430;--muted:#566272;--border:#d9dee4;--accent:{{ACCENT}};--accent-soft:#fbeee3;--now:#fdf3e7;--changed:#2f5f74;--upd:#b38600;--upd-text:#5c4500;--ins:#ffe98a;--del:#a33a3a;--box:#d64f3a;--pin:#d25f25;--hero-bg:{{HERO}};--hero-text:#fff;--hero-dim:#fbe3d2;--shade:rgba(16,20,26,.86);
 --font:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}
@@ -18,7 +18,16 @@ header p{margin:0;color:var(--hero-dim);font-size:.9rem}
 .app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 500px}
 @media (max-width:1000px){html,body{overflow:auto;height:auto}.app{grid-template-columns:1fr}.stage{overflow:visible}.side{max-height:none}}
 .stage{min-width:0;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow:auto}
-.frame{position:relative;width:100%;max-width:100%;align-self:center;cursor:zoom-in}
+.frame{position:relative;width:100%;max-width:100%;align-self:center;cursor:crosshair;touch-action:none}
+.hint{font-size:.85rem;color:var(--muted)}
+.pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--pin);color:#fff;font:700 13px/28px var(--font);text-align:center;box-shadow:0 0 0 3px #fff;cursor:pointer;border:0;padding:0;z-index:2}
+.arrows{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
+.pop{position:absolute;z-index:3;width:min(300px,80%);background:var(--surface);color:var(--text);border:2px solid var(--pin);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0/.35);padding:10px;display:grid;gap:8px;cursor:default}
+.pop .lab{color:var(--text)}.pop textarea{width:100%;font:inherit;font-size:.95rem;color:var(--text);background:var(--surface);border:1px solid var(--muted);border-radius:6px;padding:6px 8px;min-height:3em;resize:vertical}
+.pop .acts{display:flex;gap:10px;justify-content:flex-end;align-items:center}.pop .del{font:inherit;font-size:.85rem;background:none;border:0;color:var(--text);text-decoration:underline;cursor:pointer}
+.spots{display:grid;gap:5px;padding:4px 3px 2px}.spot{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:start}
+.spot .pn{width:24px;height:24px;border-radius:50%;background:var(--pin);color:#fff;font:700 12px/24px var(--font);text-align:center;border:0;padding:0;cursor:pointer}
+.spot .when{font-size:.78rem;color:var(--muted)}.spot .pt{font-weight:700}
 .frame img{display:block;width:100%;max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border);background:var(--surface)}
 .bx{position:absolute;border:3px solid var(--box);border-radius:6px;pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
 .cap{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
@@ -91,9 +100,10 @@ textarea.general{min-height:10em;resize:vertical;overflow:auto}
 <div class="app">
   <main class="stage">
     <div class="cap"><span class="sec" id="sec"></span><span class="note" id="note"></span></div>
-    <div class="frame" id="frame" title="Click to see it full size"><img id="pic" alt=""></div>
+    <div class="frame" id="frame"><img id="pic" alt="" draggable="false"></div>
+    <div class="hint">Click the picture to pin a note to a spot, or drag to draw an arrow to it.</div>
     <div class="subs" id="subs" lang="en" hidden></div>
-    <div class="nav"><button type="button" class="btn" id="prev">Back</button><button type="button" class="btn" id="next">Next</button><span class="count" id="count"></span></div>
+    <div class="nav"><button type="button" class="btn" id="prev">Back</button><button type="button" class="btn" id="next">Next</button><span class="count" id="count"></span><button type="button" class="btn" id="zoom" style="margin-left:auto">Full size</button></div>
     <div class="thumbs" id="thumbs" aria-label="All shots"></div>
   </main>
   <aside class="side">
@@ -141,7 +151,7 @@ function show(i, scroll) {
   cur = Math.max(0, Math.min(shots.length - 1, i));
   const s = shots[cur];
   $("pic").src = "shots/" + s.img + ".png"; $("pic").alt = s.section;
-  boxesInto($("frame"), s);
+  boxesInto($("frame"), s); closePop(); drawSpots();
   $("sec").textContent = s.section; $("note").textContent = s.note || "";
   const subs = (s.en || []).filter(Boolean); $("subs").hidden = !subs.length; $("subs").textContent = subs.join(" ");
   const vis = shots.map((_, k) => k).filter(visible);
@@ -163,9 +173,100 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") step(1);
   if (e.key === "ArrowLeft") step(-1);
 });
-$("frame").addEventListener("click", () => {
+$("zoom").addEventListener("click", () => {
   const s = shots[cur]; $("lbimg").src = "shots/" + s.img + ".png"; boxesInto($("lbwrap"), s); $("lb").hidden = false;
 });
+
+// ---- spot notes on the picture: a click pins one, a drag draws an arrow (from where it starts to the tip).
+// db spots/<id> {shot (key), x, y, text, kind?: "arrow", x2, y2}; x, y as fractions of the picture
+let spots = [], pop = null, saveSpot = () => {}, dropSpot = () => {};
+const pic = $("pic"), frame = $("frame"), SVGNS = "http://www.w3.org/2000/svg";
+const here = () => spots.filter((p) => p.shot === shots[cur].key);
+const spotNum = (p) => spots.filter((q) => q.shot === p.shot).indexOf(p) + 1;
+const toPic = (e) => { const r = pic.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
+const clamp01 = (n) => Math.max(0, Math.min(1, n));
+const closePop = () => { if (pop) { pop.remove(); pop = null; } };
+function arrowInto(svg, a) {
+  const W = pic.clientWidth, H = pic.clientHeight, x1 = a.x * W, y1 = a.y * H, x2 = a.x2 * W, y2 = a.y2 * H;
+  const ang = Math.atan2(y2 - y1, x2 - x1), L = 18, A = 0.5, bx = x2 - L * Math.cos(ang), by = y2 - L * Math.sin(ang);
+  const head = [[x2, y2], [x2 - L * Math.cos(ang - A), y2 - L * Math.sin(ang - A)], [x2 - L * Math.cos(ang + A), y2 - L * Math.sin(ang + A)]].map((q) => q.join(",")).join(" ");
+  for (const [stroke, wd] of [["#fff", 8], ["var(--pin)", 4]]) {
+    const ln = document.createElementNS(SVGNS, "line");
+    Object.entries({ x1, y1, x2: bx, y2: by }).forEach(([k, val]) => ln.setAttribute(k, val));
+    ln.setAttribute("stroke-linecap", "round"); ln.style.stroke = stroke; ln.style.strokeWidth = wd; svg.appendChild(ln);
+    const pg = document.createElementNS(SVGNS, "polygon"); pg.setAttribute("points", head); pg.style.fill = "var(--pin)";
+    pg.style.stroke = stroke; pg.style.strokeWidth = stroke === "#fff" ? 4 : 0; pg.setAttribute("stroke-linejoin", "round"); svg.appendChild(pg);
+  }
+}
+function drawSpots(preview) {
+  frame.querySelectorAll(".pin,.arrows").forEach((n) => n.remove());
+  const svg = document.createElementNS(SVGNS, "svg"); svg.setAttribute("class", "arrows"); frame.appendChild(svg);
+  if (preview) arrowInto(svg, preview);
+  for (const p of here()) {
+    if (p.kind === "arrow") arrowInto(svg, p);
+    const b = document.createElement("button"); b.type = "button"; b.className = "pin"; b.textContent = spotNum(p); b.title = p.text || "Note " + spotNum(p);
+    b.style.left = p.x * 100 + "%"; b.style.top = p.y * 100 + "%";
+    b.addEventListener("pointerdown", (e) => e.stopPropagation());
+    b.onclick = (e) => { e.stopPropagation(); openPop(p); };
+    frame.appendChild(b);
+  }
+}
+function openPop(p) {
+  closePop();
+  pop = document.createElement("div"); pop.className = "pop";
+  pop.innerHTML = '<span class="lab">Note ' + spotNum(p) + ' on this shot</span><textarea placeholder="What should change here?"></textarea>' +
+    '<div class="acts"><button type="button" class="del">Delete note</button><button type="button" class="btn done">Done</button></div>';
+  pop.addEventListener("pointerdown", (e) => e.stopPropagation());
+  const ta = pop.querySelector("textarea"); ta.value = p.text;
+  let t = null;
+  ta.addEventListener("input", () => { p.text = ta.value; renderSpotList(); clearTimeout(t); t = setTimeout(() => saveSpot(p), 700); });
+  ta.addEventListener("keydown", (e) => { if (e.key === "Escape") closePop(); });
+  pop.querySelector(".done").onclick = closePop;
+  pop.querySelector(".del").onclick = () => { spots = spots.filter((q) => q !== p); closePop(); drawSpots(); renderSpotList(); dropSpot(p); };
+  frame.appendChild(pop);
+  const W = frame.clientWidth, H = frame.clientHeight, x = p.x * W, y = p.y * H;
+  pop.style.left = Math.max(4, Math.min(W - pop.offsetWidth - 4, x + 18)) + "px";
+  pop.style.top = Math.max(4, y + 18 + pop.offsetHeight > H ? y - pop.offsetHeight - 18 : y + 18) + "px";
+  ta.focus();
+}
+let drag = null;
+frame.addEventListener("pointerdown", (e) => {
+  if (pop) { closePop(); return; } // a click outside an open note just closes it
+  const q = toPic(e); if (q.x < 0 || q.x > 1 || q.y < 0 || q.y > 1) return;
+  drag = { x: q.x, y: q.y, x2: q.x, y2: q.y, sx: e.clientX, sy: e.clientY, moved: false };
+  frame.setPointerCapture(e.pointerId); e.preventDefault();
+});
+frame.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const q = toPic(e); drag.x2 = clamp01(q.x); drag.y2 = clamp01(q.y);
+  drag.moved = drag.moved || Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 10;
+  drawSpots(drag.moved ? drag : null);
+});
+frame.addEventListener("pointerup", () => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  const p = { id: "s" + Date.now(), shot: shots[cur].key, x: d.x, y: d.y, text: "" };
+  if (d.moved) Object.assign(p, { kind: "arrow", x2: d.x2, y2: d.y2 });
+  spots.push(p); drawSpots(); renderSpotList(); openPop(p);
+});
+frame.addEventListener("pointercancel", () => { drag = null; drawSpots(); });
+window.addEventListener("resize", () => { closePop(); drawSpots(); });
+function renderSpotList() {
+  shots.forEach((s, i) => {
+    const g = groups[i]; if (!g) return;
+    let box = g.querySelector(".spots"); if (!box) { box = document.createElement("div"); box.className = "spots"; g.querySelector(".grp-head").after(box); }
+    box.innerHTML = "";
+    for (const p of spots.filter((q) => q.shot === s.key)) {
+      const d = document.createElement("div"); d.className = "spot";
+      d.innerHTML = '<button type="button" class="pn" title="Show this spot"></button><div><div class="when"></div><div class="pt"></div></div>';
+      d.querySelector(".pn").textContent = spotNum(p);
+      d.querySelector(".when").textContent = p.kind === "arrow" ? "Arrow on the picture" : "On the picture";
+      d.querySelector(".pt").textContent = p.text || "(no text yet)";
+      d.querySelector(".pn").onclick = () => { show(i, false); openPop(p); };
+      box.appendChild(d);
+    }
+  });
+}
 $("lb").addEventListener("click", () => { $("lb").hidden = true; });
 
 const shotUpd = (s) => s.isNew || (s.diffs || []).some(Boolean);
@@ -258,6 +359,7 @@ if (DATA.since && nUpd) {
     requestAnimationFrame(fitAll);
   });
 }
+pic.addEventListener("load", () => drawSpots());
 show(0, false); requestAnimationFrame(fitAll);
 
 // ---- approval of this draft (nothing is recorded or voiced before it): notes/approval-draft-<N>
@@ -276,6 +378,10 @@ showAppr(null);
 
 (async () => {
   try { db = await window.claude?.use?.("db"); } catch { db = null; }
+  if (db) {
+    saveSpot = async (p) => { try { await db.collection("spots").doc(p.id).set({ shot: p.shot, x: p.x, y: p.y, text: p.text, ...(p.kind === "arrow" ? { kind: "arrow", x2: p.x2, y2: p.y2 } : {}), updatedAt: new Date().toISOString() }); } catch (e) { console.error(e); } };
+    dropSpot = async (p) => { try { await db.collection("spots").doc(p.id).delete(); } catch (e) { console.error(e); } };
+  }
   if (!db) { $("status").textContent = "Edits and notes can't be saved in this view. Open the published link while signed in."; return; }
   try {
     const snap = await db.collection("lines").get();
@@ -287,8 +393,12 @@ showAppr(null);
     const g = await db.collection("notes").get();
     g.docs.forEach((d) => { if (d.id === "general" && typeof d.data().text === "string") general.value = d.data().text; });
     showAppr((g.docs.find((d) => d.id === "approval-draft-" + DATA.draft) || { data: () => null }).data());
+    const sp = await db.collection("spots").get();
+    spots = sp.docs.map((d) => { const x = d.data() || {}; return { id: d.id, shot: x.shot, x: x.x, y: x.y, text: x.text || "", ...(x.kind === "arrow" ? { kind: "arrow", x2: x.x2, y2: x.y2 } : {}) }; })
+      .filter((p) => typeof p.x === "number" && shots.some((s) => s.key === p.shot));
+    drawSpots(); renderSpotList();
     fitAll();
   } catch (e) { console.error(e); }
-  $("status").textContent = "Click any line to change its wording. Edits and notes save as you type, and I can read them. Click the picture to see it full size; the arrow keys move between shots.";
+  $("status").textContent = "Click any line to change its wording. Edits and notes save as you type, and I can read them. Click the picture to pin a note to a spot, or drag to draw an arrow; Full size shows it larger; the arrow keys move between shots.";
 })();
 </script>

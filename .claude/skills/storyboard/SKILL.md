@@ -1,6 +1,6 @@
 ---
 name: storyboard
-description: Make the storyboard page a reviewer approves before anything is filmed, voiced or rendered: each shot's real picture (with highlight boxes if wanted) beside the lines said over it, the wording editable in place, Script and On-screen notes per line, what changed since the last draft marked word by word, and an Approve button. Published as a claude.ai artifact whose edits and approval Claude can read back. Use when a script is ready for review, when asked for a storyboard, or before the first recording or render of a new video.
+description: Make the storyboard page a reviewer approves before anything is filmed, voiced or rendered: each shot's real picture (with highlight boxes if wanted) beside the lines said over it, the wording editable in place, Script and On-screen notes per line, notes pinned or arrows drawn on the picture, what changed since the last draft marked word by word, and an Approve button. Published as a claude.ai artifact whose edits and approval Claude can read back. Use when a script is ready for review, when asked for a storyboard, or before the first recording or render of a new video.
 ---
 
 # Storyboard
@@ -32,5 +32,6 @@ ministry videos, are this toolkit's own.
 
 ArtifactData: `lines/<shot key>.<line number>` (`{text, original, note, screen, shot}`: `text` is the
 reviewer's own wording when they edited it, otherwise empty), `notes/general` (`{text}`) and
-`notes/approval-draft-<N>` (`{approved, at}`). Apply every edit and note, then build the next draft. Record or
+`notes/approval-draft-<N>` (`{approved, at}`), and `spots/<id>` (`{shot, x, y, text}`, plus `kind: "arrow", x2, y2`
+for an arrow: a note the reviewer pinned or an arrow drawn on that shot's picture; look at the picture there). Apply every edit and note, then build the next draft. Record or
 render only once the newest draft is approved.

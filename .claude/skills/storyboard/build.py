@@ -1,5 +1,6 @@
 """Build the storyboard page (rule G15): every shot's real screenshot with its highlight boxes, the lines said
-over it (editable in place), Script and On-screen notes per line, what changed since the last draft marked
+over it (editable in place), Script and On-screen notes per line, notes pinned (click) or arrows drawn (drag)
+on the picture, what changed since the last draft marked
 word by word, and an Approve button. Published as an artifact with the db capability.
 
   python -I build.py <storyboard.json> <out folder> [--pictures DIR] [--boxes FILE] [--drafts DIR]
@@ -18,7 +19,8 @@ Each build keeps a copy of the draft in <drafts>/storyboard-draft-<N>.json (defa
 json); when the copy of draft N-1 is there, changed and new lines are marked.
 The out folder gets storyboard.html, shots/*.png and thumbs/*.jpg: publish them together (files).
 db: lines/<shot key>.<line n> {text (the reviewer's wording, or ""), note, screen, original, shot},
-notes/general {text}, notes/approval-draft-<N> {approved, at}.
+notes/general {text}, notes/approval-draft-<N> {approved, at}, spots/<id> {shot (key), x, y, text, kind?: "arrow",
+x2, y2} (a note pinned to a spot on the shot's picture, or an arrow from x, y to the tip x2, y2; fractions of the picture).
 """
 import argparse, difflib, json, os, re, shutil
 from PIL import Image
