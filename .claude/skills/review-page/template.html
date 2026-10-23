@@ -3,9 +3,9 @@
 /* Video review page: the video on the left (pause it and click the picture to pin a note on that spot), one row
    per narration sentence on the right with Script and On-screen notes. Change boxes mark what changed in this
    version; "Looks good" folds a change and takes it out of Previous / Next. Everything saves to the page's db. */
-:root{--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--hl:#eef0e6;--chg-bg:#fff3d6;--chg-line:#d9a72a;--chg-fg:#4a3a0c;--field:#fbfaf8;--pin:#d93a2b;--pin-fg:#fff;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#e8402f;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#e8402f;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}
+:root{--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--hl:#eef0e6;--chg-bg:#fff3d6;--chg-line:#d9a72a;--chg-fg:#4a3a0c;--field:#fbfaf8;--pin:#d25f25;--pin-fg:#fff;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--ui);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font-size:1.35rem;margin:0 0 12px;font-weight:700;text-wrap:balance}
