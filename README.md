@@ -164,7 +164,7 @@ this folder; they are also plain Markdown, worth reading yourself.
 | Skill | Covers |
 |---|---|
 | `footage-prep` | Trimming the opening hold and teleprompter pauses; where it is safe to cut |
-| `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each line, editable wording, notes, Approve |
+| `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked, Approve |
 | `script-to-beats` | Turning a script with images into a timed beat plan |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |

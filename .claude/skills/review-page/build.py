@@ -1,13 +1,14 @@
-"""Build a video review page from a data file.
+"""Build a video review page from a data file (training-video-core rule G14; the ministry video toolkit
+has a copy, kept in step by scripts/sync-to-ministry-toolkit.py).
 
   python build.py <data.json> <out.html>
 
 data.json:
   {
-    "title": "Ministry update, October: v2",
-    "video": "ministry-update-v2-web.mp4",          # published next to the page
+    "title": "My video: v2",
+    "video": "my-video-v2-web.mp4",              # published next to the page
     "version": 2,                                    # db collections are sentences-v2, pins-v2, notes-v2
-    "accent": "#5f4d72",                             # optional, the page's main colour
+    "accent": "#3a4720",                             # optional, the page's main colour
     "sentences": [{"id": "1.1", "text": "...", "t": 3.5}, ...],   # t: when it starts in the video (s)
     "changes": {"1.1": "What changed here since the last version"},  # optional
     "general": "A one-line note shown above the video"                # optional

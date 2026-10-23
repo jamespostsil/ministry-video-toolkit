@@ -1,90 +1,294 @@
-<title>__TITLE__</title>
+<title>{{TITLE}} Storyboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
-/* Storyboard: one card per script line, the real picture of what is on screen beside what is said. The wording can
-   be edited in place; Script and On-screen notes per line; one Approve button for the whole draft. Saves to db. */
-:root{--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--faint:#8a857d;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--field:#fbfaf8;--chg:#2f5f74;--ok:#2e6b3f;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--faint:#857f76;--line:#36332f;--accent-fg:#151412;--field:#191816;--chg:#9cc7da;--ok:#8fd19e;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--faint:#857f76;--line:#36332f;--accent-fg:#151412;--field:#191816;--chg:#9cc7da;--ok:#8fd19e;color-scheme:dark}
+/* Shared storyboard page (training-video-core rule G15). Layout: slim header in the product's colour; big shot with boxes on the left (note, back/next, thumbnail strip); a sidebar of editable lines grouped by shot that scrolls on its own */
+:root{--bg:#f4f5f6;--surface:#fff;--text:#1c2430;--muted:#566272;--border:#d9dee4;--accent:{{ACCENT}};--accent-soft:#fbeee3;--now:#fdf3e7;--changed:#2f5f74;--upd:#b38600;--upd-text:#5c4500;--ins:#ffe98a;--del:#a33a3a;--box:#d64f3a;--hero-bg:{{HERO}};--hero-text:#fff;--hero-dim:#fbe3d2;--shade:rgba(16,20,26,.86);
+--font:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--ui);padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-main{max-width:1100px;margin:0 auto;display:grid;gap:14px}
-header{padding-block:18px 0;display:grid;gap:4px}
-h1{margin:0;font-size:1.45rem;text-wrap:balance}
-h2.sec{margin:10px 0 0;font-size:1rem;color:var(--muted)}
-.muted{color:var(--muted)}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
-.state{flex:1 1 220px;font-weight:600}.state.ok{color:var(--ok)}
-.btn{font:600 .9rem var(--ui);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
-button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);overflow:hidden}
-.card.changed{box-shadow:inset 4px 0 0 var(--chg)}
-.pic{background:var(--bg);display:grid;align-content:start;gap:6px;padding:10px;border-right:1px solid var(--line);min-width:0}
-.pic img{width:100%;border-radius:4px;display:block;border:1px solid var(--line);cursor:zoom-in}
-.pic .none{font-size:.88rem;color:var(--faint);padding:20px 0;text-align:center}
-.pic .cap{font-size:.88rem;color:var(--muted)}
-.body{padding:10px 12px;display:grid;gap:6px;align-content:start;min-width:0}
-.n{font:600 .78rem ui-monospace,Consolas,monospace;color:var(--faint)}
-textarea{width:100%;font:inherit;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:6px 8px;resize:vertical;field-sizing:content;min-height:2.3em}
-textarea.say{font-size:1.02rem;font-weight:600;background:transparent;border-color:transparent}
-textarea.say:hover,textarea.say:focus{border-color:var(--line);background:var(--field)}
-.was{font-size:.84rem;color:var(--muted)}
-.lab{font:700 .7rem var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
-.notes{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
-.meta{font-size:.78rem;color:var(--muted);min-height:1em}
-dialog{border:0;padding:0;background:transparent;max-width:96vw}
-dialog img{max-width:96vw;max-height:90vh;display:block;border-radius:6px}
-dialog::backdrop{background:rgb(0 0 0/.75)}
-@media (max-width:760px){.card{grid-template-columns:1fr}.pic{border-right:0;border-bottom:1px solid var(--line)}.notes{grid-template-columns:1fr}}
+html,body{height:100%;overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--font);display:flex;flex-direction:column}
+header{background:var(--hero-bg);color:var(--hero-text);padding:10px 16px;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline}
+header h1{margin:0;font-size:1.2rem}
+header p{margin:0;color:var(--hero-dim);font-size:.9rem}
+.appr{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:.9rem;color:var(--hero-dim)}
+.appr .btn{background:#fff;color:#1c2430;border-color:#fff}.appr.ok #appr-state{color:#fff;font-weight:700}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 500px}
+@media (max-width:1000px){html,body{overflow:auto;height:auto}.app{grid-template-columns:1fr}.stage{overflow:visible}.side{max-height:none}}
+.stage{min-width:0;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.frame{position:relative;width:100%;max-width:100%;align-self:center;cursor:zoom-in}
+.frame img{display:block;width:100%;max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border);background:var(--surface)}
+.bx{position:absolute;border:3px solid var(--box);border-radius:6px;pointer-events:none;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+.cap{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.cap .sec{font-weight:700}
+.cap .note{color:var(--muted)}
+.nav{display:flex;gap:8px;align-items:center}
+.nav .count{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
+button.btn{font:700 .9rem var(--font);border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer}
+button.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.thumbs button{flex:0 0 auto;padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}
+.thumbs button[aria-current="true"]{border-color:var(--accent)}
+.thumbs img{width:112px;height:63px;object-fit:cover;border-radius:3px;display:block}
+.side{border-left:1px solid var(--border);background:var(--surface);min-height:0;display:flex;flex-direction:column}
+.tabs{display:flex;border-bottom:1px solid var(--border)}
+.tabs button{flex:1;font:700 .9rem var(--font);background:none;border:none;border-bottom:3px solid transparent;padding:10px 6px;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
+.pane{flex:1;overflow:auto;padding:10px 12px}
+.pane[hidden]{display:none}
+.status{font-size:.85rem;color:var(--muted);margin:2px 0 8px}
+.grp{border:1px solid var(--border);border-radius:8px;margin:8px 0;padding:6px;background:var(--bg)}
+.grp.now{background:var(--now);border-color:var(--accent)}
+.grp-head{display:flex;gap:8px;align-items:center;background:none;border:none;padding:2px;cursor:pointer;width:100%;text-align:left;color:var(--muted);font:inherit;font-size:.85rem}
+.grp-head img{width:72px;height:40px;object-fit:cover;border-radius:3px;border:1px solid var(--border)}
+.line{border-top:1px dashed var(--border);padding:6px 2px 2px;display:grid;gap:3px}
+.grp-head + .line{border-top:0}
+.line.upd{box-shadow:inset 4px 0 0 var(--upd);padding-left:8px}
+.diff{font:inherit;line-height:1.45;padding:3px 5px;border:1px solid transparent;border-radius:6px;background:none;color:var(--text);text-align:left;cursor:text;width:100%}
+.diff:hover{border-color:var(--border);background:var(--surface)}
+.line.upd.editing .diff,.line.upd:not(.editing) textarea.say{display:none}
+.diff ins{background:var(--ins);color:var(--text);text-decoration:none;border-radius:3px;padding:0 2px}
+.diff del{display:none}
+.upd-tag{font-size:.72rem;font-weight:700;color:var(--upd-text);background:var(--ins);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.thumbs button{position:relative}
+.thumbs button.upd::after{content:"";position:absolute;top:4px;right:4px;width:11px;height:11px;border-radius:50%;background:var(--upd);box-shadow:0 0 0 2px #fff}
+.filter{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;margin:2px 0 8px;font-size:.85rem;color:var(--muted)}
+.filter[hidden]{display:none}
+button.btn[aria-pressed="true"]{background:var(--ins);border-color:var(--upd);color:var(--text)}
+body.only .grp:not(.has-upd),body.only .line:not(.upd),body.only .thumbs button:not(.upd){display:none}
+.line.changed{box-shadow:inset 4px 0 0 var(--changed);padding-left:8px}
+textarea.say{width:100%;resize:none;overflow:hidden;min-height:2.2em;border:1px solid transparent;border-radius:6px;padding:3px 5px;background:transparent;color:var(--text);font:inherit;line-height:1.45}
+textarea.say:hover,textarea.say:focus{border-color:var(--border);background:var(--surface)}
+.notes2{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:0 3px}
+.lab{font:700 .7rem var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+textarea.note,textarea.general{width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 7px;background:var(--surface);color:var(--text);font:inherit;font-size:.88rem;resize:none;overflow:hidden;min-height:2em}
+textarea.general{min-height:10em;resize:vertical;overflow:auto}
+@media (max-width:520px){.notes2{grid-template-columns:1fr}}
+.check{font-size:.72rem;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:4px}
+.meta{display:flex;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
+.meta button{font:inherit;background:none;border:none;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
+.saved{color:var(--accent);opacity:0;transition:opacity .2s}.saved.show{opacity:1}
+.en{font-size:.88rem;color:var(--muted);padding:0 5px;line-height:1.4}
+.en b{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
+.subs{align-self:center;max-width:100%;background:#111;color:#fff;border-radius:6px;padding:6px 14px;text-align:center;font-size:1rem;line-height:1.45}
+.subs[hidden]{display:none}
+.none{color:var(--muted);font-style:italic;font-size:.9rem;padding:4px}
+.lb{position:fixed;inset:0;background:var(--shade);display:flex;align-items:flex-start;justify-content:center;overflow:auto;z-index:20;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;cursor:zoom-out}
+.lb[hidden]{display:none}
+.lb .wrap{position:relative}
+.lb img{display:block;width:auto;max-width:none;height:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-<main>
-<header><h1>__TITLE__</h1><p class="muted" id="intro"></p></header>
-<div class="bar"><span class="state" id="state">Connecting&hellip;</span><button type="button" class="btn primary" id="approve">Approve this draft</button></div>
-<div id="list"></div>
-<section class="card" style="grid-template-columns:1fr"><div class="body"><span class="lab">Anything else</span><textarea id="general" aria-label="Notes about the whole storyboard"></textarea><span class="meta" id="s-gen"></span></div></section>
-</main>
-<dialog id="zoom"><img alt=""></dialog>
+<header>
+  <h1>{{TITLE}}: storyboard, draft {{DRAFT}}</h1>
+  <p>{{SUBTITLE}}</p>
+  <span class="appr"><span id="appr-state"></span><button type="button" class="btn" id="approve">Approve draft {{DRAFT}}</button></span>
+</header>
+<div class="app">
+  <main class="stage">
+    <div class="cap"><span class="sec" id="sec"></span><span class="note" id="note"></span></div>
+    <div class="frame" id="frame" title="Click to see it full size"><img id="pic" alt=""></div>
+    <div class="subs" id="subs" lang="en" hidden></div>
+    <div class="nav"><button type="button" class="btn" id="prev">Back</button><button type="button" class="btn" id="next">Next</button><span class="count" id="count"></span></div>
+    <div class="thumbs" id="thumbs" aria-label="All shots"></div>
+  </main>
+  <aside class="side">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-s" aria-selected="true" aria-controls="pane-s">Script</button>
+      <button role="tab" id="tab-g" aria-selected="false" aria-controls="pane-g">General</button>
+    </div>
+    <div class="pane" id="pane-s" role="tabpanel">
+      <div class="filter" id="filter" hidden><button type="button" class="btn" id="only" aria-pressed="false"></button><span id="filter-txt"></span></div>
+      <p class="status" id="status">Connecting…</p>
+      <div id="list"></div>
+    </div>
+    <div class="pane" id="pane-g" role="tabpanel" hidden>
+      <label class="status" for="general">Anything about the whole video, or about how these review pages work.</label>
+      <textarea class="general" id="general"></textarea>
+      <span class="saved" id="saved-general">Saved</span>
+    </div>
+  </aside>
+</div>
+<div class="lb" id="lb" hidden><div class="wrap" id="lbwrap"><img id="lbimg" alt=""></div></div>
 <script>
-const D = __DATA__;
-const $ = (id) => document.getElementById(id), V = D.draft;
-$("intro").textContent = D.intro || "Each line: what is said, and a picture of what is on screen. Edit any wording in place; notes save as you type. Nothing is recorded or voiced until you approve.";
-const cards = {};
-let last = null;
-for (const r of D.lines) {
-  if (r.section && r.section !== last) { const h = document.createElement("h2"); h.className = "sec"; h.textContent = r.section; $("list").appendChild(h); last = r.section; }
-  const c = document.createElement("article"); c.className = "card" + (r.was ? " changed" : ""); c.style.marginBottom = "10px";
-  c.innerHTML = '<div class="pic"></div><div class="body"><span class="n"></span><textarea class="say"></textarea><div class="was" hidden></div>' +
-    '<div class="notes"><div><span class="lab">Script</span><textarea data-f="script" placeholder="Wording, voice"></textarea></div>' +
-    '<div><span class="lab">On screen</span><textarea data-f="screen" placeholder="Pictures, graphics, timing"></textarea></div></div><span class="meta"></span></div>';
-  const pic = c.querySelector(".pic");
-  if (r.image) { const im = document.createElement("img"); im.src = r.image; im.alt = r.screen || ""; im.loading = "lazy"; im.onclick = () => { $("zoom").querySelector("img").src = r.image; $("zoom").showModal(); }; pic.appendChild(im); }
-  else { const n = document.createElement("div"); n.className = "none"; n.textContent = "No picture yet"; pic.appendChild(n); }
-  if (r.screen) { const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = r.screen; pic.appendChild(cap); }
-  c.querySelector(".n").textContent = "Line " + r.n;
-  const say = c.querySelector(".say"); say.value = r.text; say.setAttribute("aria-label", "Wording of line " + r.n);
-  if (r.was) { const w = c.querySelector(".was"); w.hidden = false; w.textContent = "Before: " + r.was; }
-  $("list").appendChild(c); cards[r.n] = { r, c, say };
+const DATA = /*DATA*/;
+const $ = (id) => document.getElementById(id);
+const flash = (el) => { el.classList.add("show"); clearTimeout(el._h); el._h = setTimeout(() => el.classList.remove("show"), 1500); };
+const fit = (ta) => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; };
+let db = null, cur = 0;
+const shots = DATA.shots;
+
+const TABS = [["tab-s", "pane-s"], ["tab-g", "pane-g"]];
+for (const [t, p] of TABS) $(t).addEventListener("click", () => {
+  for (const [t2, p2] of TABS) { $(t2).setAttribute("aria-selected", t2 === t ? "true" : "false"); $(p2).hidden = p2 !== p; }
+});
+
+function boxesInto(el, shot) {
+  el.querySelectorAll(".bx").forEach((n) => n.remove());
+  for (const b of shot.boxes) {
+    const d = document.createElement("div"); d.className = "bx";
+    d.style.left = b.x * 100 + "%"; d.style.top = b.y * 100 + "%"; d.style.width = b.w * 100 + "%"; d.style.height = b.h * 100 + "%";
+    el.appendChild(d);
+  }
 }
-$("zoom").onclick = () => $("zoom").close();
+const groups = [];
+const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+function show(i, scroll) {
+  cur = Math.max(0, Math.min(shots.length - 1, i));
+  const s = shots[cur];
+  $("pic").src = "shots/" + s.img + ".png"; $("pic").alt = s.section;
+  boxesInto($("frame"), s);
+  $("sec").textContent = s.section; $("note").textContent = s.note || "";
+  const subs = (s.en || []).filter(Boolean); $("subs").hidden = !subs.length; $("subs").textContent = subs.join(" ");
+  const vis = shots.map((_, k) => k).filter(visible);
+  $("count").textContent = only() ? "Changed shot " + (vis.indexOf(cur) + 1) + " of " + vis.length : (cur + 1) + " of " + shots.length;
+  $("prev").disabled = !shots.some((_, k) => k < cur && visible(k)); $("next").disabled = !shots.some((_, k) => k > cur && visible(k));
+  [...$("thumbs").children].forEach((b, k) => b.setAttribute("aria-current", k === cur ? "true" : "false"));
+  groups.forEach((g, k) => g.classList.toggle("now", k === cur));
+  if (scroll && groups[cur]) groups[cur].scrollIntoView({ block: "nearest", behavior: smooth() });
+  const th = $("thumbs").children[cur]; if (th) th.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+const only = () => document.body.classList.contains("only");
+const visible = (i) => !only() || shotUpd(shots[i]);
+const step = (d) => { for (let i = cur + d; i >= 0 && i < shots.length; i += d) if (visible(i)) return show(i, true); };
+$("prev").addEventListener("click", () => step(-1));
+$("next").addEventListener("click", () => step(1));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { $("lb").hidden = true; return; }
+  if (e.target.closest("textarea") || !$("lb").hidden) return;
+  if (e.key === "ArrowRight") step(1);
+  if (e.key === "ArrowLeft") step(-1);
+});
+$("frame").addEventListener("click", () => {
+  const s = shots[cur]; $("lbimg").src = "shots/" + s.img + ".png"; boxesInto($("lbwrap"), s); $("lb").hidden = false;
+});
+$("lb").addEventListener("click", () => { $("lb").hidden = true; });
+
+const shotUpd = (s) => s.isNew || (s.diffs || []).some(Boolean);
+shots.forEach((s, i) => {
+  const t = document.createElement("button"); t.type = "button"; t.title = s.section;
+  if (shotUpd(s)) { t.classList.add("upd"); t.title += " (changed)"; }
+  const im = document.createElement("img"); im.src = "thumbs/" + s.img + ".jpg"; im.alt = ""; t.appendChild(im);
+  t.addEventListener("click", () => show(i, true));
+  $("thumbs").appendChild(t);
+});
+
+// ---- lines (collection "lines": {text: edited wording or "", note, screen, original, shot})
+const rows = {};
+const clean = (s) => s.replace(/\s*\[check(?::[^\]]*)?\]/g, "");
+function refresh(r) {
+  if (!r.say) return;
+  const changed = r.say.value.trim() !== r.orig;
+  r.row.classList.toggle("changed", changed);
+  r.row.querySelector(".orig").hidden = !changed; r.row.querySelector(".reset").hidden = !changed;
+}
+async function saveRow(r) {
+  if (!db) return;
+  const changed = r.say ? r.say.value.trim() !== r.orig : false;
+  try {
+    await db.collection("lines").doc(r.id).set({ text: changed ? r.say.value.trim() : "", note: r.note.value, screen: r.scr.value, original: r.orig, shot: r.shot, updatedAt: new Date().toISOString() });
+    flash(r.row.querySelector(".saved"));
+  } catch (e) { console.error("save failed", r.id, e); }
+}
+shots.forEach((s, i) => {
+  const g = document.createElement("div"); g.className = "grp" + (shotUpd(s) ? " has-upd" : "");
+  const head = document.createElement("button"); head.type = "button"; head.className = "grp-head";
+  const hi = document.createElement("img"); hi.src = "thumbs/" + s.img + ".jpg"; hi.alt = "";
+  const hs = document.createElement("span"); hs.textContent = s.section;
+  head.append(hi, hs);
+  if (s.isNew) { const nt = document.createElement("span"); nt.className = "upd-tag"; nt.textContent = "New shot"; head.append(nt); } head.addEventListener("click", () => show(i, false));
+  g.appendChild(head);
+  const lines = s.lines.length ? s.lines : [null];
+  lines.forEach((text, k) => {
+    const id = s.key + "." + (k + 1);
+    const orig = text == null ? "" : clean(text), toCheck = text != null && /\[check/.test(text);
+    const row = document.createElement("div"); row.className = "line";
+    row.innerHTML = (text == null ? '<div class="none">No narration on this shot.</div>' :
+      '<label class="sr" for="say-' + id + '">Narration</label><textarea class="say" id="say-' + id + '" rows="1"></textarea>') +
+      '<div class="notes2"><div><div class="lab">Script note</div><textarea class="note" id="note-' + id + '" rows="1" placeholder="Wording, voice"></textarea></div>' +
+      '<div><div class="lab">On screen</div><textarea class="note" id="scr-' + id + '" rows="1" placeholder="Boxes, what is shown"></textarea></div></div>' +
+      '<div class="meta">' + (toCheck ? '<span class="check">to check in the app</span>' : '') +
+      '<span class="orig" hidden>Original: <i></i></span><button type="button" class="reset" hidden>Undo my edit</button><span class="saved">Saved</span></div>';
+    const say = row.querySelector(".say"), note = row.querySelector('[id="note-' + id + '"]'), scr = row.querySelector('[id="scr-' + id + '"]');
+    if (say) { say.value = orig; row.querySelector(".orig i").textContent = orig; }
+    if (say && (s.en || [])[k]) { const en = document.createElement("div"); en.className = "en"; en.lang = "en"; en.innerHTML = "<b>English</b>"; en.append(s.en[k]); say.after(en); }
+    const d = (s.diffs || [])[k];
+    if (d && text != null) {
+      row.classList.add("upd");
+      const tag = document.createElement("span"); tag.className = "upd-tag";
+      tag.textContent = d === "new" ? "New line" : "Changed";
+      row.querySelector(".meta").prepend(tag);
+      if (Array.isArray(d)) {   // the old wording struck out, the new wording highlighted
+        const dv = document.createElement("button"); dv.type = "button"; dv.className = "diff"; dv.title = "Click to change the wording";
+        for (const [op, t] of d) { const e = document.createElement(op === "+" ? "ins" : op === "-" ? "del" : "span"); e.textContent = clean(t); dv.appendChild(e); }
+        say.after(dv);
+        dv.addEventListener("click", () => { row.classList.add("editing"); fit(say); say.focus(); });
+      }
+    }
+    g.appendChild(row);
+    const r = rows[id] = { id, row, say, note, scr, orig, shot: s.key, timer: null };
+    for (const ta of [say, note, scr]) if (ta) {
+      ta.addEventListener("focus", () => { if (cur !== i) show(i, false); });
+      ta.addEventListener("input", () => { fit(ta); refresh(r); clearTimeout(r.timer); r.timer = setTimeout(() => saveRow(r), 800); });
+    }
+    row.querySelector(".reset").addEventListener("click", () => { say.value = r.orig; fit(say); refresh(r); saveRow(r); });
+  });
+  groups.push(g); $("list").appendChild(g);
+});
+const fitAll = () => Object.values(rows).forEach((r) => [r.say, r.note, r.scr].forEach((t) => t && fit(t)));
+const general = $("general"); let gTimer = null;
+general.addEventListener("input", () => { clearTimeout(gTimer); gTimer = setTimeout(async () => {
+  if (!db) return;
+  try { await db.collection("notes").doc("general").set({ text: general.value, updatedAt: new Date().toISOString() }); flash($("saved-general")); } catch (e) { console.error(e); }
+}, 800); });
+window.addEventListener("resize", fitAll);
+const nUpd = shots.reduce((n, s) => n + (s.diffs || []).filter(Boolean).length, 0);
+if (DATA.since && nUpd) {
+  $("filter").hidden = false;
+  $("filter-txt").textContent = "Yellow marks what changed since draft " + DATA.since + ": the new wording is highlighted.";
+  const btn = $("only"), label = () => { btn.textContent = only() ? "Show all lines" : "Show only changed (" + nUpd + ")"; };
+  label();
+  btn.addEventListener("click", () => {
+    document.body.classList.toggle("only"); btn.setAttribute("aria-pressed", only() ? "true" : "false"); label();
+    if (!visible(cur)) { const f = shots.findIndex((_, k) => visible(k)); if (f >= 0) show(f, true); } else show(cur, true);
+    requestAnimationFrame(fitAll);
+  });
+}
+show(0, false); requestAnimationFrame(fitAll);
+
+// ---- approval of this draft (nothing is recorded or voiced before it): notes/approval-draft-<N>
+function showAppr(a) {
+  const on = !!(a && a.approved);
+  $("appr-state").textContent = on ? "Approved " + new Date(a.at).toLocaleString() : "Not approved yet";
+  $("approve").textContent = on ? "Withdraw approval" : "Approve draft " + DATA.draft; $("approve").dataset.on = on ? "1" : "";
+  $("approve").parentElement.classList.toggle("ok", on);
+}
+$("approve").addEventListener("click", async () => {
+  if (!db) return;
+  const a = { approved: !$("approve").dataset.on, at: new Date().toISOString() };
+  try { await db.collection("notes").doc("approval-draft-" + DATA.draft).set(a); showAppr(a); } catch (e) { console.error(e); $("appr-state").textContent = "Couldn't save. Try again."; }
+});
+showAppr(null);
+
 (async () => {
-  const db = await claude.use("db");
-  if (!db) { $("state").textContent = "Can't save in this view: open the published link while signed in."; return; }
-  const col = db.collection("lines-" + V), meta = db.collection("draft-" + V), timers = new Map();
-  const save = (x) => { const m = x.c.querySelector(".meta"); m.textContent = "…"; clearTimeout(timers.get(x)); timers.set(x, setTimeout(async () => {
-    const t = x.say.value.trim(), notes = {}; x.c.querySelectorAll("[data-f]").forEach((ta) => notes[ta.dataset.f] = ta.value);
-    try { await col.doc(String(x.r.n)).set({ text: t === x.r.text ? "" : t, original: x.r.text, ...notes }); m.textContent = "saved"; } catch (e) { m.textContent = "not saved"; } }, 700)); };
-  for (const x of Object.values(cards)) x.c.querySelectorAll("textarea").forEach((ta) => ta.addEventListener("input", () => save(x)));
-  let gt = null; $("general").addEventListener("input", () => { $("s-gen").textContent = "…"; clearTimeout(gt); gt = setTimeout(async () => {
-    try { await meta.doc("general").set({ text: $("general").value }); $("s-gen").textContent = "saved"; } catch (e) { $("s-gen").textContent = "not saved"; } }, 700); });
-  const show = (a) => { const s = $("state");
-    if (a && a.approved) { s.textContent = "Approved " + new Date(a.at).toLocaleString() + "."; s.className = "state ok"; $("approve").textContent = "Withdraw approval"; }
-    else { s.textContent = "Not approved yet."; s.className = "state"; $("approve").textContent = "Approve this draft"; }
-    $("approve").dataset.on = a && a.approved ? "1" : ""; };
-  $("approve").onclick = async () => { const a = { approved: !$("approve").dataset.on, at: new Date().toISOString() };
-    try { await meta.doc("approval").set(a); show(a); } catch (e) { $("state").textContent = "Couldn't save. Try again."; } };
-  col.onSnapshot((snap) => { for (const d of snap.docs) { const x = cards[d.id], v = d.data() || {}; if (!x) continue;
-    if (v.text && document.activeElement !== x.say) x.say.value = v.text;
-    x.c.querySelectorAll("[data-f]").forEach((ta) => { if (document.activeElement !== ta) ta.value = v[ta.dataset.f] || ""; }); } });
-  meta.onSnapshot((snap) => { let a = null; for (const d of snap.docs) { if (d.id === "approval") a = d.data(); if (d.id === "general" && document.activeElement !== $("general")) $("general").value = (d.data() || {}).text || ""; } show(a); });
-})().catch(() => { $("state").textContent = "Can't save in this view."; });
+  try { db = await window.claude?.use?.("db"); } catch { db = null; }
+  if (!db) { $("status").textContent = "Edits and notes can't be saved in this view. Open the published link while signed in."; return; }
+  try {
+    const snap = await db.collection("lines").get();
+    snap.docs.forEach((d) => { const x = d.data(), r = rows[d.id]; if (!x || !r) return;
+      if (x.text && r.say) { r.say.value = x.text; r.row.classList.add("editing"); }
+      if (typeof x.note === "string") r.note.value = x.note;
+      if (typeof x.screen === "string") r.scr.value = x.screen;
+      refresh(r); });
+    const g = await db.collection("notes").get();
+    g.docs.forEach((d) => { if (d.id === "general" && typeof d.data().text === "string") general.value = d.data().text; });
+    showAppr((g.docs.find((d) => d.id === "approval-draft-" + DATA.draft) || { data: () => null }).data());
+    fitAll();
+  } catch (e) { console.error(e); }
+  $("status").textContent = "Click any line to change its wording. Edits and notes save as you type, and I can read them. Click the picture to see it full size; the arrow keys move between shots.";
+})();
 </script>

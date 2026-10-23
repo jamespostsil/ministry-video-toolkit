@@ -9,6 +9,10 @@ One page per version of a video. The reviewer watches, pauses, and writes notes 
 the notes back from the page's database and make the changes. Pair it with the `review` skill (your own checks
 come first: a reviewer should never be the one who finds a defect).
 
+`build.py` and `template.html` here are a copy of a shared page (also used for software training videos);
+don't change them here, or the next update overwrites the change. This file, and how you use the page for
+ministry videos, are this toolkit's own.
+
 ## Build it
 
 1. Make a small web copy of the render (it must stay under the artifact size limit):
