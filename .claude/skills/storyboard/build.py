@@ -20,7 +20,9 @@ json); when the copy of draft N-1 is there, changed and new lines are marked.
 The out folder gets storyboard.html, shots/*.png and thumbs/*.jpg: publish them together (files).
 db: lines/<shot key>.<line n> {text (the reviewer's wording, or ""), note, screen, original, shot},
 notes/general {text}, notes/approval-draft-<N> {approved, at}, spots/<id> {shot (key), x, y, text, kind?: "arrow",
-x2, y2} (a note pinned to a spot on the shot's picture, or an arrow from x, y to the tip x2, y2; fractions of the picture).
+x2, y2} (a note pinned to a spot on the shot's picture, or an arrow from x, y to the tip x2, y2; fractions of the picture),
+scenes/<id> {after (shot key), say, screen, createdAt} (a new scene the reviewer added after that shot: make its picture
+and add it to the next draft).
 """
 import argparse, difflib, json, os, re, shutil
 from PIL import Image

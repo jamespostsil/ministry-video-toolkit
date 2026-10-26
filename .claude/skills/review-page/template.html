@@ -47,6 +47,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px soli
 .cnav{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;background:var(--bg);padding:0 0 8px}
 .cnav button{font:600 .85rem var(--ui);background:var(--chg-bg);color:var(--chg-fg);border:1px solid var(--chg-line);border-radius:4px;padding:5px 10px;cursor:pointer}
 .cnav button:disabled{opacity:.4;cursor:default}.cnav span{font-size:.85rem;color:var(--muted)}
+.cnav{flex-wrap:wrap}.cnav .ap{margin-left:auto;display:inline-flex;gap:5px;align-items:center;font-size:.85rem;color:var(--muted);cursor:pointer;white-space:nowrap}.cnav .ap input{accent-color:var(--accent);margin:0}
 .off{color:var(--muted);font-size:.9rem;margin:0 0 10px}
 @media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}.vid{position:static}.side{height:auto;overflow:visible}video{max-height:none}}
 </style>
@@ -61,7 +62,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px soli
     <div class="hint" id="hint">Pause the video, then click anywhere on the picture to pin a note to that spot.</div>
   </div>
   <div class="side" id="side">
-    <div class="cnav" id="cnav" hidden><button type="button" id="cprev">&#9664; Previous change</button><button type="button" id="cnext">Next change &#9654;</button><span id="ccount" aria-live="polite"></span></div>
+    <div class="cnav" id="cnav" hidden><button type="button" id="cprev">&#9664; Previous change</button><button type="button" id="cnext">Next change &#9654;</button><span id="ccount" aria-live="polite"></span><label class="ap"><input type="checkbox" id="cplay" checked> Play when jumping</label></div>
     <div class="row"><label class="f" for="n-all" style="margin-top:0">Anything else about the video</label><textarea id="n-all"></textarea><div class="save" id="s-all"></div></div>
     <p class="off" id="off" hidden>Notes can't be saved in this view: open the published link while signed in.</p>
     <div id="rows"></div>
@@ -108,9 +109,13 @@ if (chgAll.length) {
     const here = L.findIndex((c) => c.id === cur);
     cc.textContent = !L.length ? "All changes look good" : here >= 0 ? "Change " + (here + 1) + " of " + L.length : L.length + (L.length > 1 ? " changes to check" : " change to check"); };
   navUpd = upd;
+  // "Play when jumping": off = jump to the change and stay paused (remembered in this browser only)
+  const cp = $("cplay");
+  try { cp.checked = localStorage.getItem("review-jump-play") !== "off"; } catch (e) {}
+  cp.onchange = () => { try { localStorage.setItem("review-jump-play", cp.checked ? "on" : "off"); } catch (e) {} };
   const go = (dir) => { const L = live(), pos = cur ? S.findIndex((s) => s.id === cur) : -1;
     const s = dir > 0 ? L.find((c) => S.indexOf(c) > pos) : [...L].reverse().find((c) => S.indexOf(c) < pos); if (!s) return;
-    v.currentTime = Math.max(0, s.t - 0.2); v.play().catch(() => {}); const r = el[s.id];
+    v.currentTime = Math.max(0, s.t - 0.2); if (cp.checked) v.play().catch(() => {}); else v.pause(); const r = el[s.id];
     if (cur && cur !== s.id) el[cur].classList.remove("on"); cur = s.id; r.classList.add("on"); r.scrollIntoView({ block: "start", behavior: "smooth" });
     r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 1200); upd(); };
   bn.onclick = () => go(1); bp.onclick = () => go(-1); v.addEventListener("timeupdate", upd); upd();

@@ -33,5 +33,7 @@ ministry videos, are this toolkit's own.
 ArtifactData: `lines/<shot key>.<line number>` (`{text, original, note, screen, shot}`: `text` is the
 reviewer's own wording when they edited it, otherwise empty), `notes/general` (`{text}`) and
 `notes/approval-draft-<N>` (`{approved, at}`), and `spots/<id>` (`{shot, x, y, text}`, plus `kind: "arrow", x2, y2`
-for an arrow: a note the reviewer pinned or an arrow drawn on that shot's picture; look at the picture there). Apply every edit and note, then build the next draft. Record or
+for an arrow: a note the reviewer pinned or an arrow drawn on that shot's picture; look at the picture there),
+and `scenes/<id>` (`{after, say, screen, createdAt}`: a new scene the reviewer added after shot `after`, with
+what is said and what is shown; make its picture and put it in the next draft). Apply every edit and note, then build the next draft. Record or
 render only once the newest draft is approved.

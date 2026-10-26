@@ -18,7 +18,11 @@ header p{margin:0;color:var(--hero-dim);font-size:.9rem}
 .app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 500px}
 @media (max-width:1000px){html,body{overflow:auto;height:auto}.app{grid-template-columns:1fr}.stage{overflow:visible}.side{max-height:none}}
 .stage{min-width:0;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow:auto}
-.frame{position:relative;width:100%;max-width:100%;align-self:center;cursor:crosshair;touch-action:none}
+/* the picture shrinks to fit the space left over, so the whole left side stays on the screen */
+.fit{flex:1 1 0;min-height:160px;container-type:size;display:flex;justify-content:center;align-items:flex-start}
+.stage>:not(.fit){flex:none}
+.frame{position:relative;width:min(100cqw,calc(100cqh * var(--ar,1.78)));max-width:100%;cursor:crosshair;touch-action:none}
+@media (max-width:1000px){.fit{container-type:normal;flex:none;min-height:0}.frame{width:100%}}
 .hint{font-size:.85rem;color:var(--muted)}
 .pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--pin);color:#fff;font:700 13px/28px var(--font);text-align:center;box-shadow:0 0 0 3px #fff;cursor:pointer;border:0;padding:0;z-index:2}
 .arrows{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1}
@@ -90,6 +94,17 @@ textarea.general{min-height:10em;resize:vertical;overflow:auto}
 .lb[hidden]{display:none}
 .lb .wrap{position:relative}
 .lb img{display:block;width:auto;max-width:none;height:auto}
+/* "+ Add a scene here" between two shots, and the new scene's card (no picture yet) */
+.add-gap{display:flex;align-items:center;gap:8px;opacity:.6;transition:opacity .15s}
+.add-gap::before,.add-gap::after{content:"";flex:1;border-top:1px dashed var(--border)}
+.add-gap:hover,.add-gap:focus-within{opacity:1}
+.add-btn{font:700 .8rem var(--font);color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 10px;cursor:pointer}
+.add-btn:hover{color:var(--accent);border-color:var(--accent)}
+.grp.added{border-style:dashed;border-color:var(--accent)}
+.add-head{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted);padding:2px}
+.add-head b{color:var(--text)}
+.add-head .ph{width:72px;height:40px;flex:none;border:1px dashed var(--muted);border-radius:3px;display:grid;place-items:center;font-size:.62rem;text-align:center;line-height:1.1}
+body.only .add-gap{display:none}body.only .grp.added .line{display:grid}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -101,7 +116,7 @@ textarea.general{min-height:10em;resize:vertical;overflow:auto}
 <div class="app">
   <main class="stage">
     <div class="cap"><span class="sec" id="sec"></span><span class="note" id="note"></span></div>
-    <div class="frame" id="frame"><img id="pic" alt="" draggable="false"></div>
+    <div class="fit"><div class="frame" id="frame"><img id="pic" alt="" draggable="false"></div></div>
     <div class="hint">Click the picture to pin a note to a spot, or drag to draw an arrow to it.</div>
     <div class="subs" id="subs" lang="en" hidden></div>
     <div class="nav"><button type="button" class="btn" id="prev">Back</button><button type="button" class="btn" id="next">Next</button><span class="count" id="count"></span><button type="button" class="btn" id="zoom" style="margin-left:auto">Full size</button></div>
@@ -360,7 +375,7 @@ if (DATA.since && nUpd) {
     requestAnimationFrame(fitAll);
   });
 }
-pic.addEventListener("load", () => drawSpots());
+pic.addEventListener("load", () => { if (pic.naturalHeight) $("frame").style.setProperty("--ar", pic.naturalWidth / pic.naturalHeight); drawSpots(); });
 show(0, false); requestAnimationFrame(fitAll);
 
 // ---- approval of this draft (nothing is recorded or voiced before it): notes/approval-draft-<N>
@@ -376,6 +391,50 @@ $("approve").addEventListener("click", async () => {
   try { await db.collection("notes").doc("approval-draft-" + DATA.draft).set(a); showAppr(a); } catch (e) { console.error(e); $("appr-state").textContent = "Couldn't save. Try again."; }
 });
 showAppr(null);
+
+// ---- new scenes the reviewer adds between two shots: scenes/<id> {after: shot key, say, screen, createdAt}
+let scenes = [];
+function sceneCard(sc) {
+  const g = document.createElement("div"); g.className = "grp added has-upd";
+  const id = "scene-" + sc.id;
+  g.innerHTML = '<div class="add-head"><span class="ph">Picture<br>to come</span><span><b>New scene</b><br>Write what is said and what is shown. I will make the picture for the next draft.</span></div>' +
+    '<div class="line"><label class="f" for="' + id + '-say" style="margin-top:0">Script</label><textarea class="note" id="' + id + '-say" rows="1"></textarea>' +
+    '<label class="f" for="' + id + '-scr">On screen</label><textarea class="note" id="' + id + '-scr" rows="1"></textarea>' +
+    '<div class="meta"><button type="button" class="rm">Remove this scene</button><span class="saved">Saved</span></div></div>';
+  const say = g.querySelector('[id="' + id + '-say"]'), scr = g.querySelector('[id="' + id + '-scr"]'), rm = g.querySelector(".rm");
+  say.value = sc.say || ""; scr.value = sc.screen || "";
+  let timer = null;
+  sc.save = async () => {
+    try { await db.collection("scenes").doc(sc.id).set({ after: sc.after, say: say.value, screen: scr.value, createdAt: sc.createdAt, updatedAt: new Date().toISOString() }); flash(g.querySelector(".saved")); }
+    catch (e) { console.error(e); }
+  };
+  for (const ta of [say, scr]) ta.addEventListener("input", () => { fit(ta); clearTimeout(timer); timer = setTimeout(sc.save, 800); });
+  rm.addEventListener("click", async () => {   // a scene with text in it takes a second click
+    if ((say.value + scr.value).trim() && !rm.dataset.sure) {
+      rm.dataset.sure = "1"; rm.textContent = "Click again to remove it";
+      setTimeout(() => { delete rm.dataset.sure; rm.textContent = "Remove this scene"; }, 4000); return;
+    }
+    try { await db.collection("scenes").doc(sc.id).delete(); } catch (e) { console.error(e); return; }
+    scenes = scenes.filter((x) => x !== sc); g.remove();
+  });
+  sc.el = g;
+  return g;
+}
+function setupScenes(saved) {
+  scenes = saved;
+  const gaps = shots.map((s, i) => {   // after each shot (and the scenes already added there)
+    const gap = document.createElement("div"); gap.className = "add-gap";
+    const b = document.createElement("button"); b.type = "button"; b.className = "add-btn"; b.textContent = "+ Add a scene here";
+    b.title = "Add a new scene after “" + s.section + "”";
+    b.addEventListener("click", async () => {
+      const sc = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), after: s.key, say: "", screen: "", createdAt: new Date().toISOString() };
+      scenes.push(sc); gap.before(sceneCard(sc)); sc.el.querySelector("textarea").focus(); await sc.save();
+    });
+    gap.appendChild(b); groups[i].after(gap); return gap;
+  });
+  for (const sc of scenes) { const i = shots.findIndex((s) => s.key === sc.after); gaps[i].before(sceneCard(sc)); }
+  scenes.forEach((sc) => sc.el.querySelectorAll("textarea").forEach(fit));
+}
 
 (async () => {
   try { db = await window.claude?.use?.("db"); } catch { db = null; }
@@ -399,7 +458,10 @@ showAppr(null);
       .filter((p) => typeof p.x === "number" && shots.some((s) => s.key === p.shot));
     drawSpots(); renderSpotList();
     fitAll();
+    const sn = await db.collection("scenes").get();
+    setupScenes(sn.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((x) => shots.some((s) => s.key === x.after))
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))));
   } catch (e) { console.error(e); }
-  $("status").textContent = "Click any line to change its wording. Edits and notes save as you type, and I can read them. Click the picture to pin a note to a spot, or drag to draw an arrow; Full size shows it larger; the arrow keys move between shots.";
+  $("status").textContent = "Click any line to change its wording. Edits and notes save as you type, and I can read them. Click the picture to pin a note to a spot, or drag to draw an arrow; Full size shows it larger; the arrow keys move between shots. “+ Add a scene here” adds a new scene between two shots.";
 })();
 </script>
