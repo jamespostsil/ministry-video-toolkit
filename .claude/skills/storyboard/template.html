@@ -53,9 +53,8 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .grp.now{background:var(--now);border-color:var(--accent)}
 .grp-head{display:flex;gap:8px;align-items:center;background:none;border:none;padding:2px;cursor:pointer;width:100%;text-align:left;color:var(--muted);font:inherit;font-size:.85rem}
 .grp-head img{width:72px;height:40px;object-fit:cover;border-radius:3px;border:1px solid var(--border)}
-.line{border-top:1px dashed var(--border);padding:6px 2px 2px;display:grid;gap:3px}
-.grp-head + .line{border-top:0}
-.line.upd{box-shadow:inset 4px 0 0 var(--upd);padding-left:8px}
+.line{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;margin-top:8px;display:grid;gap:3px}
+.line.upd{box-shadow:inset 4px 0 0 var(--upd);padding-left:14px}
 .diff{font:inherit;line-height:1.45;padding:3px 5px;border:1px solid transparent;border-radius:6px;background:none;color:var(--text);text-align:left;cursor:text;width:100%}
 .diff:hover{border-color:var(--border);background:var(--surface)}
 .line.upd.editing .diff,.line.upd:not(.editing) textarea.say{display:none}
@@ -68,14 +67,16 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .filter[hidden]{display:none}
 button.btn[aria-pressed="true"]{background:var(--ins);border-color:var(--upd);color:var(--text)}
 body.only .grp:not(.has-upd),body.only .line:not(.upd),body.only .thumbs button:not(.upd){display:none}
-.line.changed{box-shadow:inset 4px 0 0 var(--changed);padding-left:8px}
-textarea.say{width:100%;resize:none;overflow:hidden;min-height:2.2em;border:1px solid transparent;border-radius:6px;padding:3px 5px;background:transparent;color:var(--text);font:inherit;line-height:1.45}
-textarea.say:hover,textarea.say:focus{border-color:var(--border);background:var(--surface)}
-.notes2{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:0 3px}
+.line.changed{box-shadow:inset 4px 0 0 var(--changed);padding-left:14px}
+.diff{font-weight:700}
+textarea.say{width:100%;resize:none;overflow:hidden;min-height:2.2em;border:1px solid transparent;border-radius:6px;padding:3px 5px;background:transparent;color:var(--text);font:inherit;font-weight:700;line-height:1.45}
+textarea.say:hover,textarea.say:focus{border-color:var(--border);background:var(--bg)}
+.diff:hover{background:var(--bg)}
 .lab{font:700 .7rem var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-textarea.note,textarea.general{width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 7px;background:var(--surface);color:var(--text);font:inherit;font-size:.88rem;resize:none;overflow:hidden;min-height:2em}
+/* Script and On screen notes: one under the other, the same as the review page */
+label.f{display:block;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:8px 0 3px}
+textarea.note,textarea.general{width:100%;border:1px solid var(--border);border-radius:4px;padding:6px 8px;background:var(--bg);color:var(--text);font:inherit;font-size:.95rem;resize:none;overflow:hidden;min-height:2.4em}
 textarea.general{min-height:10em;resize:vertical;overflow:auto}
-@media (max-width:520px){.notes2{grid-template-columns:1fr}}
 .check{font-size:.72rem;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:4px}
 .meta{display:flex;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
 .meta button{font:inherit;background:none;border:none;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
@@ -310,8 +311,8 @@ shots.forEach((s, i) => {
     const row = document.createElement("div"); row.className = "line";
     row.innerHTML = (text == null ? '<div class="none">No narration on this shot.</div>' :
       '<label class="sr" for="say-' + id + '">Narration</label><textarea class="say" id="say-' + id + '" rows="1"></textarea>') +
-      '<div class="notes2"><div><div class="lab">Script note</div><textarea class="note" id="note-' + id + '" rows="1" placeholder="Wording, voice"></textarea></div>' +
-      '<div><div class="lab">On screen</div><textarea class="note" id="scr-' + id + '" rows="1" placeholder="Boxes, what is shown"></textarea></div></div>' +
+      '<div><label class="f" for="note-' + id + '">Script</label><textarea class="note" id="note-' + id + '" rows="1"></textarea>' +
+      '<label class="f" for="scr-' + id + '">On screen</label><textarea class="note" id="scr-' + id + '" rows="1"></textarea></div>' +
       '<div class="meta">' + (toCheck ? '<span class="check">to check in the app</span>' : '') +
       '<span class="orig" hidden>Original: <i></i></span><button type="button" class="reset" hidden>Undo my edit</button><span class="saved">Saved</span></div>';
     const say = row.querySelector(".say"), note = row.querySelector('[id="note-' + id + '"]'), scr = row.querySelector('[id="scr-' + id + '"]');
