@@ -23,7 +23,7 @@ Start from the *shape of the content*, not from what looks nice.
 | An ask, while the speaker keeps talking | **Call-to-action** | Words beside them over the live shot |
 | A person's photos under their name (a family update) | **Row** with `title` and `revealAt` | The name on top; each photo comes in on its own words |
 | A number worth dwelling on | **Counter** | Counts up, settles, one small pop; brand colours, no confetti |
-| "Every language / the whole world" | **Globe** (`bibleAt`) | A real globe turning; a Bible fades in on the word that names Scripture |
+| "Every language / the whole world" | **Globe** (`bibleAt`) | **Work in progress:** a real globe turning; a Bible fades in on the word that names Scripture. Check its render closely before using it. |
 
 **Never force mixed aspect ratios into one fixed card shape.** A 16:9 family
 photo and a 4:3 one in identical cards means one of them gets cropped. Row sizes

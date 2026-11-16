@@ -38,7 +38,7 @@ export type Beat =
   // a number counting up, with a label under it ("600 / Bible translation
   // projects started"). Counts for countSeconds (default 2.6), then holds.
   | { kind: "counter"; start: number; end: number; to: number; from?: number; label: string; countSeconds?: number }
-  // a turning globe; at bibleAt (seconds from the beat's start) a Bible fades in
+  // WORK IN PROGRESS: a turning globe; at bibleAt (seconds from the beat's start) a Bible fades in
   // in front of it. label: optional words under it.
   | { kind: "globe"; start: number; end: number; bibleAt?: number; label?: string }
   | { kind: "slider"; start: number; end: number; title: string; photos: GalleryPhoto[]; cardWidth?: number; cardHeight?: number }

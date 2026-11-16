@@ -63,7 +63,7 @@ the recording.
 | Whole photo (`blur`) | The photo shown complete over a blurred copy of itself | Portraits, or anything with words on it that must not be cropped |
 | Row (`row`) | 2–4 images side by side, each at its own shape, with an optional title above; each can come in on its own words | Comparing things, such as screenshots; a person's photos under their name |
 | Counter (`counter`) | A number counting up, with a label | A milestone worth dwelling on ("600 projects started") |
-| Globe (`globe`) | A turning globe; a Bible fades in on a chosen word | "Every language in the world" |
+| Globe (`globe`) | **Work in progress.** A turning globe; a Bible fades in on a chosen word | "Every language in the world" |
 | Slider (`slider`) | Cards drifting across the screen | A run of 5–10 captioned photos |
 | Scatter (`scatter`) | Photos dropping onto a pile, one at a time | A list you read out, each photo on its own phrase |
 | Before / after (`compare`) | Two columns, each side appearing on its own word | "Used to take weeks, now days" |
@@ -147,7 +147,7 @@ All run from `remotion/`. `<project>` is a folder name under `src/projects/`.
 |---|---|
 | `npm run doctor` | Checks your tools and every project, and says how to fix anything missing |
 | `npm run new -- <name>` | Starts a new project from the example |
-| `npm run example:media` | Downloads the example video's footage and photos (about 80 MB) |
+| `npm run example:media` | Downloads the example video's footage, photos and music (about 85 MB) |
 | `npm run footage -- <project>` | Cuts the recording, writes the title-card still, records the real length |
 | `npm run transcribe -- <project>` | Word-level transcript of the footage |
 | `npm run studio` | Preview in the browser: scrub, inspect, no rendering |
