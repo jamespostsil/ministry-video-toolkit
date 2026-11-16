@@ -64,6 +64,14 @@ pushes the subjects to the right and frees the left ~40% of the frame. Mirror it
 Check the result — the subjects should land in the outer 55%, with a clean
 column for type.
 
+### When the footage leaves no free side
+
+If the speakers stand centred and the footage has no spare width, no crop frees a column for type, and the scrim
+ends up across someone's face. Then use a photo instead: set `thumbnail.src` to a portrait of the speakers (the end
+frame's photo is usually right), `photoFrom` to where it starts (about 0.44), and `objectPosition` to keep the faces
+in. The type then sits on its own dark brand panel, and no face is ever under a scrim. Keep the panel dark enough
+for the accent-coloured line: measure it (4.5:1 or better).
+
 ## Scrim rules — measure, never eyeball
 
 Type needs a dark field behind it or it dissolves into foliage. That field must

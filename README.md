@@ -58,10 +58,12 @@ the recording.
 | Beat | What it looks like | Use it for |
 |---|---|---|
 | Title card (`opening`) | The footage's first frame, frozen, with your title over it. Then the picture starts moving | Opening |
-| Heading (`heading`) | A short label upper left, over the live shot, with an optional subtitle or bullet list | Naming each section or speaker |
+| Heading (`heading`) | A short label upper left (or right), over the live shot or a photo, with an optional subtitle, logo, or bullet list whose lines arrive on their own words | Naming each section or speaker; a few words over a photo |
 | Takeover (`cover`) | One photo, full screen, slowly zooming | A landscape photo worth the whole frame |
 | Whole photo (`blur`) | The photo shown complete over a blurred copy of itself | Portraits, or anything with words on it that must not be cropped |
-| Row (`row`) | 2–4 images side by side, each at its own shape | Comparing things, such as screenshots |
+| Row (`row`) | 2–4 images side by side, each at its own shape, with an optional title above; each can come in on its own words | Comparing things, such as screenshots; a person's photos under their name |
+| Counter (`counter`) | A number counting up, with a label | A milestone worth dwelling on ("600 projects started") |
+| Globe (`globe`) | A turning globe; a Bible fades in on a chosen word | "Every language in the world" |
 | Slider (`slider`) | Cards drifting across the screen | A run of 5–10 captioned photos |
 | Scatter (`scatter`) | Photos dropping onto a pile, one at a time | A list you read out, each photo on its own phrase |
 | Before / after (`compare`) | Two columns, each side appearing on its own word | "Used to take weeks, now days" |
@@ -87,14 +89,18 @@ From the `remotion/` folder:
    can replace things one at a time. Your project folders are git-ignored, so
    your video's details stay on your computer.
 2. **Point it at your recording.** In `src/projects/my-video/project.json`, set
-   `footagePrep.source` to your camera file, and list the `segments` to keep
+   `footagePrep.source` to your camera file (or a list of files, if it was
+   recorded in parts; segments are then `[part, in, out]`), and list the `segments` to keep
    (the `footage-prep` skill explains how to choose them). A relative path is
    read from the `remotion/` folder; in JSON, write Windows paths with forward
    slashes (`"C:/Videos/update.mp4"`). Then: `npm run footage -- my-video`
 3. **Get a transcript.** `npm run transcribe -- my-video` writes word-by-word
    timings, so graphics can land on the right words. It needs a Whisper API key
    ([SETUP.md](SETUP.md#optional-a-transcription-key)).
-4. **Plan the beats.** Edit `beats.ts`: which graphic appears, and when. Times
+4. **Storyboard it, then plan the beats.** The `storyboard` skill makes a page
+   where each scene shows its words with a mock-up of the screen; once it is
+   approved, its `export_photos.py` writes the cropped photos the video uses.
+   Then edit `beats.ts`: which graphic appears, and when. Times
    are seconds into your **footage**, read off the transcript. (`npm run still`
    takes seconds into the finished video instead, and prints both.)
 5. **Set the titles and end frame.** `titleCard` and `thumbnail` in

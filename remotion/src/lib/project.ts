@@ -36,15 +36,16 @@ export type ProjectJson = {
    *  by build-footage. The title card and thumbnail are built on it, so the
    *  cut from title card to live footage changes nothing but the type. */
   titleStill: string;
-  music?: { src: string };
   /** Input to scripts/build-footage.mjs. */
   footagePrep?: {
-    /** The camera original. Relative paths resolve from the remotion/ folder.
-     *  null when the footage arrives already cut, as the example's does. */
-    source: string | null;
-    /** [in, out] in SOURCE seconds. The gaps between rows are what gets cut.
-     *  Omit to use the whole source untouched. */
-    segments?: [number, number][];
+    /** The camera original, or a list of them when the recording came in parts.
+     *  Relative paths resolve from the remotion/ folder. null when the footage
+     *  arrives already cut, as the example's does. */
+    source: string | string[] | null;
+    /** [in, out] in SOURCE seconds; with several parts, [part, in, out] (part
+     *  counts from 1). The gaps between rows are what gets cut. Omit to use the
+     *  whole source untouched. */
+    segments?: number[][];   // JSON can't say "pair or triple"; build-footage.mjs checks each row
     crossfadeSeconds?: number;
     /** What each removed gap was. JSON has no comments; the script ignores this. */
     notes?: string[];
@@ -59,7 +60,15 @@ export type ProjectJson = {
     /** CSS object-position for cropping the still into 16:9. Anchor it so the
      *  people end up on the side away from the type. */
     objectPosition?: string;
+    /** A photo (path under public/) to use instead of the footage's first
+     *  frame. It fills the right of the thumbnail, from `photoFrom` (a fraction
+     *  of the width, default 0.42), and the type sits on a brand field to its
+     *  left. Use it when the footage leaves no free side: two people centred
+     *  in frame would otherwise end up under the type's panel. */
+    src?: string;
+    photoFrom?: number;
   };
+  music?: { src: string; credit?: string };
   /** The part of the frame where upper-left overlays may draw without
    *  darkening anyone. MEASURE THIS on your own footage — see the beat-library
    *  skill. `right` caps how wide overlay panels grow. `bottom` is for checking

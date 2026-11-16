@@ -7,6 +7,9 @@ import { GallerySlider } from "./GallerySlider";
 import { GalleryScatter } from "./GalleryScatter";
 import { Heading, Compare, ThankYou } from "./overlays";
 import { PartnerFrame } from "./PartnerFrame";
+import { Counter } from "./Counter";
+import { YouTubeThumbnail } from "./Thumbnail";
+import { Globe } from "./Globe";
 const EASE_OUT = Easing.out(Easing.cubic);
 
 const kenBurns = (frame: number, durFrames: number, from: number, to: number) =>
@@ -27,7 +30,36 @@ const Field: React.FC = () => (
 // scrim and type fading away — the picture appears to simply start moving.
 // Type sits in the lower third because both faces live in the upper-middle of
 // this framing; a centred title would land straight across them.
+// The "thumbnail" style: the YouTube thumbnail's design (drawn at 1280x720, scaled to the frame) with its type rising
+// in, held so it can be read, then dissolved to the footage's first frame, which holds a moment before the footage
+// moves. A frozen frame under a title is a long time to look at two people standing still; this keeps the freeze short.
+const DISSOLVE = 0.7, FREEZE = 0.3;   // seconds, at the end of the opening
+const ThumbnailOpening: React.FC<{ beat: Extract<Beat, { kind: "opening" }>; durFrames: number }> = ({ beat, durFrames }) => {
+  const frame = useCurrentFrame();
+  const { fps, width, height } = useVideoConfig();
+  const t0 = durFrames - (DISSOLVE + FREEZE) * fps;
+  const card = interpolate(frame, [t0, t0 + DISSOLVE * fps], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.inOut(Easing.cubic) });
+  const reveal = (i: number): React.CSSProperties => {
+    const d = (0.15 + i * 0.16) * fps, k = interpolate(frame, [d, d + 0.55 * fps], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE_OUT });
+    return { opacity: k, transform: `translateY(${(1 - k) * 14}px)` };
+  };
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
+      <Img src={staticFile(beat.src)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      <AbsoluteFill style={{ opacity: card }}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: 1280, height: 720, transform: `scale(${width / 1280}, ${height / 720})`, transformOrigin: "0 0" }}>
+          <YouTubeThumbnail reveal={reveal} />
+        </div>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
 const Opening: React.FC<{ beat: Extract<Beat, { kind: "opening" }>; durFrames: number }> = ({ beat, durFrames }) => {
+  if (beat.style === "thumbnail") return <ThumbnailOpening beat={beat} durFrames={durFrames} />;
+  return <StillOpening beat={beat} durFrames={durFrames} />;
+};
+const StillOpening: React.FC<{ beat: Extract<Beat, { kind: "opening" }>; durFrames: number }> = ({ beat, durFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { titleCard } = useProject();
@@ -250,14 +282,20 @@ const Row: React.FC<{ beat: Extract<Beat, { kind: "row" }>; durFrames: number }>
   const { fps, width } = useVideoConfig();
   const photos = beat.photos;
   const n = photos.length;
-  const GAP = 60;
-  const MAX_W = 1800;
+  const GAP = 48;
+  const MAX_W = 1860;
 
   const hasCaption = photos.some((p) => p.caption);
   const captionSpace = hasCaption ? 62 : 0;
+  // A title sits just above the photos, and the two are centred together: wide photos that the frame's width
+  // keeps short would otherwise leave a big gap under a title at the top of the frame.
+  const TITLE_H = 93; // 80px type at 1.16
+  const TITLE_GAP = 34;
+  const TITLE_SPACE = beat.title ? TITLE_H + TITLE_GAP : 0;
 
   const sumAspect = photos.reduce((s, p) => s + p.width / p.height, 0);
-  const h = Math.min(beat.maxHeight, (MAX_W - GAP * (n - 1)) / sumAspect);
+  const h = Math.min(beat.maxHeight, (MAX_W - GAP * (n - 1)) / sumAspect, 1080 - 80 - TITLE_SPACE - captionSpace);
+  const blockTop = Math.max(40, (1080 - TITLE_SPACE - h - captionSpace) / 2);
   const widths = photos.map((p) => (p.width / p.height) * h);
   const totalW = widths.reduce((a, b) => a + b, 0) + GAP * (n - 1);
 
@@ -273,18 +311,38 @@ const Row: React.FC<{ beat: Extract<Beat, { kind: "row" }>; durFrames: number }>
   return (
     <AbsoluteFill>
       <Field />
+      {beat.title ? (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: blockTop,
+            textAlign: "center",
+            opacity: interpolate(frame, [0.1 * fps, 0.6 * fps], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE_OUT }),
+            fontFamily: FONTS.display,
+            fontWeight: 700,
+            fontSize: 80,
+            lineHeight: 1.16,
+            color: "#fff",
+            textShadow: "0 2px 14px rgba(0,0,0,0.7)",
+          }}
+        >
+          {beat.title}
+        </div>
+      ) : null}
       <div
         style={{
           position: "absolute",
-          top: "50%",
+          top: blockTop + TITLE_SPACE,
           left: 0,
           right: 0,
           height: h + captionSpace,
-          transform: `translateY(-${(h + captionSpace) / 2}px)`,
         }}
       >
         {photos.map((p, i) => {
-          const t0 = (0.15 + i * interval) * fps;
+          // revealAt: each photo on its own words; otherwise one after another at the start
+          const t0 = (beat.revealAt?.[i] ?? 0.15 + i * interval) * fps;
           const op = interpolate(frame, [t0, t0 + 0.5 * fps], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE_OUT });
           const y = interpolate(frame, [t0, t0 + 0.5 * fps], [26, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE_OUT });
           const sc = interpolate(frame, [t0, t0 + 0.5 * fps], [0.93, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: EASE_OUT });
@@ -487,6 +545,10 @@ export const BeatContent: React.FC<{ beat: Beat; durFrames: number }> = ({ beat,
       return <Compare beat={beat} durFrames={durFrames} />;
     case "thankyou":
       return <ThankYou beat={beat} durFrames={durFrames} />;
+    case "counter":
+      return <Counter beat={beat} durFrames={durFrames} />;
+    case "globe":
+      return <Globe beat={beat} durFrames={durFrames} />;
     case "ending":
       return <Ending beat={beat} />;
   }

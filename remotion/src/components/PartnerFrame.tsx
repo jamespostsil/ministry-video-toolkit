@@ -31,6 +31,9 @@ export type PartnerFrameProps = {
   /** Path under public/ to a full-bleed background image. Without one the
    *  frame draws its own gradient field. */
   background?: string;
+  /** One small line along the bottom, e.g. "Photos by Wycliffe, SIL PNG and C Gilmore": the
+   *  script's photo credits for the whole video. Optional. */
+  credits?: string;
   /** Seconds of fade-in. Defaults to 0: when this is the closing beat of a
    *  video the beat engine is already crossfading into it, and a second fade
    *  on top of that reads as a stutter. Set it only for standalone use. */
@@ -86,6 +89,7 @@ export const PartnerFrame: React.FC<PartnerFrameProps> = ({
   headline,
   logo,
   background,
+  credits,
   fadeInSeconds = 0,
 }) => {
   const frame = useCurrentFrame();
@@ -236,6 +240,26 @@ export const PartnerFrame: React.FC<PartnerFrameProps> = ({
             src={staticFile(logo)}
             style={{ position: "absolute", right: 64, bottom: 48, width: 320, opacity: 0.95 }}
           />
+        ) : null}
+
+        {credits ? (
+          // 28px: the smallest secondary text that still reads at a glance (beat-library).
+          <div
+            style={{
+              position: "absolute",
+              left: EDGE,
+              right: logo ? 420 : EDGE,
+              bottom: 40,
+              textAlign: logo ? "left" : "center",
+              fontFamily: FONTS.secondary,
+              fontWeight: 400,
+              fontSize: fitSize(credits, VIDEO_WIDTH - 2 * EDGE - (logo ? 360 : 0), 28, "secondary"),
+              color: "rgba(255,255,255,0.86)",
+              textShadow: SHADOW,
+            }}
+          >
+            {credits}
+          </div>
         ) : null}
       </AbsoluteFill>
     </AbsoluteFill>

@@ -58,10 +58,12 @@ for (const { folder } of listProjects()) {
   console.log(`\nProject ${folder}  (id ${json.id})`);
   const prep = json.footagePrep;
   if (prep?.source) {
-    const src = isAbsolute(prep.source) ? prep.source : resolve(ROOT, prep.source);
-    if (prep.source.startsWith("PATH/TO"))
-      warn("footagePrep.source is still the placeholder: set it to your recording, then run  npm run footage -- " + folder);
-    else existsSync(src) ? ok("camera original found") : warn(`camera original not found: ${prep.source}`);
+    for (const p of Array.isArray(prep.source) ? prep.source : [prep.source]) {   // one recording, or a list of parts
+      const src = isAbsolute(p) ? p : resolve(ROOT, p);
+      if (p.startsWith("PATH/TO"))
+        warn("footagePrep.source is still the placeholder: set it to your recording, then run  npm run footage -- " + folder);
+      else existsSync(src) ? ok("camera original found: " + p) : warn(`camera original not found: ${p}`);
+    }
   }
   const footage = publicPath(json.footage.src);
   if (!existsSync(footage)) {

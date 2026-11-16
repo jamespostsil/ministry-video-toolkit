@@ -21,6 +21,9 @@ Start from the *shape of the content*, not from what looks nice.
 | 5–10 photos of the same kind, with captions | **Slider** | Cards drift across; reads as a set |
 | A list the narrator reads aloud | **Scatter** | Each photo lands on its own phrase and stays, building a pile |
 | An ask, while the speaker keeps talking | **Call-to-action** | Words beside them over the live shot |
+| A person's photos under their name (a family update) | **Row** with `title` and `revealAt` | The name on top; each photo comes in on its own words |
+| A number worth dwelling on | **Counter** | Counts up, settles, one small pop; brand colours, no confetti |
+| "Every language / the whole world" | **Globe** (`bibleAt`) | A real globe turning; a Bible fades in on the word that names Scripture |
 
 **Never force mixed aspect ratios into one fixed card shape.** A 16:9 family
 photo and a 4:3 one in identical cards means one of them gets cropped. Row sizes
@@ -105,6 +108,15 @@ lands near 1:1, and let the caption carry the meaning.
   graphics.
 
 ---
+
+## Opening — the thumbnail, then the two of you
+
+A title over the footage's frozen first frame is a long time to look at people standing still. Open with
+`{ kind: "opening", style: "thumbnail", ... }`: the YouTube thumbnail's design (project.json `thumbnail`), its type
+rising in, held about 3 seconds so it can be read, then a 0.7s dissolve to the footage's first frame (both
+smiling), a 0.3s freeze, and the footage. Set `titleCardSeconds` to about 4.5. The cut footage should start about
+1 second before the first word, so the viewer sees a smile before the talking. The default style (`"still"`) keeps
+the title over the frozen frame, for a video with no thumbnail photo.
 
 ## Headings — label every main section
 
@@ -222,6 +234,18 @@ it, and that reads as a bad edit rather than a design choice.
 Check compositional problems unprompted: an element dead-centred against a face,
 a caption tangent to someone's head, a scrim crushing dark clothing to black.
 
+**Centre text in the space it has, by eye.** Words over a photo sit visually
+centred in the empty space they occupy, not at a fixed default spot. For a heading
+above people, that space runs from the top of the frame to the top of the nearest
+heads: measure the head line, then set `top` so the letters' middle (not the line
+box) lands halfway. A heading at the default height over a group photo floats too
+close to the heads and leaves dead space above.
+
+**Keep a title next to what it names.** A photo row's title sits just above its
+photos, and the two are centred together (the Row beat does this). A title pinned
+to the top of the frame over short, wide photos leaves a gap that reads as two
+unrelated things.
+
 ### Setting `overlaySafeArea`
 
 Headings, before/after rows and the call to action all draw in the upper left,
@@ -254,3 +278,29 @@ immediate family, **ask whether there is permission before using it** — do not
 use it and mention it afterwards. Screenshots of internal meetings or team calls
 are the clearest case. An organisation's own published field photos, credited,
 are fine.
+
+## Heading options
+
+The `heading` beat takes, besides `title`, `subtitle` and `bullets`:
+
+- `titleSize` (default 72 with any of these options; reviewers asked for headings larger than the old 58).
+- `align: "right"` for the upper right: over a photo whose people sit on the left, for example.
+- `size`: every line the same size, no bullet dots, for a few words laid over a photo ("Support / Training /
+  Partnership" at 96px). They can cover an unimportant part of the photo.
+- `bulletsAt`: when each bullet arrives, in seconds from the beat's start, so each lands on its own words
+  ("Monthly Partner" on "monthly financial partner"). The panel grows as lines arrive, never sitting half empty.
+- `logo` (+ `logoAt`): an organisation's logo under the plate; `logoInline` puts it at the end of the subtitle line
+  ("Missionaries with [logo]"), which costs no height.
+- `top`: the type's top edge. When the speakers' heads come high in the frame, move it up (70 rather than 120) and
+  shrink `titleSize`/`bulletSize` until the panel's soft edge stops above the highest head. Measure, don't guess.
+
+List heading beats **after** the photo beats in `beats.ts`: they then draw on top of a photo when they overlap one,
+and they never sit between two photo beats that should abut.
+
+## Building a beat that doesn't exist yet
+
+When a script asks for something no beat does (a counter, a globe, a map), build it as a reusable beat in
+`src/components/`, add it to `beatTypes.ts` and this table, and draw a sketch of it on the storyboard first. If it
+needs an outside library (an npm package, map data, an icon set), **name it to the person first**: what it is, its
+licence, and why it is needed, and wait for a yes. If they are away, ask it as a question on the storyboard or review
+page (`questions`, in the scene it is about) that they can say no to. Prefer small, well-known, permissively licensed (MIT, ISC, BSD) packages, and pin exact versions.

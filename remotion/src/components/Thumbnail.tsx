@@ -20,26 +20,52 @@ import { useProject } from "../lib/project";
 const RING =
   "0 0 2px rgba(0,0,0,0.98), 2px 2px 0 rgba(0,0,0,0.85), -2px 2px 0 rgba(0,0,0,0.85), 2px -2px 0 rgba(0,0,0,0.85), -2px -2px 0 rgba(0,0,0,0.85), 0 2px 18px rgba(0,0,0,0.9)";
 
-export const YouTubeThumbnail: React.FC = () => {
+// `reveal(i)` styles the i-th piece of type (eyebrow, title, bar, byline, date) when the thumbnail opens the video
+// (the opening beat's "thumbnail" style); the still leaves it out.
+export const YouTubeThumbnail: React.FC<{ reveal?: (i: number) => React.CSSProperties }> = ({ reveal = () => ({}) }) => {
   const { titleStill, thumbnail } = useProject();
   return (
     <AbsoluteFill style={{ backgroundColor: "#04181a", overflow: "hidden" }}>
-      <Img
-        src={staticFile(titleStill)}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          objectPosition: thumbnail.objectPosition ?? "0% 50%",
-        }}
-      />
+      {thumbnail.src ? (
+        // A photo on the right, fading into a brand field on the left where the type sits.
+        <>
+          <AbsoluteFill style={{ background: "linear-gradient(118deg, #0b3a40 0%, #062a2e 45%, #02181b 100%)"   /* dark enough for the accent date to read */ }} />
+          <Img
+            src={staticFile(thumbnail.src)}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              right: 0,
+              left: `${(thumbnail.photoFrom ?? 0.42) * 100}%`,
+              width: `${(1 - (thumbnail.photoFrom ?? 0.42)) * 100}%`,
+              height: "100%",
+              maxWidth: "none",
+              objectFit: "cover",
+              objectPosition: thumbnail.objectPosition ?? "50% 30%",
+            }}
+          />
+        </>
+      ) : (
+        <Img
+          src={staticFile(titleStill)}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: thumbnail.objectPosition ?? "0% 50%",
+          }}
+        />
+      )}
 
       {/* Left-side scrim for type contrast, feathered to zero by 41%. */}
       <AbsoluteFill
         style={{
-          background: `linear-gradient(90deg, rgba(2,20,22,0.97) 0%, rgba(2,20,22,0.95) 26%, rgba(2,20,22,0.82) 33%, ${BRAND.tealDeep}80 37%, rgba(2,20,22,0) 41%)`,
+          background: thumbnail.src
+            ? `linear-gradient(90deg, rgba(2,20,22,0) ${(thumbnail.photoFrom ?? 0.42) * 100}%, rgba(2,20,22,0.55) ${(thumbnail.photoFrom ?? 0.42) * 100 + 0.5}%, rgba(2,20,22,0) ${(thumbnail.photoFrom ?? 0.42) * 100 + 6}%)`
+            : `linear-gradient(90deg, rgba(2,20,22,0.97) 0%, rgba(2,20,22,0.95) 26%, rgba(2,20,22,0.82) 33%, ${BRAND.tealDeep}80 37%, rgba(2,20,22,0) 41%)`,
         }}
       />
 
@@ -55,21 +81,22 @@ export const YouTubeThumbnail: React.FC = () => {
               whiteSpace: "nowrap",
               color: "#8fdcdc",
               marginBottom: 10,
+              ...reveal(0),
             }}
           >
             {thumbnail.eyebrow}
           </div>
         ) : null}
 
-        <div style={{ fontFamily: FONTS.display, fontWeight: 700, fontSize: 116, lineHeight: 0.98, color: "#ffffff", textShadow: RING }}>
+        <div style={{ fontFamily: FONTS.display, fontWeight: 700, fontSize: 116, lineHeight: 0.98, color: "#ffffff", textShadow: RING, ...reveal(1) }}>
           {thumbnail.titleLines.map((line, i) => (
             <div key={i}>{line}</div>
           ))}
         </div>
 
-        <div style={{ width: 132, height: 7, backgroundColor: BRAND.accent, margin: "26px 0 20px", borderRadius: 4 }} />
+        <div style={{ width: 132, height: 7, backgroundColor: BRAND.accent, margin: "26px 0 20px", borderRadius: 4, ...reveal(2) }} />
 
-        <div style={{ fontFamily: FONTS.secondary, fontWeight: 700, fontSize: 38, lineHeight: 1.25, color: "#ffffff", textShadow: RING }}>
+        <div style={{ fontFamily: FONTS.secondary, fontWeight: 700, fontSize: 38, lineHeight: 1.25, color: "#ffffff", textShadow: RING, ...reveal(3) }}>
           {thumbnail.byline}
         </div>
         {thumbnail.date ? (
@@ -81,6 +108,7 @@ export const YouTubeThumbnail: React.FC = () => {
               color: BRAND.accent,
               marginTop: 4,
               textShadow: "0 0 2px rgba(0,0,0,0.98), 1.5px 1.5px 0 rgba(0,0,0,0.85), -1.5px 1.5px 0 rgba(0,0,0,0.85)",
+              ...reveal(4),
             }}
           >
             {thumbnail.date}
