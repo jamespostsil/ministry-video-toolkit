@@ -138,3 +138,15 @@ The page should explain itself. Keep these when changing the template:
   is no bar at the top of the list.
 - **"+ Add a scene here"** shows when the gap between two cards is pointed at.
 - **Simple** keeps a one-line legend for the yellow marks when a draft has changes, without the filter button.
+
+## Shared photos in "+ Add a photo"
+
+`--library <folder>` (repeatable) offers a shared photo folder under "+ Add a photo", below the script's own photos,
+headed "Shared photos, cleared to use". If the folder has a `photo-credits.csv` (columns `file`, `caption`,
+`on-screen credit`), only the photos it lists are offered, each with its caption and credit filled in; otherwise
+every photo in the folder is offered. A shared photo the reviewer adds is saved with its caption and credit at once.
+The photos are copied into the page when it is built, so reviewers need nothing but the page link: no Google
+sign-in. Whoever builds the page needs the folder on their computer (Google Drive for desktop, or a download).
+The people-with-Bibles set: the SIL Drive folder "People with Bibles: photos for partnership videos".
+
+After approval, pass the same folder to `export_photos.py --library <folder>` so it finds photos added from it.

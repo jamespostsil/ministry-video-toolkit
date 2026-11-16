@@ -246,6 +246,11 @@ select.rights.no{background:#f7dede;color:#7a1f1f;border-color:#d99}
 .pblk.empty{display:none}
 dialog.pick{border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);padding:14px;width:min(720px,92vw);max-height:84vh}
 dialog.pick::backdrop{background:rgb(0 0 0/.5)}
+/* "+ Add a photo": the script's photos, then the shared photos (cleared to use) with their credit under each */
+.pick .libh{grid-column:1/-1;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
+.pick .lib button{display:flex;flex-direction:column;text-align:left}
+.pick .lib .pc{line-height:1.25;font-size:.72rem;color:var(--muted);padding:3px 2px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
 .pick h2{font-size:1.05rem;margin:0 0 8px}.pick .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
 .pick .lib button{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}.pick .lib button:hover,.pick .lib button:focus-visible{border-color:var(--accent)}
 .pick .lib img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px}
@@ -298,7 +303,8 @@ select.rights{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
 /* the card's last row: "Saved" (when it flashes) and Next scene, at the bottom right under everything */
 .cardfoot{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:6px;min-height:1.4em}
 .cardfoot .saved{position:static;background:none;padding:0}.cardfoot .nextsc{margin:0}
-.grp.good>.cardfoot{display:none}body.simple .grp.good>.cardfoot{display:flex}
+.grp.good>.cardfoot{display:none}
+.grp .saved:not(.cardfoot .saved){display:none}body.simple .grp.good>.cardfoot{display:flex}
 details.help{margin:0 0 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root:not([data-theme="light"]) select.rights.ask{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root:not([data-theme="light"]) select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root:not([data-theme="light"]) .cap .beat{color:var(--text)}}
@@ -344,7 +350,8 @@ details.help{margin:0 0 10px}
 <script>
 const DATA = /*DATA*/;
 const $ = (id) => document.getElementById(id);
-const flash = (el) => { el.classList.add("show"); clearTimeout(el._h); el._h = setTimeout(() => el.classList.remove("show"), 1500); };
+const flash = (el) => { if (!el) return; const ft = el.closest(".grp") && el.closest(".grp").querySelector(".cardfoot .saved"); if (ft) el = ft;   // every "Saved" in a card shows at its bottom right
+  el.classList.add("show"); clearTimeout(el._h); el._h = setTimeout(() => el.classList.remove("show"), 1500); };
 const fit = (ta) => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; };
 let db = null, cur = 0;
 const shots = DATA.shots;
@@ -682,10 +689,15 @@ let assetsP = Promise.resolve(null), pickFor = null;
 const pick = $("pick");
 function openPicker(s) {
   pickFor = s; const lib = $("plib"); lib.innerHTML = "";
-  for (const p of DATA.library || []) { if (s.order.includes(p.id)) continue;
-    const b = document.createElement("button"); b.type = "button"; b.title = p.file; b.innerHTML = '<img alt="">'; b.querySelector("img").src = psrc(p, true); b.querySelector("img").alt = p.file;
-    b.addEventListener("click", () => { s.addPhoto(p); pick.close(); }); lib.appendChild(b); }
-  if (!lib.children.length) lib.textContent = "Every photo from the script is already here.";
+  const head = (t) => { const h = document.createElement("div"); h.className = "libh"; h.textContent = t; lib.appendChild(h); };
+  const tile = (p) => { const b = document.createElement("button"); b.type = "button"; b.title = [p.caption, p.credit].filter(Boolean).join(" · ") || p.file;
+    b.innerHTML = '<img alt="">'; b.querySelector("img").src = psrc(p, true); b.querySelector("img").alt = p.caption || p.file;
+    if (p.shared) { const c = document.createElement("span"); c.className = "pc"; c.textContent = p.credit || p.caption || ""; b.appendChild(c); }
+    b.addEventListener("click", () => { s.addPhoto(p); pick.close(); }); lib.appendChild(b); };
+  const mine = (DATA.library || []).filter((p) => !p.shared && !s.order.includes(p.id)), shared = (DATA.library || []).filter((p) => p.shared && !s.order.includes(p.id));
+  if (mine.length && shared.length) head("From the script"); mine.forEach(tile);
+  if (shared.length) { head("Shared photos, cleared to use"); shared.forEach(tile); }
+  if (!lib.children.length) lib.textContent = "Every photo is already here.";
   $("pupst").textContent = ""; $("pup").hidden = true; assetsP.then((a) => { $("pup").hidden = !a; });
   pick.showModal();
 }
@@ -809,12 +821,13 @@ function picBlock(s, i) {
   s.addPhoto = (p) => { if (s.order.includes(p.id)) return; const before = s.order.slice();
     s.removed = s.removed.filter((q) => q !== p.id);
     if (!orig.includes(p.id) && !s.added.some((q) => q.id === p.id)) s.added.push({ id: p.id, file: p.file || "", w: p.w, h: p.h, cropped: !!p.cropped, ...(p.asset ? { asset: p.asset } : {}) });
-    list.appendChild(rowsBy[p.id] || makeRow(p)); commit(before); };
+    list.appendChild(rowsBy[p.id] || makeRow(p)); commit(before);
+    if (p.shared && !(PIC[p.id].savedOnce)) { PIC[p.id].savedOnce = true; savePic(p.id); } };
   blk.querySelector(".addp").addEventListener("click", () => openPicker(s));
   back.addEventListener("click", () => { const before = s.order.slice(); s.removed = s.added.map((p) => p.id); [...list.children].forEach((r) => r.remove());
     orig.forEach((id) => list.appendChild(rowsBy[id])); commit(before); });
   // the saved state: {pics: the order, removed, added} (an older save is just {pics})
-  s.applyOrder = (y) => { (y.added || []).forEach((p) => { if (p && p.id && !rowsBy[p.id]) { s.added.push(p); makeRow(p); } });
+  s.applyOrder = (y) => { (y.added || []).forEach((p) => { if (p && p.id && !rowsBy[p.id]) { s.added.push(p); makeRow({ ...((DATA.library || []).find((q) => q.id === p.id) || {}), ...p }); } });
     s.removed = (Array.isArray(y.removed) ? y.removed : []).filter((id) => rowsBy[id]); [...list.children].forEach((r) => r.remove());
     (Array.isArray(y.pics) ? y.pics : orig).forEach((id) => { if (rowsBy[id] && !s.removed.includes(id)) list.appendChild(rowsBy[id]); });
     orig.forEach((id) => { if (!rowsBy[id].parentNode && !s.removed.includes(id)) list.appendChild(rowsBy[id]); });   // a photo new in this draft
@@ -939,7 +952,7 @@ shots.forEach((s, i) => {
   g.appendChild(notes);
   { const ft = document.createElement("div"); ft.className = "cardfoot"; ft.innerHTML = '<span class="saved">Saved</span>'; g.appendChild(ft); }   // "Saved" for the Note: bottom right of the card
   if (i < shots.length - 1) { const nx = document.createElement("div"); nx.className = "nextsc";
-    nx.innerHTML = '<button type="button" class="btn">Next scene ›</button>'; g.querySelector(".cardfoot").appendChild(nx); nx.firstChild.addEventListener("click", () => { for (let j = i + 1; j < shots.length; j++) if (visible(j)) return show(j, true); }); g.appendChild(nx); }   // the scene after this card, not after the highlighted one
+    nx.innerHTML = '<button type="button" class="btn">Next scene ›</button>'; g.querySelector(".cardfoot").appendChild(nx); nx.firstChild.addEventListener("click", () => { for (let j = i + 1; j < shots.length; j++) if (visible(j)) return show(j, true); }); }   // the scene after this card, not after the highlighted one
   groups.push(g); $("list").appendChild(g);
 });
 // ---- questions from Claude (answers/<id> {title, answer: "ok" | "change", note}), all at the top; one with "at" (a shot key) links to that card

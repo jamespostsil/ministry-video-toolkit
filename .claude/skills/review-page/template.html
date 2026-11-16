@@ -116,6 +116,11 @@ video::cue{font:600 18px system-ui,sans-serif;background:rgb(0 0 0/.62);color:#f
 .pblk.empty{display:none}.pacts:not(:has(:not([hidden]))){display:none}
 dialog.pick{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg);padding:14px;width:min(720px,92vw);max-height:84vh}
 dialog.pick::backdrop{background:rgb(0 0 0/.5)}
+/* "+ Add a photo": the script's photos, then the shared photos (cleared to use) with their credit under each */
+.pick .libh{grid-column:1/-1;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
+.pick .lib button{display:flex;flex-direction:column;text-align:left}
+.pick .lib .pc{line-height:1.25;font-size:.72rem;color:var(--muted);padding:3px 2px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
 .pick h2{font-size:1.05rem;margin:0 0 8px}.pick .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
 .pick .lib button{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}.pick .lib button:hover,.pick .lib button:focus-visible{border-color:var(--accent)}
 .pick .lib img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px}
@@ -340,12 +345,13 @@ function buildShown(s, box) {
     O.addPhoto = (p) => { if (O.cur.includes(p.id)) return; const before = O.cur.slice();
       O.removed = O.removed.filter((q) => q !== p.id);
       if (!orig.includes(p.id) && !O.added.some((q) => q.id === p.id)) O.added.push({ id: p.id, file: p.file || "", w: p.w, h: p.h, ...(p.asset ? { asset: p.asset } : {}) });
-      list.appendChild(O.rows[p.id] || makeRow(p)); commit(before); };
+      list.appendChild(O.rows[p.id] || makeRow(p)); commit(before);
+      if (p.shared && !PIC[p.id].savedOnce) { PIC[p.id].savedOnce = true; savePicDb(PIC[p.id]); } };
     b.querySelector(".add").onclick = () => openPicker(O);
     back.onclick = () => { const before = O.cur.slice(); O.removed = O.added.map((p) => p.id); [...list.children].forEach((r) => r.remove());
       orig.forEach((id) => list.appendChild(O.rows[id])); commit(before); };
     // the saved state: {pics: the order, removed, added}
-    O.apply = (y) => { (y.added || []).forEach((p) => { if (p && p.id && !O.rows[p.id]) { O.added.push(p); makeRow(p); } });
+    O.apply = (y) => { (y.added || []).forEach((p) => { if (p && p.id && !O.rows[p.id]) { O.added.push(p); makeRow({ ...((D.library || []).find((q) => q.id === p.id) || {}), ...p }); } });
       O.removed = (Array.isArray(y.removed) ? y.removed : []).filter((id) => O.rows[id]); [...list.children].forEach((r) => r.remove());
       (Array.isArray(y.pics) ? y.pics : orig).forEach((id) => { if (O.rows[id] && !O.removed.includes(id)) list.appendChild(O.rows[id]); }); sync(); };
     sync(); box.appendChild(b);
@@ -359,10 +365,15 @@ let assetsP = Promise.resolve(null), pickFor = null;
 const pick = $("pick");
 function openPicker(O) {
   pickFor = O; const lib = $("plib"); lib.innerHTML = "";
-  for (const p of D.library || []) { if (O.cur.includes(p.id)) continue;
-    const b = document.createElement("button"); b.type = "button"; b.title = p.file; b.innerHTML = '<img alt="">'; b.querySelector("img").src = srcOf(p, true); b.querySelector("img").alt = p.file;
-    b.onclick = () => { O.addPhoto(p); pick.close(); }; lib.appendChild(b); }
-  if (!lib.children.length) lib.textContent = "Every photo from the script is already here.";
+  const head = (t) => { const h = document.createElement("div"); h.className = "libh"; h.textContent = t; lib.appendChild(h); };
+  const tile = (p) => { const b = document.createElement("button"); b.type = "button"; b.title = [p.caption, p.credit].filter(Boolean).join(" · ") || p.file;
+    b.innerHTML = '<img alt="">'; b.querySelector("img").src = srcOf(p, true); b.querySelector("img").alt = p.caption || p.file;
+    if (p.shared) { const c = document.createElement("span"); c.className = "pc"; c.textContent = p.credit || p.caption || ""; b.appendChild(c); }
+    b.addEventListener("click", () => { O.addPhoto(p); pick.close(); }); lib.appendChild(b); };
+  const mine = (D.library || []).filter((p) => !p.shared && !O.cur.includes(p.id)), shared = (D.library || []).filter((p) => p.shared && !O.cur.includes(p.id));
+  if (mine.length && shared.length) head("From the script"); mine.forEach(tile);
+  if (shared.length) { head("Shared photos, cleared to use"); shared.forEach(tile); }
+  if (!lib.children.length) lib.textContent = "Every photo is already here.";
   $("pupst").textContent = ""; $("pup").hidden = true;
   assetsP.then((a) => { $("pup").hidden = !a; });
   pick.showModal();

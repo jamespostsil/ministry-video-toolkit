@@ -1,7 +1,8 @@
 """Export the approved storyboard's photos for the video, exactly as the reviewer left them.
 
   python -I export_photos.py <storyboard.json> <photos folder> <out folder> --edits <folder> [--crops FILE]
-                             [--uploads FOLDER] [--long-edge 2400] [--skip-unapproved]
+                             [--uploads FOLDER] [--library FOLDER] [--long-edge 2400]
+                             [--skip-unapproved]
   python -I export_photos.py ... --no-edits     (only when the page was never published, so there is nothing to read)
 
 --edits: the storyboard page's saved data, read with ArtifactData list (out_dir = this folder) for the collections
@@ -31,6 +32,7 @@ ap.add_argument("storyboard"); ap.add_argument("photos"); ap.add_argument("out")
 ap.add_argument("--crops"); ap.add_argument("--edits"); ap.add_argument("--no-edits", action="store_true")
 ap.add_argument("--uploads"); ap.add_argument("--long-edge", type=int, default=2400)
 ap.add_argument("--skip-unapproved", action="store_true")
+ap.add_argument("--library", action="append", default=[], help="a shared photo folder the reviewer may have added photos from")
 a = ap.parse_args()
 if not a.edits and not a.no_edits:
     sys.exit("Stopped: pass --edits <folder> with the storyboard page's saved data (ArtifactData list of the "
@@ -108,8 +110,10 @@ def source(pid):
     if p.get("asset"):
         hits = glob.glob(os.path.join(a.uploads or "", p["asset"] + "*")) if a.uploads else []
         return hits[0] if hits else None
-    f = os.path.join(a.photos, p["file"])
-    return f if os.path.isfile(f) else None
+    for folder in [a.photos, *a.library]:
+        f = os.path.join(folder, p["file"])
+        if os.path.isfile(f): return f
+    return None
 
 
 missing = [pid for pid in used if not source(pid)]

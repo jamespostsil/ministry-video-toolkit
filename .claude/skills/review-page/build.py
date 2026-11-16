@@ -30,6 +30,7 @@ import argparse, json, os, re
 here = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser(); ap.add_argument("data"); ap.add_argument("out")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--out-pics")
+ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
 a = ap.parse_args(); data_path, out = a.data, a.out
 d = json.load(open(data_path, encoding="utf-8"))
 for k in ("title", "video", "version", "sentences"):
@@ -53,6 +54,22 @@ if a.photos and a.out_pics:   # the photo thumbnails and larger copies the cards
         for suffix, size in ((".jpg", 1600), (".t.jpg", 240)):
             q = im.copy(); q.thumbnail((size, size)); q.save(os.path.join(a.out_pics, pid + suffix), quality=86)
         library.append({"id": pid, "file": f, "w": im.width, "h": im.height})
+if a.library and a.out_pics:   # shared photos (people with Bibles...), with their caption and credit filled in
+    import csv
+    from PIL import Image, ImageOps
+    os.makedirs(a.out_pics, exist_ok=True)
+    for folder in a.library:
+        sheet = os.path.join(folder, "photo-credits.csv")
+        rows = ([{"file": r["file"], "caption": r.get("caption", ""), "credit": r.get("on-screen credit") or r.get("credit", "")}
+                 for r in csv.DictReader(open(sheet, encoding="utf-8-sig"))] if os.path.isfile(sheet) else
+                [{"file": f} for f in sorted(os.listdir(folder)) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))])
+        for r in rows:
+            src = os.path.join(folder, r["file"])
+            if not os.path.isfile(src): continue
+            pid = pid_of(r["file"]); im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+            for suffix, size in ((".jpg", 1600), (".t.jpg", 240)):
+                q = im.copy(); q.thumbnail((size, size)); q.save(os.path.join(a.out_pics, pid + suffix), quality=86)
+            library.append({"id": pid, "file": r["file"], "w": im.width, "h": im.height, "caption": r.get("caption", ""), "credit": r.get("credit", ""), "shared": True})
 page = open(os.path.join(here, "template.html"), encoding="utf-8").read()
 esc = lambda s: s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 payload = {k: d.get(k) for k in ("version", "sentences", "changes", "general", "questions", "good", "preview", "mode")}

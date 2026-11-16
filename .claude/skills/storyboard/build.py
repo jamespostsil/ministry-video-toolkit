@@ -65,6 +65,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("storyboard"); ap.add_argument("out")
 ap.add_argument("--pictures"); ap.add_argument("--boxes"); ap.add_argument("--drafts")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--logo")
+ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
 ap.add_argument("--subtitle", default="Real screenshots. Nothing has been recorded yet.")
 ap.add_argument("--accent", default="#b0561c"); ap.add_argument("--hero", default="#9a4a17")
 a = ap.parse_args()
@@ -109,13 +110,25 @@ def line_diffs(old, new):
     return ["new" if old is None or k >= len(old) else word_diff(old[k], t) if old[k] != t else None for k, t in enumerate(new)]
 
 
+def shared_library(folder):
+    """A shared photo folder for "+ Add a photo": the photos listed in its photo-credits.csv (file, caption,
+    on-screen credit), or every photo in it when there is no sheet. These are cleared to use (permission "ok")."""
+    import csv
+    sheet = os.path.join(folder, "photo-credits.csv")
+    if os.path.isfile(sheet):
+        rows = list(csv.DictReader(open(sheet, encoding="utf-8-sig")))
+        return [{"file": r["file"], "caption": r.get("caption", ""), "credit": r.get("on-screen credit") or r.get("credit", "")}
+                for r in rows if os.path.isfile(os.path.join(folder, r["file"]))]
+    return [{"file": f} for f in sorted(os.listdir(folder)) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))]
+
+
 pics_done = {}
 def picture(p):
     """Copy one photo in, upright and cropped; return what the page needs to know about it."""
     pid = re.sub(r"[^A-Za-z0-9]+", "-", os.path.splitext(p["file"])[0]).strip("-").lower()
     if pid not in pics_done:
-        if not a.photos: raise SystemExit("shots have pictures: pass --photos <folder>")
-        src = os.path.join(a.photos, p["file"])
+        if not a.photos and not p.get("dir"): raise SystemExit("shots have pictures: pass --photos <folder>")
+        src = os.path.join(p.get("dir") or a.photos, p["file"])
         if not os.path.isfile(src): raise SystemExit(f"no photo {src}")
         whole = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
         c = crops.get(p["file"])
@@ -151,6 +164,9 @@ if a.photos:   # every photo in the script's folder, for "+ Add a photo"
     for f in sorted(os.listdir(a.photos)):
         if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
             p = picture({"file": f}); library.append({k: p[k] for k in ("id", "file", "w", "h", "cropped")})
+for folder in a.library:   # shared photos (people with Bibles...), with their caption and credit filled in
+    for q in shared_library(folder):
+        p = picture({**q, "dir": folder}); library.append({**{k: p[k] for k in ("id", "file", "w", "h", "cropped", "caption", "credit")}, "shared": True})
 keys = {s["key"] for s in shots}
 bad = [q.get("at") for q in sb.get("questions", []) if q.get("at") not in (None, *keys)]
 if bad: raise SystemExit(f"questions for unknown shots: {bad}")
