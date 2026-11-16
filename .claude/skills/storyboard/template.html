@@ -1,8 +1,8 @@
 <title>{{TITLE}} Storyboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Alegreya:wght@700&family=Poppins:wght@400;600&display=swap">
 <style>
-/* Shared storyboard page (training-video-core rule G15). Layout: slim header in the product's colour; big shot with boxes on the left (note, back/next, thumbnail strip); a sidebar of editable lines grouped by shot that scrolls on its own */
+/* Storyboard page. Layout: slim header in the video's colour; big shot with boxes on the left (note, back/next, thumbnail strip); a sidebar that scrolls on its own, one card per shot: its photos (drag to reorder; caption, credit, permission), the words on screen, and its editable lines */
 :root{--bg:#f4f5f6;--surface:#fff;--text:#1c2430;--muted:#566272;--border:#d9dee4;--accent:{{ACCENT}};--accent-soft:#fbeee3;--now:#fdf3e7;--changed:#2f5f74;--upd:#b38600;--upd-text:#5c4500;--ins:#ffe98a;--del:#a33a3a;--box:#d64f3a;--pin:#d25f25;--hero-bg:{{HERO}};--hero-text:#fff;--hero-dim:#fbe3d2;--shade:rgba(16,20,26,.86);
 --font:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}}
@@ -16,7 +16,8 @@ header p{margin:0;color:var(--hero-dim);font-size:.9rem}
 .appr{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:.9rem;color:var(--hero-dim)}
 .appr .btn{background:#fff;color:#1c2430;border-color:#fff}.appr.ok #appr-state{color:#fff;font-weight:700}
 .app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 500px}
-@media (max-width:1000px){html,body{overflow:auto;height:auto}.app{grid-template-columns:1fr}.stage{overflow:visible}.side{max-height:none}}
+/* narrow screens: one page that scrolls as a whole (the fixed-height app layout collapsed to nothing here) */
+@media (max-width:1000px){html,body{overflow:auto;height:auto}body{display:block}.app{display:block}.stage{overflow:visible}.side{border-left:0;border-top:1px solid var(--border)}.pane{overflow:visible}}
 .stage{min-width:0;padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow:auto}
 /* the picture shrinks to fit the space left over, so the whole left side stays on the screen */
 .fit{flex:1 1 0;min-height:160px;container-type:size;display:flex;justify-content:center;align-items:flex-start}
@@ -42,7 +43,7 @@ header p{margin:0;color:var(--hero-dim);font-size:.9rem}
 button.btn{font:700 .9rem var(--font);border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer}
 button.btn:disabled{opacity:.4;cursor:default}
 button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;position:relative}
 .thumbs button{flex:0 0 auto;padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}
 .thumbs button[aria-current="true"]{border-color:var(--accent)}
 .thumbs img{width:112px;height:63px;object-fit:cover;border-radius:3px;display:block}
@@ -50,7 +51,17 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outl
 .tabs{display:flex;border-bottom:1px solid var(--border)}
 .tabs button{flex:1;font:700 .9rem var(--font);background:none;border:none;border-bottom:3px solid transparent;padding:10px 6px;color:var(--muted);cursor:pointer}
 .tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent)}
-.pane{flex:1;overflow:auto;padding:10px 12px}
+.pane{flex:1;overflow:auto;padding:0 12px 10px}
+.snav{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;justify-content:space-between;background:var(--surface);border-bottom:1px solid var(--border);margin:0 -12px 8px;padding:8px 12px}
+.snav #scount{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+
+.nextsc{display:flex;justify-content:flex-end;margin-top:8px}
+.notes{margin-top:6px;padding:0 2px}
+.notes label.f{margin:0 0 3px}
+details.help{margin:0 0 8px;font-size:.85rem;color:var(--muted)}
+details.help summary{cursor:pointer;font-weight:700;color:var(--text)}
+details.help ul{margin:6px 0 0;padding-left:1.2em}details.help li{margin:2px 0}
 .pane[hidden]{display:none}
 .status{font-size:.85rem;color:var(--muted);margin:2px 0 8px}
 .grp{border:1px solid var(--border);border-radius:8px;margin:8px 0;padding:6px;background:var(--bg)}
@@ -77,10 +88,10 @@ textarea.say{width:100%;resize:none;overflow:hidden;min-height:2.2em;border:1px 
 textarea.say:hover,textarea.say:focus{border-color:var(--border);background:var(--bg)}
 .diff:hover{background:var(--bg)}
 .lab{font:700 .7rem var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-/* Script and On screen notes: one under the other, the same as the review page */
+/* one Note box per card, the same as the review page */
 label.f{display:block;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:8px 0 3px}
 textarea.note,textarea.general{width:100%;border:1px solid var(--border);border-radius:4px;padding:6px 8px;background:var(--bg);color:var(--text);font:inherit;font-size:.95rem;resize:none;overflow:hidden;min-height:2.4em}
-textarea.general{min-height:10em;resize:vertical;overflow:auto}
+textarea.general{min-height:3em;resize:vertical;overflow:auto}
 .check{font-size:.72rem;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:4px}
 .meta{display:flex;gap:8px;align-items:center;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
 .meta button{font:inherit;background:none;border:none;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
@@ -106,7 +117,188 @@ textarea.general{min-height:10em;resize:vertical;overflow:auto}
 .add-head .ph{width:72px;height:40px;flex:none;border:1px dashed var(--muted);border-radius:3px;display:grid;place-items:center;font-size:.62rem;text-align:center;line-height:1.1}
 body.only .add-gap{display:none}body.only .grp.added .line{display:grid}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* how the shot is shown, and the words on screen, above the picture */
+.cap .beat{font-size:.78rem;font-weight:700;color:var(--hero-bg);background:var(--accent-soft);padding:1px 8px;border-radius:999px}
+.onscr[hidden]{display:none}.onscr{display:flex;flex-wrap:wrap;gap:4px 6px;font-size:.85rem}.onscr:empty{display:none}
+.onscr span{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 7px}.onscr b{color:var(--muted);font-weight:400}
+/* which picture of the shot is on the stage */
+.views{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.views:empty{display:none}
+.views button:not(.whole){padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0;position:relative}
+.views button:not(.whole)[aria-pressed="true"]{border-color:var(--accent)}
+.views img{width:64px;height:40px;object-fit:cover;border-radius:3px;display:block}
+.views .vn{position:absolute;left:2px;top:2px;font:700 .65rem/1 var(--font);background:rgb(0 0 0/.65);color:#fff;border-radius:3px;padding:2px 4px}
+.views .whole{margin-left:auto}
+.frame .badge{position:absolute;right:8px;top:8px;z-index:2;font:700 .78rem var(--font);border-radius:4px;padding:2px 8px;pointer-events:none}
+.badge.ask{background:#ffe08a;color:#4d3800}.badge.no{background:#a33a3a;color:#fff}.badge.sk{background:rgb(0 0 0/.6);color:#fff}
+/* the words on screen, drawn on the picture where the video puts them (sizes in 1920-wide video pixels: n/19.2 cqw) */
+.ovl{position:absolute;inset:0;container-type:inline-size;pointer-events:none;z-index:1;overflow:hidden;border-radius:6px;color:#fff}
+.ovl .sh{text-shadow:0 0 2px rgb(0 0 0/.98),1px 1px 0 rgb(0 0 0/.85),-1px 1px 0 rgb(0 0 0/.85),0 2px 12px rgb(0 0 0/.9)}
+.ovl .plate{position:absolute;left:calc(116cqw/19.2);top:calc(120cqw/19.2);max-width:calc(880cqw/19.2)}
+.ovl .plate::before{content:"";position:absolute;inset:calc(-48cqw/19.2) calc(-60cqw/19.2);background:rgb(12 10 18/.55);filter:blur(calc(26cqw/19.2));z-index:-1}
+.ovl .p-title{font:700 calc(72cqw/19.2)/1.16 Alegreya,Georgia,serif}
+.ovl .p-word{font:700 calc(96cqw/19.2)/1.12 Alegreya,Georgia,serif}
+.ovl .plate.right{left:auto;right:calc(116cqw/19.2);text-align:right}
+.ovl .p-sub{font:400 calc(40cqw/19.2)/1.2 Poppins,sans-serif;margin-top:calc(8cqw/19.2)}
+.ovl .p-bul{font:600 calc(42cqw/19.2)/1.2 Poppins,sans-serif;margin-top:calc(18cqw/19.2)}
+.ovl .p-logo{display:block;width:calc(300cqw/19.2);margin-top:calc(22cqw/19.2);background:none;border:0;border-radius:0}
+.ovl .p-logo.inl{display:inline-block;width:auto;height:calc(58cqw/19.2);margin:0 0 0 calc(14cqw/19.2);vertical-align:middle}
+.ovl .tcard{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgb(60 107 121/.24) 64%,rgb(3 24 26/.78) 84%,rgb(2 18 20/.92));display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:calc(90cqw/19.2);text-align:center}
+.ovl .t-eye{font:600 calc(27cqw/19.2) Poppins,sans-serif;letter-spacing:.2em}
+.ovl .t-title{font:700 calc(96cqw/19.2)/1.1 Alegreya,Georgia,serif;margin-top:calc(10cqw/19.2)}
+.ovl .t-rule{width:calc(110cqw/19.2);height:calc(3cqw/19.2);background:#9d85b8;margin:calc(22cqw/19.2) auto 0;border-radius:2px}
+.ovl .t-by{font:400 calc(38cqw/19.2) Poppins,sans-serif;margin-top:calc(18cqw/19.2)}
+.ovl .ty{position:absolute;left:calc(92cqw/19.2);top:calc(132cqw/19.2);width:calc(596cqw/19.2);padding:calc(44cqw/19.2) calc(48cqw/19.2);border-radius:calc(30cqw/19.2);background:linear-gradient(150deg,#9d85b8,#5f4d72 52%,#3a2f47);text-align:center;font:700 calc(76cqw/19.2)/1.1 Alegreya,Georgia,serif;box-shadow:0 calc(12cqw/19.2) calc(40cqw/19.2) rgb(0 0 0/.35)}
+.ovl .above{position:absolute;left:0;right:0;top:calc(40cqw/19.2);text-align:center;font:700 calc(80cqw/19.2)/1.16 Alegreya,Georgia,serif}
+.ovl .capn{position:absolute;left:calc(40cqw/19.2);bottom:calc(36cqw/19.2);max-width:80%;background:rgb(0 0 0/.55);border-radius:calc(10cqw/19.2);padding:calc(10cqw/19.2) calc(18cqw/19.2)}
+.ovl .capn b{display:block;font:600 calc(34cqw/19.2)/1.25 Poppins,sans-serif}
+.ovl .capn span{display:block;font:400 calc(24cqw/19.2)/1.3 Poppins,sans-serif;opacity:.85}
+/* the screen as the video will show it: the shot's photos laid out the way its beat lays them out, in the current order */
+.comp{position:absolute;inset:0;container-type:inline-size;pointer-events:none;overflow:hidden;border-radius:6px}
+.comp img{position:absolute;max-width:none;max-height:none;display:block}
+.comp .bg{inset:0;width:100%;height:100%;object-fit:cover;filter:blur(calc(30cqw/19.2)) brightness(.55);transform:scale(1.08)}
+.comp .card{position:absolute;background:rgb(255 255 255/.92);border-radius:calc(18cqw/19.2);overflow:hidden;box-shadow:0 calc(10cqw/19.2) calc(36cqw/19.2) rgb(0 0 0/.45)}
+.comp .card img{left:-1px;top:-1px;width:calc(100% + 2px);height:calc(100% + 2px);object-fit:cover}
+.comp .card.no img{opacity:.35}
+.comp .cc{position:absolute;color:#fff;text-align:center;font:600 calc(30cqw/19.2)/1.2 Poppins,sans-serif;text-shadow:0 1px 6px rgb(0 0 0/.9)}
+.comp .cc span{display:block;font-weight:400;font-size:calc(22cqw/19.2);opacity:.85}
+.comp .chip{position:absolute;left:calc(14cqw/19.2);bottom:calc(14cqw/19.2);background:rgb(255 255 255/.9);color:#1c2430;border-radius:calc(8cqw/19.2);padding:calc(6cqw/19.2) calc(12cqw/19.2);font:600 calc(26cqw/19.2)/1.2 Poppins,sans-serif;text-shadow:none}
+.comp .chip span{display:block;font-weight:400;font-size:calc(20cqw/19.2)}
+.frame.under #pic{filter:blur(6px) brightness(.5)}
+.comp.field{background:radial-gradient(120% 90% at 50% 30%,#3c6b7966 0%,#0a1216 70%),#0a1216}
+.mini,.big{position:relative;aspect-ratio:16/9;overflow:hidden;container-type:inline-size;background:#0a1216}
+.mini{border-radius:3px}.big{width:min(94vw,calc(88vh * 16 / 9));border-radius:6px;cursor:zoom-out}
+.mini>img.base,.big>img.base{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.mini.under>img.base{filter:blur(1.5px) brightness(.45)}.big.under>img.base{filter:blur(10px) brightness(.45)}
+.thumbs .mini{width:112px}
+.gthumb{flex:none;width:112px;padding:0;border:1px solid var(--border);border-radius:4px;background:none;cursor:zoom-in;line-height:0}
+.gthumb:hover{border-color:var(--accent)}
+.ghead{display:flex;gap:8px;align-items:center}
+.ghead .grp-head{flex:1;min-width:0}
+/* the shot's photos (drag to reorder) and words on screen, in its card */
+.blk{margin-top:8px}
+.blk-h{display:flex;gap:8px;align-items:baseline;justify-content:space-between;padding:0 2px}
+.blk-h .hint2{font-size:.75rem;color:var(--muted)}
+.blk-h button{font:inherit;font-size:.78rem;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
+.plist{display:grid;gap:6px;margin-top:4px}
+.prow{display:grid;grid-template-columns:26px 84px minmax(0,1fr);gap:8px;align-items:start;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 8px 8px 4px}
+.prow.dragging{border-color:var(--accent);box-shadow:0 6px 18px rgb(0 0 0/.22);position:relative;z-index:1}
+.prow.no .th{opacity:.45}
+.handle{align-self:stretch;display:grid;place-items:center;border:0;border-radius:4px;background:none;color:var(--muted);cursor:grab;touch-action:none;font:700 1.05rem/1 var(--font);padding:0}
+.handle:hover{background:var(--bg);color:var(--text)}.prow.dragging .handle{cursor:grabbing}
+.th-btn{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0;position:relative}
+.th-btn[aria-pressed="true"]{border-color:var(--accent)}
+.th{width:80px;height:56px;object-fit:cover;border-radius:3px;display:block}
+.th-btn .vn{position:absolute;left:3px;top:3px;font:700 .65rem/1 var(--font);background:rgb(0 0 0/.65);color:#fff;border-radius:3px;padding:2px 4px}
+.fld{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center}
+.fld label,.scr-row label{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+input.txt,select.rights{font:inherit;font-size:.9rem;border:1px solid var(--border);border-radius:4px;padding:3px 6px;background:var(--bg);color:var(--text);width:100%;min-width:0}
+input.txt.edited,select.rights.edited{box-shadow:inset 3px 0 0 var(--changed)}
+select.rights{font-weight:700;cursor:pointer}
+select.rights.ok{background:#e3f1e6;color:#1f5a2d;border-color:#9cc8a6}
+select.rights.ask{background:#fff1c7;color:#5c4500;border-color:#e3bd3c}
+select.rights.no{background:#f7dede;color:#7a1f1f;border-color:#d99}
+.pmeta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.75rem;color:var(--muted)}
+.pmeta button{font:inherit;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
+.scr-list{display:grid;gap:5px;margin-top:4px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px}
+.scr-row{display:grid;grid-template-columns:minmax(0,7.5em) minmax(0,1fr) auto;gap:8px;align-items:center}
+.scr-row .rs{font:inherit;font-size:.75rem;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
+.scr-row .rs[hidden]{display:none}
+.scr-row.upd input.txt{background:var(--ins)}
+/* "Looks good": a card, its words or its photos fold to one line; ✎ Edit opens them again */
+.gc{display:inline-flex;gap:8px;align-items:center;flex:none;margin-left:auto}
+.okb{font:700 .75rem var(--font);background:none;border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:2px 9px;cursor:pointer;white-space:nowrap}
+.okb:hover{border-color:var(--accent);color:var(--text)}
+.gtag{display:none;font:700 .78rem var(--font);color:var(--accent);white-space:nowrap}
+.pen{display:none;font:700 .78rem var(--font);background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap}
+.good>.ghead .okb,.good>.blk-h .okb{display:none}.good>.ghead .gtag,.good>.ghead .pen,.good>.blk-h .gtag,.good>.blk-h .pen{display:inline-block}
+.grp.good .pen{visibility:hidden}.grp.good:hover .pen,.grp.good:focus-within .pen{visibility:visible}
+.grp.good{padding:4px 6px}.grp.good>:not(.ghead):not(.q){display:none}
+.grp-head .gl{display:none;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.grp.good .grp-head{flex-direction:column;align-items:flex-start;gap:0}.grp.good .grp-head .gl{display:block;max-width:100%}
+.blk.good>:not(.blk-h){display:none}.blk.good .hint2,.blk.good .lab{display:none}
+.blk-h button.okb{font:700 .75rem var(--font);border:1px solid var(--border);border-radius:999px;padding:2px 9px;color:var(--muted);text-decoration:none}
+.blk-h button.pen{font:700 .78rem var(--font);color:var(--muted)}
+/* the words' and photos' own "Looks good" show when pointed at or tabbed to (the card's is always there) */
+.grp:hover>.ghead .okb,.grp.now>.ghead .okb,.grp:focus-within>.ghead .okb{background:var(--accent);border-color:var(--accent);color:#fff}
+.nhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.nhead .addp{font:inherit;font-size:.85rem;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0;opacity:0;transition:opacity .15s}
+.grp:hover .nhead .addp,.grp.now .nhead .addp,.nhead .addp:focus-visible{opacity:1}
+.views .mini{width:64px}
+.gsum{display:none;gap:3px;min-width:0;overflow:hidden;color:var(--muted);font-size:.85rem;white-space:nowrap;text-overflow:ellipsis}.blk.good .gsum{display:flex}
+.gsum img{width:36px;height:24px;object-fit:cover;border-radius:2px}
+.thumbs button.good{opacity:.45}
+.secd{display:flex;gap:8px;align-items:center;margin:16px 2px 4px;font:700 .75rem var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+/* questions from Claude */
+.qs{margin:0 0 10px}.qs[hidden]{display:none}.qs h2{font-size:1rem;margin:0}
+.q{background:var(--accent-soft);border:1px solid var(--accent);border-radius:8px;padding:8px 10px;margin-top:8px}
+.qhead{display:flex;gap:8px;align-items:baseline}.qhead b{flex:1;min-width:0}
+.q ul{margin:4px 0 0;padding-left:1.2em;font-size:.9rem}.q li{margin:2px 0}
+.q .qimg{padding:0;border:0;background:none;cursor:zoom-in;line-height:0;margin-top:6px}.q .qimg img{max-width:220px;border-radius:4px}
+.q .qa{display:flex;gap:8px;align-items:center;margin-top:8px}.q .qa .btn[aria-pressed="true"]{outline:2px solid var(--accent)}
+.q textarea{width:100%;margin-top:6px;border:1px solid var(--border);border-radius:4px;padding:6px 8px;background:var(--surface);color:var(--text);font:inherit;font-size:.95rem}.q textarea[hidden]{display:none}
+.q .qt,.q .pen{display:none}.q.ok{background:transparent;border-style:dashed;padding:5px 10px}.q.ok>:not(.qhead){display:none}.q.ok .qt,.q.ok .pen{display:inline-block}
+.q.ok .qt{color:var(--accent);font-weight:700;font-size:.8rem}.q.ok .qhead b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q .qgo{margin-left:auto;font:inherit;font-size:.8rem;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
+/* removing and adding photos */
+.prow{grid-template-columns:26px 84px minmax(0,1fr) auto}.plist.one .prow{grid-template-columns:84px minmax(0,1fr) auto;padding-left:8px}.plist.one .handle{display:none}
+.prm{align-self:start;font:700 .9rem/1 var(--font);background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:4px}.prm:hover{background:var(--bg);color:var(--text)}
+.rmd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-size:.8rem;color:var(--muted)}.rmd[hidden]{display:none}
+.rmd .chip{display:inline-flex;gap:5px;align-items:center;border:1px dashed var(--border);border-radius:4px;padding:2px 6px 2px 2px}.rmd img{width:40px;height:28px;object-fit:cover;border-radius:2px;opacity:.6}
+.rmd button,.meta .addp{font:inherit;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
+.pblk.empty{display:none}
+dialog.pick{border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);padding:14px;width:min(720px,92vw);max-height:84vh}
+dialog.pick::backdrop{background:rgb(0 0 0/.5)}
+.pick h2{font-size:1.05rem;margin:0 0 8px}.pick .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
+.pick .lib button{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}.pick .lib button:hover,.pick .lib button:focus-visible{border-color:var(--accent)}
+.pick .lib img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px}
+.pick .pfoot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}.pick .up{font-size:.85rem;color:var(--muted)}.pick label.btn{display:inline-block;font:700 .9rem var(--font);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer}
+/* Simple / Detailed: Simple is each scene's picture, what is said, and a Note (on the card or pinned on the picture) */
+.mode{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;flex:none}
+.mode button{font:600 .85rem var(--font);border:0;background:var(--surface);color:var(--muted);padding:5px 12px;cursor:pointer}
+.mode button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.mode button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+/* the side panel's top: Simple / Detailed at the right, then the help, then "Anything else about the video" */
+.sidehead{display:flex;justify-content:flex-end;padding:10px 0 6px}
+.genbox{border:1px solid var(--border);border-radius:6px;padding:10px;margin:0 0 10px}
+.glab{display:block;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+body.simple .pblk,body.simple .blk:not(.notes),body.simple .gc,body.simple .qs,body.simple .add-gap,body.simple .grp.added,body.simple .filter .btn,body.simple #help,body.simple .nhead .addp{display:none}
+body.simple .grp.good{padding:6px}body.simple .grp.good>.line,body.simple .grp.good>.spots{display:grid}body.simple .grp.good>.notes,body.simple .grp.good>.nextsc{display:block}
+body.simple .grp.good .grp-head{flex-direction:row;align-items:center;gap:8px}body.simple .grp.good .grp-head .gl{display:none}
+body.simple .thumbs button.good{opacity:1}
+body.simple textarea.say{cursor:default}body.simple textarea.say:hover{border-color:transparent;background:transparent}
+body.simple .diff{pointer-events:none}body.simple .line .reset{display:none}
+/* Simple: Previous / Next under the picture, and each card's own "Next scene" at its lower right; no bar at the top of the list */
+body.simple .snav{display:none}
+/* ---- 2026-11 tidy-up: fewer boxes, labels and instructions; the page explains itself ---- */
+/* the picture's box is as tall as the picture (no gap under it); what is left over sits under the thumbnails */
+.fit{flex:0 1 auto;width:100%;aspect-ratio:var(--ar,1.78);min-height:160px;justify-content:flex-start}
+@media (max-width:1000px){.fit{aspect-ratio:auto}}
+/* one way to move between scenes in both modes: under the picture, and "Next scene" on each card */
+.snav{display:none}
+.sidehead{justify-content:space-between;align-items:center;gap:10px}.sidehead .status{margin:0;font-size:.8rem}
+/* "Saved" flashes in a corner and takes no room of its own */
+.line,.blk,.genbox,.prow{position:relative}
+.saved{position:absolute;top:3px;right:8px;font-size:.72rem;font-weight:700;background:var(--surface);border-radius:4px;padding:0 5px;pointer-events:none;z-index:1}
+.nhead .saved{position:static;margin:0 auto 0 8px;background:none;padding:0}
+.genbox .saved{top:8px;right:10px}
+.line{padding:8px 10px}.line .meta:not(:has(>:not([hidden]):not(.saved))){display:none}
+/* fields read as plain text until pointed at or typed in */
+input.txt{border-color:transparent;background:transparent;text-overflow:ellipsis}
+input.txt:hover,input.txt:focus{border-color:var(--border);background:var(--bg)}
+input.txt::placeholder{color:var(--muted);font-style:italic;opacity:.8}
+.scr-list{gap:2px;padding:6px 8px}.scr-row{grid-template-columns:minmax(0,6.5em) minmax(0,1fr) auto}
+/* a photo: its picture, the caption over the credit, the permission as a small tag */
+.prow{row-gap:0;padding:6px 6px 6px 2px;align-items:center}.plist.one .prow{padding-left:6px}
+.fld{grid-template-columns:minmax(0,1fr) auto;gap:0 6px}.fld .cap{grid-column:1/-1;font-weight:700}.fld .cred{font-size:.82rem;color:var(--muted)}
+select.rights{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
+/* a photo's extra line (why it is cropped, a permission note, Undo, Saved) only shows when it has something to say */
+.pmeta{display:none}.pmeta:has(.rn:not(:empty),.cw:not(:empty),.undo:not([hidden])){display:flex;margin-top:6px;padding-left:4px}.pmeta .saved{position:static;background:none;padding:0}
+.blk-h:not(:has(>:not([hidden]):not(.gsum))){display:none}.blk.good>.blk-h{display:flex}
+/* "+ Add a scene here" shows when the gap between two scenes is pointed at */
+.add-gap{opacity:0;margin:-4px 0;height:16px}.add-gap:hover,.add-gap:focus-within{opacity:1}
+.notes{margin-top:8px}.nextsc{margin-top:6px}
+details.help{margin:0 0 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root:not([data-theme="light"]) select.rights.ask{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root:not([data-theme="light"]) select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root:not([data-theme="light"]) .cap .beat{color:var(--text)}}
+:root[data-theme="dark"] select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root[data-theme="dark"] select.rights.ask{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root[data-theme="dark"] select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root[data-theme="dark"] .cap .beat{color:var(--text)}
 </style>
 <header>
   <h1>{{TITLE}}: storyboard, draft {{DRAFT}}</h1>
@@ -115,31 +307,36 @@ body.only .add-gap{display:none}body.only .grp.added .line{display:grid}
 </header>
 <div class="app">
   <main class="stage">
-    <div class="cap"><span class="sec" id="sec"></span><span class="note" id="note"></span></div>
+    <div class="cap"><span class="sec" id="sec"></span><span class="beat" id="beat"></span><span class="note" id="note"></span></div>
+    <div class="onscr" id="onscr" aria-label="Words on screen" hidden></div>
     <div class="fit"><div class="frame" id="frame"><img id="pic" alt="" draggable="false"></div></div>
-    <div class="hint">Click the picture to pin a note to a spot, or drag to draw an arrow to it.</div>
+    <div class="views" id="views" aria-label="Pictures in this shot"></div>
+    <div class="hint">Click the picture to leave a note on that spot.</div>
+    <div class="sr" id="live" aria-live="polite"></div>
     <div class="subs" id="subs" lang="en" hidden></div>
-    <div class="nav"><button type="button" class="btn" id="prev">Back</button><button type="button" class="btn" id="next">Next</button><span class="count" id="count"></span><button type="button" class="btn" id="zoom" style="margin-left:auto">Full size</button></div>
+    <div class="nav"><button type="button" class="btn" id="prev">‹ Previous scene</button><button type="button" class="btn" id="next">Next scene ›</button><span class="count" id="count"></span><button type="button" class="btn" id="zoom" style="margin-left:auto">Full size</button></div>
     <div class="thumbs" id="thumbs" aria-label="All shots"></div>
   </main>
   <aside class="side">
-    <div class="tabs" role="tablist">
-      <button role="tab" id="tab-s" aria-selected="true" aria-controls="pane-s">Script</button>
-      <button role="tab" id="tab-g" aria-selected="false" aria-controls="pane-g">General</button>
-    </div>
-    <div class="pane" id="pane-s" role="tabpanel">
+    <div class="pane" id="pane-s">
+      <div class="sidehead"><p class="status" id="status">Connecting…</p><span class="mode" role="group" aria-label="How much to show"><button type="button" data-mode="simple" aria-pressed="false">Simple</button><button type="button" data-mode="detailed" aria-pressed="true">Detailed</button></span></div>
+      <div class="snav"><button type="button" class="btn" id="sprev">‹ Previous scene</button><span id="scount"></span><button type="button" class="btn" id="snext">Next scene ›</button>
+</div>
+      <details class="help" id="help"><summary>Tips</summary><ul>
+        <li>Click any words to change them: a line, a caption, the words on screen.</li>
+        <li>Drag on the picture to draw an arrow. Point between two scenes to add a scene.</li>
+        <li>“Looks good” folds a scene, and Next scene skips it.</li>
+        <li>Keys: ← and → change scenes. While typing, Alt + ↓ and Alt + ↑.</li></ul></details>
+      <div class="genbox"><label class="glab" for="general">Anything else about the video</label><textarea class="general" id="general" placeholder="Notes about the whole video"></textarea><span class="saved" id="saved-general">Saved</span></div>
       <div class="filter" id="filter" hidden><button type="button" class="btn" id="only" aria-pressed="false"></button><span id="filter-txt"></span></div>
-      <p class="status" id="status">Connecting…</p>
+      <section class="qs" id="qs" hidden><h2 id="qsh">Questions from Claude</h2><div id="qlist"></div></section>
       <div id="list"></div>
-    </div>
-    <div class="pane" id="pane-g" role="tabpanel" hidden>
-      <label class="status" for="general">Anything about the whole video, or about how these review pages work.</label>
-      <textarea class="general" id="general"></textarea>
-      <span class="saved" id="saved-general">Saved</span>
     </div>
   </aside>
 </div>
-<div class="lb" id="lb" hidden><div class="wrap" id="lbwrap"><img id="lbimg" alt=""></div></div>
+<div class="lb" id="lb" hidden><div class="wrap" id="lbwrap"></div></div>
+<dialog class="pick" id="pick"><h2>Add a photo</h2><div class="lib" id="plib"></div>
+  <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span><button type="button" class="btn" id="pclose">Close</button></div></dialog>
 <script>
 const DATA = /*DATA*/;
 const $ = (id) => document.getElementById(id);
@@ -147,11 +344,67 @@ const flash = (el) => { el.classList.add("show"); clearTimeout(el._h); el._h = s
 const fit = (ta) => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + 2 + "px"; };
 let db = null, cur = 0;
 const shots = DATA.shots;
+// ---- each shot's photos: the reviewer's order (order/<key>) and each photo's caption, credit, permission (pics/<id>)
+const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
+const PIC = {};   // picture id -> {caption, credit, rights, file, orig: {...}}, shared by every shot that uses it
+// cards of one moment share a group: the first one ("lead") holds the photo list, the later ones share its order
+shots.forEach((s, k) => { s.group = s.group || s.key; const lead = shots.slice(0, k).find((t) => t.group === s.group && t.pictures.length);
+  s.lead = !lead; s.order = lead ? lead.order : s.pictures.map((p) => p.id); s.view = 0;
+  s.pictures.forEach((p) => { if (!PIC[p.id]) PIC[p.id] = { ...p, orig: { caption: p.caption, credit: p.credit, rights: p.rights } }; }); });
+const picsOf = (s) => s.order.map((id) => PIC[id]).filter(Boolean);
+// what can be on the stage for a shot: its own picture (footage frame or sketch) unless photos replace it, then its photos in order
+const viewsOf = (s) => (s.sketch || !s.order.length ? [{ id: "frame" }] : [{ id: "screen", screen: true }]).concat(picsOf(s).map((p) => ({ id: p.id, p })));
+let whole = false;
+// a photo's picture: an upload lives in the page's asset store, the rest are published next to the page
+const psrc = (p, small, wh) => p.asset ? "/_blob/" + p.asset : "pics/" + p.id + (wh && p.cropped ? ".whole" : "") + (small ? ".t" : "") + ".jpg";
+const viewSrc = (s, v) => v.p ? psrc(v.p, false, whole) : "shots/" + s.img + ".png";
+const X = (px) => px / 19.2 + "cqw";   // 1920-wide video pixels -> the picture's width
+function drawScreen(box = $("frame"), s = shots[cur], v = curView(), small = false) {   // a still of the beat at a representative moment, from the current order, captions and permissions
+  box.querySelectorAll(".comp").forEach((n) => n.remove()); box.classList.remove("under"); delete box.dataset.aboveTop;
+  if (!v.screen) return;
+  const J = small ? ".t.jpg" : ".jpg";
+  const ps = picsOf(s).filter((p) => PIC[p.id].rights !== "no" || true), L = s.layout || "cover";
+  const c = document.createElement("div"); c.className = "comp"; c.setAttribute("aria-hidden", "true");
+  const img = (src, cls, parent) => { const i = document.createElement("img"); i.src = src; i.alt = ""; if (cls) i.className = cls; (parent || c).appendChild(i); return i; };
+  const card = (p, x, y, w, h) => { const d = document.createElement("div"); d.className = "card" + (PIC[p.id].rights === "no" ? " no" : "");
+    Object.assign(d.style, { left: X(x), top: X(y), width: X(w), height: X(h), border: X(4) + " solid rgb(255 255 255/.92)" }); img(psrc(p, small), "", d); c.appendChild(d); return d; };
+  const words = (p) => [PIC[p.id].caption, PIC[p.id].credit];
+  if (L === "cover" && ps[0]) { const i = img(psrc(ps[0], small)); Object.assign(i.style, { inset: 0, width: "100%", height: "100%", objectFit: "cover" }); }
+  else if (L === "blur" && ps[0]) {
+    img(psrc(ps[0], small), "bg");
+    const p = ps[0], h = Math.min(960, 1800 * p.h / p.w), w = h * p.w / p.h;
+    const i = img(psrc(p, small)); Object.assign(i.style, { left: X((1920 - w) / 2), top: X((1080 - h) / 2), width: X(w), height: X(h), borderRadius: X(12), boxShadow: "0 " + X(10) + " " + X(40) + " rgb(0 0 0/.5)" });
+  } else if (L === "row") {
+    c.classList.add("field");   // rows and sliders sit on the dark brand field, as in the video
+    // as the video's Row: a title sits just above the photos and the two are centred together
+    const GAP = 48, capH = ps.some((p) => PIC[p.id].caption) ? 62 : 0, sum = ps.reduce((a, p) => a + p.w / p.h, 0);
+    const TS = (s.screen || []).some((it) => grp(it.label) === "above") ? 127 : 0;
+    const h = Math.min(s.maxHeight || 760, (1860 - GAP * (ps.length - 1)) / sum, 1080 - 80 - TS - capH), ws = ps.map((p) => p.w / p.h * h);
+    let x = (1920 - ws.reduce((a, b) => a + b, 0) - GAP * (ps.length - 1)) / 2; const top = Math.max(40, (1080 - TS - h - capH) / 2), y = top + TS;
+    if (TS) box.dataset.aboveTop = top;
+    ps.forEach((p, k) => {   // a card of a staged row shows only the photos that are up by then, in their final places
+      if (s.show && k >= s.show) { x += ws[k] + GAP; return; }
+      card(p, x, y, ws[k], h);
+      const [cap, cr] = words(p);
+      if (cap || cr) { const t = document.createElement("div"); t.className = "cc"; Object.assign(t.style, { left: X(x), top: X(y + h + 14), width: X(ws[k]) });
+        if (cap) t.append(cap); if (cr) { const sp = document.createElement("span"); sp.textContent = cr; t.appendChild(sp); } c.appendChild(t); }
+      x += ws[k] + GAP; });
+  } else if (L === "slider") {
+    c.classList.add("field");   // rows and sliders sit on the dark brand field, as in the video
+    const H = Math.round(Math.min(640, Math.max(380, 562 - 27 * (ps.length - 5)))), W = Math.round(H * 1.6), STEP = Math.round(W * 0.85);
+    const top0 = 210 + (1080 - 210 - H) / 2;
+    ps.forEach((p, k) => {   // a moment a little into the drift: the first card has partly left on the left
+      const cx = 960 + (k - 0.9) * STEP, y = top0 + (k % 2 ? -50 : 50);
+      const d = card(p, cx - W / 2, y, W, H);
+      const [cap, cr] = words(p);
+      if (cap || cr) { const ch = document.createElement("div"); ch.className = "chip"; if (cap) ch.append(cap); if (cr) { const sp = document.createElement("span"); sp.textContent = cr; ch.appendChild(sp); } d.appendChild(ch); }
+    });
+  }
+  box.appendChild(c);
+}
+const curView = () => { const v = viewsOf(shots[cur]); return v[Math.min(shots[cur].view, v.length - 1)]; };
+const say = (t) => { $("live").textContent = t; };
 
-const TABS = [["tab-s", "pane-s"], ["tab-g", "pane-g"]];
-for (const [t, p] of TABS) $(t).addEventListener("click", () => {
-  for (const [t2, p2] of TABS) { $(t2).setAttribute("aria-selected", t2 === t ? "true" : "false"); $(p2).hidden = p2 !== p; }
-});
 
 function boxesInto(el, shot) {
   el.querySelectorAll(".bx").forEach((n) => n.remove());
@@ -164,40 +417,148 @@ function boxesInto(el, shot) {
 const groups = [];
 const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 function show(i, scroll) {
+  if (i !== cur) { shots[Math.max(0, Math.min(shots.length - 1, i))].view = 0; whole = false; }
   cur = Math.max(0, Math.min(shots.length - 1, i));
   const s = shots[cur];
-  $("pic").src = "shots/" + s.img + ".png"; $("pic").alt = s.section;
-  boxesInto($("frame"), s); closePop(); drawSpots();
-  $("sec").textContent = s.section; $("note").textContent = s.note || "";
+  const v = curView();
+  $("pic").src = viewSrc(s, v); $("pic").alt = v.p ? (PIC[v.p.id].caption || v.p.file) : s.section;
+  boxesInto($("frame"), v.p ? { boxes: [] } : s); closePop(); drawSpots();
+  $("frame").querySelectorAll(".badge").forEach((n) => n.remove());
+  const r = v.p && PIC[v.p.id].rights, badge = r === "ask" ? ["ask", "Permission: ask first"] : r === "no" ? ["no", "Marked: don't use"] : !v.p && s.sketch ? ["sk", "Sketch"] : null;
+  if (badge) { const b = document.createElement("span"); b.className = "badge " + badge[0]; b.textContent = badge[1]; $("frame").appendChild(b); }
+  drawScreen(); drawOverlay();
+  $("sec").textContent = s.section; $("beat").hidden = true; $("note").textContent = s.note || "";
+  renderOnscr(); renderViews();
+  groups.forEach((g) => g.querySelectorAll(".th-btn").forEach((b) => b.setAttribute("aria-pressed", "false")));
+  if (v.p && groups[cur]) { const b = groups[cur].querySelector('.prow[data-pid="' + v.p.id + '"] .th-btn'); if (b) b.setAttribute("aria-pressed", "true"); }
   const subs = (s.en || []).filter(Boolean); $("subs").hidden = !subs.length; $("subs").textContent = subs.join(" ");
   const vis = shots.map((_, k) => k).filter(visible);
-  $("count").textContent = only() ? "Changed shot " + (vis.indexOf(cur) + 1) + " of " + vis.length : (cur + 1) + " of " + shots.length;
-  $("prev").disabled = !shots.some((_, k) => k < cur && visible(k)); $("next").disabled = !shots.some((_, k) => k > cur && visible(k));
+  const left = shots.filter((t) => !GOOD["card-" + t.key]).length;
+  $("count").textContent = simple() ? "Scene " + (cur + 1) + " of " + shots.length : (only() ? "Changed shot " + (vis.indexOf(cur) + 1) + " of " + vis.length : "Scene " + (cur + 1) + " of " + shots.length) + (left < shots.length ? (left ? " · " + left + " to check" : " · all good") : "");
+  $("prev").disabled = $("sprev").disabled = !shots.some((_, k) => k < cur && visible(k)); $("next").disabled = $("snext").disabled = !shots.some((_, k) => k > cur && visible(k));
+  $("scount").textContent = $("count").textContent;
   [...$("thumbs").children].forEach((b, k) => b.setAttribute("aria-current", k === cur ? "true" : "false"));
   groups.forEach((g, k) => g.classList.toggle("now", k === cur));
-  if (scroll && groups[cur]) groups[cur].scrollIntoView({ block: "nearest", behavior: smooth() });
-  const th = $("thumbs").children[cur]; if (th) th.scrollIntoView({ block: "nearest", inline: "nearest" });
+  // scroll only the card list and the strip: scrollIntoView would also scroll the page and push the header away
+  const pane = $("pane-s");
+  if (scroll && groups[cur] && !pane.hidden) pane.scrollTo({ top: groups[cur].getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - $("pane-s").querySelector(".snav").offsetHeight - 8, behavior: smooth() });
+  const th = $("thumbs").children[cur], tb = $("thumbs");
+  if (th && (th.offsetLeft < tb.scrollLeft || th.offsetLeft + th.offsetWidth > tb.scrollLeft + tb.clientWidth)) tb.scrollLeft = th.offsetLeft - tb.clientWidth / 2 + th.offsetWidth / 2;
 }
+// ---- the words on screen, drawn on the picture. Which layout a word uses follows its label; a sketch already has its words.
+const grp = (label) => /^Title card/.test(label) ? "title" : /^(Heading|Subtitle|Line \d|Word \d|Logo)$/.test(label) ? "plate"
+  : label === "Card" ? "card" : /^(Title|Title above the photos|Slider title)$/.test(label) ? "above" : null;
+function drawOverlay(box = $("frame"), s = shots[cur], v = curView()) {
+  box.querySelectorAll(".ovl").forEach((n) => n.remove());
+  if (!v.p && s.sketch) return;
+  // a photo on its own (to check its crop) isn't a screen of the video: only its own caption and credit go on it
+  const items = v.p ? [] : (s.scr || []).map((id) => SCR[id]).filter((r) => r && r.input.value.trim()).map((r) => ({ label: r.label, text: r.input.value.trim(), g: grp(r.label), at: r.at }));
+  const o = document.createElement("div"); o.className = "ovl"; o.setAttribute("aria-hidden", "true");
+  const el = (cls, text, parent) => { const d = document.createElement("div"); d.className = cls; if (text != null) d.textContent = text; (parent || o).appendChild(d); return d; };
+  const title = items.filter((x) => x.g === "title");
+  if (title.length) {
+    const t = el("tcard");
+    title.forEach((x, k) => { if (/top line/i.test(x.label)) el("t-eye sh", x.text, t); else if (/: title$/i.test(x.label)) { el("t-title sh", x.text, t); el("t-rule", null, t); } });
+    const by = title.filter((x) => /names|date/i.test(x.label)).map((x) => x.text).join("  ·  "); if (by) el("t-by sh", by, t);
+  }
+  const plate = items.filter((x) => x.g === "plate");
+  if (plate.length) {
+    const p = el("plate" + (plate.some((x) => x.at === "right") ? " right" : ""));
+    for (const x of plate) {
+      if (x.label === "Heading") el("p-title sh", x.text, p);
+      else if (x.label === "Subtitle") el("p-sub sh", x.text, p);
+      else if (x.label === "Logo") {   // "at": "inline" puts it at the end of the line before it (the video's logoInline)
+        if (DATA.logo) { const im = document.createElement("img"); im.className = "p-logo" + (x.at === "inline" && p.lastChild ? " inl" : ""); im.src = DATA.logo; im.alt = "";
+          (x.at === "inline" && p.lastChild ? p.lastChild : p).appendChild(im); } else el("p-sub sh", x.text, p); }
+      else if (/^Word \d/.test(x.label)) el("p-word sh", x.text, p);   // words over a photo: all one size, big
+      else el((plate[0] === x && !plate.some((y) => y.label === "Heading") ? "p-title" : "p-bul") + " sh", x.text, p);
+    }
+  }
+  items.filter((x) => x.g === "card").forEach((x) => el("ty", x.text));
+  items.filter((x) => x.g === "above").forEach((x) => { const d = el("above sh", x.text); if (box.dataset.aboveTop) d.style.top = X(+box.dataset.aboveTop); });
+  const lone = v.p || (v.screen && /^(cover|blur)$/.test(s.layout || "cover") ? picsOf(s)[0] : null);
+  if (lone && (PIC[lone.id].caption || PIC[lone.id].credit)) {
+    const c = el("capn");
+    if (PIC[lone.id].caption) { const b = document.createElement("b"); b.textContent = PIC[lone.id].caption; c.appendChild(b); }
+    if (PIC[lone.id].credit) { const sp = document.createElement("span"); sp.textContent = PIC[lone.id].credit; c.appendChild(sp); }
+  }
+  if (o.children.length) box.appendChild(o);
+}
+// ---- a shot's screen as a small picture (the card and the strip) or a large one (click a thumbnail)
+function screenBox(s, v, small) {
+  const d = document.createElement("div"); d.className = small ? "mini" : "big";
+  const b = document.createElement("img"); b.className = "base"; b.alt = ""; d.appendChild(b);
+  b.src = v.p ? psrc(v.p, small) : small ? "thumbs/" + s.img + ".jpg" : "shots/" + s.img + ".png";
+  if (v.p) d.style.aspectRatio = v.p.w + " / " + v.p.h;
+  drawScreen(d, s, v, small); drawOverlay(d, s, v);
+  return d;
+}
+function openBig(s, v) {
+  const w = $("lbwrap"); w.innerHTML = ""; w.appendChild(screenBox(s, v, false));
+  if (!v.p && !v.screen) boxesInto(w.firstChild, s);
+  $("lb").hidden = false;
+}
+let miniTimer = null;
+function refreshMinis() {   // after an edit: every thumbnail shows the screen as it is now
+  clearTimeout(miniTimer); miniTimer = setTimeout(() => shots.forEach((s, i) => {
+    for (const slot of [$("thumbs").children[i], groups[i] && groups[i].querySelector(".gthumb")]) {
+      if (!slot) continue; const old = slot.querySelector(".mini"); const m = screenBox(s, viewsOf(s)[0], true); old ? old.replaceWith(m) : slot.prepend(m);
+    }
+  }), 250);
+}
+function renderOnscr() {
+  const box = $("onscr"); box.innerHTML = "";
+  for (const r of (shots[cur].scr || []).map((id) => SCR[id]).filter(Boolean)) {
+    if (!r.input.value.trim()) continue;
+    const sp = document.createElement("span"), b = document.createElement("b"); b.textContent = r.label + ": "; sp.append(b, r.input.value); box.appendChild(sp);
+  }
+}
+function renderViews() {
+  const s = shots[cur], vs = viewsOf(s), box = $("views"); box.innerHTML = "";
+  if (vs.length > 1) vs.forEach((v, k) => {
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-pressed", k === Math.min(s.view, vs.length - 1) ? "true" : "false");
+    b.title = v.p ? "Photo " + k + " on its own: " + (PIC[v.p.id].caption || v.p.file) : v.screen ? "The screen, as the video shows it" : s.sketch ? "Sketch" : "On camera";
+    b.innerHTML = '<img alt=""><span class="vn"></span>'; b.querySelector("img").src = v.p ? psrc(v.p, true) : "thumbs/" + s.img + ".jpg";
+    b.querySelector(".vn").textContent = v.p ? String(k) : v.screen ? "Screen" : s.sketch ? "Sketch" : "Cam";
+    if (v.screen) b.querySelector("img").replaceWith(screenBox(s, v, true));   // the drawn screen, not the camera frame
+    b.addEventListener("click", () => { s.view = k; whole = false; show(cur, false); });
+    box.appendChild(b);
+  });
+  const v = curView();
+  if (v.p && v.p.cropped) {
+    const w = document.createElement("button"); w.type = "button"; w.className = "btn whole"; w.setAttribute("aria-pressed", whole ? "true" : "false");
+    w.textContent = whole ? "Show the crop" : "Show the whole photo"; w.title = v.p.cropWhy ? "Cropped: " + v.p.cropWhy : "This photo is cropped";
+    w.addEventListener("click", () => { whole = !whole; show(cur, false); });
+    box.appendChild(w);
+  }
+}
+const showPic = (i, pid) => { const k = viewsOf(shots[i]).findIndex((v) => v.id === pid); if (k >= 0) shots[i].view = k; whole = false; show(i, false); };
+const thumbSrc = (s) => "thumbs/" + s.img + ".jpg";
 const only = () => document.body.classList.contains("only");
-const visible = (i) => !only() || shotUpd(shots[i]);
+const simple = () => document.body.classList.contains("simple");
+const visible = (i) => simple() || ((!only() || shotUpd(shots[i])) && !GOOD["card-" + shots[i].key]);   // Simple steps through every scene
 const step = (d) => { for (let i = cur + d; i >= 0 && i < shots.length; i += d) if (visible(i)) return show(i, true); };
 $("prev").addEventListener("click", () => step(-1));
 $("next").addEventListener("click", () => step(1));
+$("sprev").addEventListener("click", () => step(-1));
+$("snext").addEventListener("click", () => step(1));
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { $("lb").hidden = true; return; }
-  if (e.target.closest("textarea") || !$("lb").hidden) return;
+  if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp")) { e.preventDefault(); $("lb").hidden = true; step(e.key === "ArrowDown" ? 1 : -1); return; }
+  if (e.target.closest("textarea,input,select,.handle") || !$("lb").hidden) return;
   if (e.key === "ArrowRight") step(1);
   if (e.key === "ArrowLeft") step(-1);
 });
 $("zoom").addEventListener("click", () => {
-  const s = shots[cur]; $("lbimg").src = "shots/" + s.img + ".png"; boxesInto($("lbwrap"), s); $("lb").hidden = false;
+  const s = shots[cur], v = curView(); if (v.p && whole) { $("lbwrap").innerHTML = '<img alt="">'; $("lbwrap").firstChild.src = viewSrc(s, v); $("lb").hidden = false; } else openBig(s, v);
 });
 
 // ---- spot notes on the picture: a click pins one, a drag draws an arrow (from where it starts to the tip).
-// db spots/<id> {shot (key), x, y, text, kind?: "arrow", x2, y2}; x, y as fractions of the picture
+// db spots/<id> {shot (key), view (picture id, or "frame"), x, y, text, kind?: "arrow", x2, y2}; x, y as fractions of the picture
 let spots = [], pop = null, saveSpot = () => {}, dropSpot = () => {};
 const pic = $("pic"), frame = $("frame"), SVGNS = "http://www.w3.org/2000/svg";
-const here = () => spots.filter((p) => p.shot === shots[cur].key);
+const viewOfSpot = (p) => p.view || viewsOf(shots.find((s) => s.key === p.shot))[0].id;
+const here = () => spots.filter((p) => p.shot === shots[cur].key && viewOfSpot(p) === curView().id);
 const spotNum = (p) => spots.filter((q) => q.shot === p.shot).indexOf(p) + 1;
 const toPic = (e) => { const r = pic.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; };
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
@@ -261,7 +622,7 @@ frame.addEventListener("pointermove", (e) => {
 frame.addEventListener("pointerup", () => {
   if (!drag) return;
   const d = drag; drag = null;
-  const p = { id: "s" + Date.now(), shot: shots[cur].key, x: d.x, y: d.y, text: "" };
+  const p = { id: "s" + Date.now(), shot: shots[cur].key, view: curView().id, x: d.x, y: d.y, text: "" };
   if (d.moved) Object.assign(p, { kind: "arrow", x2: d.x2, y2: d.y2 });
   spots.push(p); drawSpots(); renderSpotList(); openPop(p);
 });
@@ -270,7 +631,7 @@ window.addEventListener("resize", () => { closePop(); drawSpots(); });
 function renderSpotList() {
   shots.forEach((s, i) => {
     const g = groups[i]; if (!g) return;
-    let box = g.querySelector(".spots"); if (!box) { box = document.createElement("div"); box.className = "spots"; g.querySelector(".grp-head").after(box); }
+    let box = g.querySelector(".spots"); if (!box) { box = document.createElement("div"); box.className = "spots"; g.querySelector(".ghead").after(box); }
     box.innerHTML = "";
     for (const p of spots.filter((q) => q.shot === s.key)) {
       const d = document.createElement("div"); d.className = "spot";
@@ -278,24 +639,222 @@ function renderSpotList() {
       d.querySelector(".pn").textContent = spotNum(p);
       d.querySelector(".when").textContent = p.kind === "arrow" ? "Arrow on the picture" : "On the picture";
       d.querySelector(".pt").textContent = p.text || "(no text yet)";
-      d.querySelector(".pn").onclick = () => { show(i, false); openPop(p); };
+      d.querySelector(".pn").onclick = () => { const k = viewsOf(s).findIndex((v) => v.id === viewOfSpot(p)); if (k >= 0) s.view = k; whole = false; show(i, false); openPop(p); };
       box.appendChild(d);
     }
   });
 }
 $("lb").addEventListener("click", () => { $("lb").hidden = true; });
 
-const shotUpd = (s) => s.isNew || (s.diffs || []).some(Boolean);
+const shotUpd = (s) => s.isNew || (s.diffs || []).some(Boolean) || (s.sdiffs || []).some(Boolean);
 shots.forEach((s, i) => {
   const t = document.createElement("button"); t.type = "button"; t.title = s.section;
   if (shotUpd(s)) { t.classList.add("upd"); t.title += " (changed)"; }
-  const im = document.createElement("img"); im.src = "thumbs/" + s.img + ".jpg"; im.alt = ""; t.appendChild(im);
+  t.appendChild(screenBox(s, viewsOf(s)[0], true));
   t.addEventListener("click", () => show(i, true));
   $("thumbs").appendChild(t);
 });
 
+// ---- "Looks good" marks (good/<doc>): card-<shot key>, one per scene. DATA.good: shot keys
+// marked good in the last draft and unchanged since; they start folded.
+const GOOD = {}, GT = {};
+function goodCtl(doc, target, onSet) {
+  const c = document.createElement("span"); c.className = "gc";
+  c.innerHTML = '<button type="button" class="okb">Looks good</button><span class="gtag">✓ Looks good</span><button type="button" class="pen" title="Open it for edits again">✎ Edit</button>';
+  GT[doc] = { target, onSet };
+  c.querySelector(".okb").addEventListener("click", (e) => { e.stopPropagation(); setGood(doc, true); });
+  c.querySelector(".pen").addEventListener("click", (e) => { e.stopPropagation(); setGood(doc, false); });
+  return c;
+}
+function setGood(doc, on, save = true) {
+  GOOD[doc] = on; const t = GT[doc]; if (!t) return;
+  t.target.classList.toggle("good", on); if (t.onSet) t.onSet(on);
+  if (save && db) db.collection("good").doc(doc).set({ good: on, at: new Date().toISOString() }).catch((e) => console.error(e));
+  if (groups.length === shots.length) show(cur, false);
+}
+
+// ---- adding a photo: the script's photos (DATA.library), or one uploaded from the computer (asset store)
+let assetsP = Promise.resolve(null), pickFor = null;
+const pick = $("pick");
+function openPicker(s) {
+  pickFor = s; const lib = $("plib"); lib.innerHTML = "";
+  for (const p of DATA.library || []) { if (s.order.includes(p.id)) continue;
+    const b = document.createElement("button"); b.type = "button"; b.title = p.file; b.innerHTML = '<img alt="">'; b.querySelector("img").src = psrc(p, true); b.querySelector("img").alt = p.file;
+    b.addEventListener("click", () => { s.addPhoto(p); pick.close(); }); lib.appendChild(b); }
+  if (!lib.children.length) lib.textContent = "Every photo from the script is already here.";
+  $("pupst").textContent = ""; $("pup").hidden = true; assetsP.then((a) => { $("pup").hidden = !a; });
+  pick.showModal();
+}
+$("pclose").addEventListener("click", () => pick.close());
+pick.addEventListener("click", (e) => { if (e.target === pick) pick.close(); });
+$("pfile").addEventListener("change", async () => {
+  const f = $("pfile").files[0], st = $("pupst"); $("pfile").value = ""; if (!f || !pickFor) return;
+  st.textContent = "Uploading…";
+  try {
+    const a = await assetsP, r = await a.upload(f);
+    const im = new Image(); im.src = r.url; await im.decode().catch(() => {});
+    pickFor.addPhoto({ id: "up-" + r.id, asset: r.id, file: f.name, w: im.naturalWidth || 1600, h: im.naturalHeight || 1200 }); pick.close();
+  } catch (e) { st.textContent = "Couldn't upload it" + (e && e.code ? " (" + e.code + ")" : "") + "."; }
+});
+
 // ---- lines (collection "lines": {text: edited wording or "", note, screen, original, shot})
 const rows = {};
+const picRows = [];   // every photo row on the page, so an edit shows wherever that photo is used
+const scrRows = [];   // every on-screen text row: {shot (index), key, n, label, input, orig}
+const same = (a, b) => a.length === b.length && a.every((x, k) => x === b[k]);
+function savePic(pid) {
+  if (!db) return; const x = PIC[pid];
+  clearTimeout(x.timer); x.timer = setTimeout(async () => {
+    try { await db.collection("pics").doc(pid).set({ caption: x.caption, credit: x.credit, rights: x.rights, file: x.file, original: x.orig, updatedAt: new Date().toISOString() });
+      picRows.filter((r) => r.pid === pid).forEach((r) => flash(r.saved)); } catch (e) { console.error(e); }
+  }, 600);
+}
+async function saveOrder(i) {
+  if (!db) return; const s = shots[i];
+  try { await db.collection("order").doc(s.group).set({ pics: s.order, removed: s.removed, added: s.added, updatedAt: new Date().toISOString() }); flash(groups[i].querySelector(".osaved")); } catch (e) { console.error(e); }
+}
+function paintPic(pid) {   // the edited marks, permission colour and stage badge for one photo, wherever it appears
+  const x = PIC[pid];
+  for (const r of picRows.filter((q) => q.pid === pid)) {
+    if (document.activeElement !== r.cap) r.cap.value = x.caption;
+    if (document.activeElement !== r.cred) r.cred.value = x.credit;
+    r.rt.value = x.rights; r.rt.className = "rights " + x.rights;
+    r.cap.classList.toggle("edited", x.caption !== x.orig.caption); r.cred.classList.toggle("edited", x.credit !== x.orig.credit);
+    r.rt.classList.toggle("edited", x.rights !== x.orig.rights);
+    r.row.classList.toggle("no", x.rights === "no");
+    r.undo.hidden = x.caption === x.orig.caption && x.credit === x.orig.credit && x.rights === x.orig.rights;
+  }
+}
+function picBlock(s, i) {
+  const blk = document.createElement("div"); blk.className = "blk pblk";
+  blk.innerHTML = '<div class="blk-h"><span class="gsum"></span><span class="hint2" hidden></span></div><div class="plist" role="list"></div><div class="rmd" hidden></div>' +
+    '<div class="meta"><button type="button" class="addp">+ Add a photo</button><button type="button" class="reorder" hidden>Undo photo changes</button><span class="saved osaved">Saved</span></div>';
+  const list = blk.querySelector(".plist"), back = blk.querySelector(".reorder"), rmd = blk.querySelector(".rmd"), sum = blk.querySelector(".gsum");
+  const orig = s.pictures.map((p) => p.id), rowsBy = {};
+  s.removed = []; s.added = [];   // saved with the order: order/<group> {pics, removed, added}
+  const sync = () => {   // the order as shown -> the shot's order, numbers, stage
+    s.order.splice(0, s.order.length, ...[...list.children].map((r) => r.dataset.pid));   // in place: the group's later cards share this array
+    [...list.children].forEach((r, k) => { r.querySelector(".th-btn .vn").textContent = k + 1; r.querySelector(".handle").setAttribute("aria-label", "Move photo " + (k + 1) + " of " + list.children.length + ". Drag, or press the up and down arrow keys."); });
+    back.hidden = same(s.order, orig); blk.classList.toggle("empty", !s.order.length && !s.removed.length);
+    list.classList.toggle("one", s.order.length < 2);
+    sum.innerHTML = ""; s.order.forEach((id) => { const im = document.createElement("img"); im.alt = ""; im.src = psrc(PIC[id], true); sum.appendChild(im); });
+    rmd.hidden = !s.removed.length; rmd.innerHTML = s.removed.length ? "Removed:" : "";
+    for (const id of s.removed) { const c = document.createElement("span"); c.className = "chip"; c.innerHTML = '<img alt=""><button type="button">Put back</button>';
+      c.querySelector("img").src = psrc(PIC[id], true);
+      c.querySelector("button").addEventListener("click", () => { const before = s.order.slice(); s.removed = s.removed.filter((q) => q !== id); list.appendChild(rowsBy[id]); commit(before); });
+      rmd.appendChild(c); }
+    if (groups[i] && shots[cur].group === s.group) show(cur, false);
+    if (groups[i]) refreshMinis();
+  };
+  const commit = (before) => { sync(); if (!same(before, s.order)) saveOrder(i); };
+  const makeRow = (p) => {
+    if (!PIC[p.id]) PIC[p.id] = { caption: "", credit: "", rights: "ok", ...p, orig: { caption: p.caption || "", credit: p.credit || "", rights: p.rights || "ok" } };
+    const row = document.createElement("div"); row.className = "prow"; row.dataset.pid = p.id; row.setAttribute("role", "listitem"); rowsBy[p.id] = row;
+    const uid = s.key + "-" + p.id;
+    row.innerHTML = '<button type="button" class="handle" title="Drag to change the order">⠿</button>' +
+      '<button type="button" class="th-btn" aria-pressed="false"><img class="th" alt=""><span class="vn"></span></button>' +
+      '<div class="fld"><label class="sr" for="cap-' + uid + '">Caption</label><input class="txt cap" id="cap-' + uid + '" placeholder="No caption" title="Caption">' +
+      '<label class="sr" for="cred-' + uid + '">Credit</label><input class="txt cred" id="cred-' + uid + '" placeholder="No credit" title="Credit">' +
+      '<label class="sr" for="rt-' + uid + '">Permission</label><select class="rights" id="rt-' + uid + '" title="Permission to use this photo"></select></div>' +
+      '<button type="button" class="prm" title="Remove this photo" aria-label="Remove this photo">✕</button>' +
+      '<div class="pmeta"><span class="rn"></span><span class="cw"></span><button type="button" class="undo" hidden>Undo my changes</button><span class="saved">Saved</span></div>';
+    row.querySelector(".th").src = psrc(p, true); row.querySelector(".th-btn").title = "Open " + (p.file || "the photo") + " larger";
+    const rt = row.querySelector(".rights");
+    for (const [v, t] of RIGHTS) { const o = document.createElement("option"); o.value = v; o.textContent = t; rt.appendChild(o); }
+    row.querySelector(".rn").textContent = p.rightsNote || ""; row.querySelector(".cw").textContent = p.cropped ? "Cropped: " + (p.cropWhy || "yes") : "";
+    const r = { pid: p.id, row, cap: row.querySelector(".cap"), cred: row.querySelector(".cred"), rt, undo: row.querySelector(".undo"), saved: row.querySelector(".saved") };
+    picRows.push(r);
+    const edit = (f, val) => { PIC[p.id][f] = val; paintPic(p.id); savePic(p.id); if (shots[cur].group === s.group) { drawScreen(); drawOverlay(); } refreshMinis(); };
+    r.cap.addEventListener("input", () => edit("caption", r.cap.value));
+    r.cred.addEventListener("input", () => edit("credit", r.cred.value));
+    rt.addEventListener("change", () => { edit("rights", rt.value); say("Permission: " + rt.options[rt.selectedIndex].text); });
+    r.undo.addEventListener("click", () => { Object.assign(PIC[p.id], PIC[p.id].orig); paintPic(p.id); savePic(p.id); if (shots[cur].group === s.group) show(cur, false); });
+    for (const el of [r.cap, r.cred, rt]) el.addEventListener("focus", () => { if (cur !== i || curView().id !== p.id) showPic(i, p.id); });
+    row.querySelector(".th-btn").addEventListener("click", () => openBig(s, { id: p.id, p: PIC[p.id] }));
+    row.querySelector(".prm").addEventListener("click", () => { const before = s.order.slice(); s.removed.push(p.id); row.remove(); commit(before); say("Photo removed. Put back undoes it."); });
+    // drag the handle (mouse, pen or touch); or focus it and use the up and down arrow keys
+    const h = row.querySelector(".handle");
+    h.addEventListener("pointerdown", (e) => {
+      // listen on the window, not the handle: moving the row in the page drops a pointer capture on it
+      e.preventDefault(); h.focus(); row.classList.add("dragging");
+      const before = s.order.slice(), pane = $("pane-s");
+      const move = (ev) => {
+        const pb = pane.getBoundingClientRect();   // near the pane's top or bottom edge, scroll it
+        if (ev.clientY < pb.top + 40) pane.scrollTop -= 12; else if (ev.clientY > pb.bottom - 40) pane.scrollTop += 12;
+        const others = [...list.children].filter((x) => x !== row);
+        const next = others.find((x) => { const b = x.getBoundingClientRect(); return ev.clientY < b.top + b.height / 2; });
+        if (next !== row.nextElementSibling) list.insertBefore(row, next || null);
+      };
+      const up = () => { removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up);
+        row.classList.remove("dragging"); commit(before);
+        say("Photo moved to position " + (s.order.indexOf(p.id) + 1) + " of " + s.order.length); };
+      addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up);
+    });
+    h.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault(); const before = s.order.slice();
+      if (e.key === "ArrowUp" && row.previousElementSibling) list.insertBefore(row, row.previousElementSibling);
+      if (e.key === "ArrowDown" && row.nextElementSibling) list.insertBefore(row.nextElementSibling, row);
+      h.focus(); commit(before); say("Photo moved to position " + (s.order.indexOf(p.id) + 1) + " of " + s.order.length);
+    });
+    paintPic(p.id);
+    return row;
+  };
+  s.pictures.forEach((p) => list.appendChild(makeRow(p)));
+  // an added photo: from the script's photos (DATA.library) or uploaded ({id: "up-<asset>", asset, file, w, h})
+  s.addPhoto = (p) => { if (s.order.includes(p.id)) return; const before = s.order.slice();
+    s.removed = s.removed.filter((q) => q !== p.id);
+    if (!orig.includes(p.id) && !s.added.some((q) => q.id === p.id)) s.added.push({ id: p.id, file: p.file || "", w: p.w, h: p.h, cropped: !!p.cropped, ...(p.asset ? { asset: p.asset } : {}) });
+    list.appendChild(rowsBy[p.id] || makeRow(p)); commit(before); };
+  blk.querySelector(".addp").addEventListener("click", () => openPicker(s));
+  back.addEventListener("click", () => { const before = s.order.slice(); s.removed = s.added.map((p) => p.id); [...list.children].forEach((r) => r.remove());
+    orig.forEach((id) => list.appendChild(rowsBy[id])); commit(before); });
+  // the saved state: {pics: the order, removed, added} (an older save is just {pics})
+  s.applyOrder = (y) => { (y.added || []).forEach((p) => { if (p && p.id && !rowsBy[p.id]) { s.added.push(p); makeRow(p); } });
+    s.removed = (Array.isArray(y.removed) ? y.removed : []).filter((id) => rowsBy[id]); [...list.children].forEach((r) => r.remove());
+    (Array.isArray(y.pics) ? y.pics : orig).forEach((id) => { if (rowsBy[id] && !s.removed.includes(id)) list.appendChild(rowsBy[id]); });
+    orig.forEach((id) => { if (!rowsBy[id].parentNode && !s.removed.includes(id)) list.appendChild(rowsBy[id]); });   // a photo new in this draft
+    sync(); };
+  sync();
+  return blk;
+}
+// A later card of the same moment (same group) shows the photos and words of the card that introduced them; they are
+// edited there, once. Words are identified by group + their id (default: their label).
+const SCR = {};
+const sidOf = (s, it) => (s.group + "." + (it.id || it.label)).replace(/[^A-Za-z0-9_.~:@+-]+/g, "-");
+function screenBlock(s, i) {
+  s.scr = s.screen.map((it) => sidOf(s, it));
+  const fresh = s.screen.filter((it) => !SCR[sidOf(s, it)]);
+  if (!fresh.length) return null;   // all still showing from the previous card: edited there
+  const blk = document.createElement("div"); blk.className = "blk";
+  blk.innerHTML = '<div class="scr-list" role="group" aria-label="Words on screen"></div><div class="meta"><span class="saved">Saved</span></div>';
+  const list = blk.querySelector(".scr-list");
+  s.screen.forEach((it, n) => {
+    if (SCR[sidOf(s, it)]) return;
+    const id = sidOf(s, it), d = (s.sdiffs || [])[n];
+    const row = document.createElement("div"); row.className = "scr-row" + (d ? " upd" : "");
+    row.innerHTML = '<label for="scr2-' + id + '"></label><input class="txt" id="scr2-' + id + '"><button type="button" class="rs" hidden>Undo</button>';
+    row.querySelector("label").textContent = it.label.replace(/^.*:\s*/, ""); row.querySelector("label").title = it.label;
+    const input = row.querySelector("input"), rs = row.querySelector(".rs");
+    input.value = it.text;
+    if (d) input.title = d === "new" ? "New since the last draft" : "Was: " + d.filter(([op]) => op !== "+").map(([, t]) => t).join("");
+    const r = { shot: i, sid: id, label: it.label, at: it.at, input, orig: it.text, timer: null };
+    scrRows.push(r); SCR[id] = r;
+    const here = () => (shots[cur].scr || []).includes(id);
+    const mark = () => { const ch = input.value !== r.orig; input.classList.toggle("edited", ch); rs.hidden = !ch; };
+    r.mark = mark;
+    const save = () => { clearTimeout(r.timer); r.timer = setTimeout(async () => {
+      if (!db) return;
+      try { await db.collection("screen").doc(id).set({ label: it.label, text: input.value, original: r.orig, shot: s.key, updatedAt: new Date().toISOString() }); flash(blk.querySelector(".saved")); } catch (e) { console.error(e); }
+    }, 700); };
+    input.addEventListener("input", () => { mark(); if (here()) { renderOnscr(); drawOverlay(); } refreshMinis(); save(); });
+    input.addEventListener("focus", () => { if (!here()) show(i, false); });
+    rs.addEventListener("click", () => { input.value = r.orig; mark(); if (here()) { renderOnscr(); drawOverlay(); } refreshMinis(); save(); });
+    list.appendChild(row);
+  });
+  const m = document.createElement("div"); m.className = "meta"; m.innerHTML = '<span class="saved">Saved</span>'; blk.appendChild(m);
+  return blk;
+}
 const clean = (s) => s.replace(/\s*\[check(?::[^\]]*)?\]/g, "");
 function refresh(r) {
   if (!r.say) return;
@@ -303,34 +862,49 @@ function refresh(r) {
   r.row.classList.toggle("changed", changed);
   r.row.querySelector(".orig").hidden = !changed; r.row.querySelector(".reset").hidden = !changed;
 }
-async function saveRow(r) {
+async function saveRow(r, where) {
   if (!db) return;
   const changed = r.say ? r.say.value.trim() !== r.orig : false;
   try {
-    await db.collection("lines").doc(r.id).set({ text: changed ? r.say.value.trim() : "", note: r.note.value, screen: r.scr.value, original: r.orig, shot: r.shot, updatedAt: new Date().toISOString() });
-    flash(r.row.querySelector(".saved"));
+    await db.collection("lines").doc(r.id).set({ text: changed ? r.say.value.trim() : "", note: r.note ? r.note.value : "", screen: "", original: r.orig, shot: r.shot, updatedAt: new Date().toISOString() });
+    flash((where || r.row).querySelector(".saved"));
   } catch (e) { console.error("save failed", r.id, e); }
 }
+let lastSec = null;
 shots.forEach((s, i) => {
+  const secName = String(s.section || "").split(":")[0].trim();
+  if (secName && secName !== lastSec) {   // a thin divider with the section's name
+    const sd = document.createElement("div"); sd.className = "secd"; sd.textContent = secName;
+    $("list").appendChild(sd); lastSec = secName;
+  }
   const g = document.createElement("div"); g.className = "grp" + (shotUpd(s) ? " has-upd" : "");
   const head = document.createElement("button"); head.type = "button"; head.className = "grp-head";
-  const hi = document.createElement("img"); hi.src = "thumbs/" + s.img + ".jpg"; hi.alt = "";
-  const hs = document.createElement("span"); hs.textContent = s.section;
-  head.append(hi, hs);
+  const hs = document.createElement("span"); hs.textContent = s.section;   // the screen itself shows the layout; no description
+  const gl = document.createElement("span"); gl.className = "gl"; gl.textContent = clean(s.lines.join(" ")) || (s.screen[0] || {}).text || "";   // shown when folded
+  head.append(hs, gl);
   if (s.isNew) { const nt = document.createElement("span"); nt.className = "upd-tag"; nt.textContent = "New shot"; head.append(nt); } head.addEventListener("click", () => show(i, false));
-  g.appendChild(head);
+  // the card's picture is its screen (filled in by refreshMinis); a click opens it large
+  const gt = document.createElement("button"); gt.type = "button"; gt.className = "gthumb"; gt.title = "Open this screen larger";
+  gt.addEventListener("click", () => { show(i, false); openBig(s, viewsOf(s)[0]); });
+  const gh = document.createElement("div"); gh.className = "ghead"; gh.append(gt, head, goodCtl("card-" + s.key, g, () => { const t = $("thumbs").children[i]; if (t) t.classList.toggle("good", !!GOOD["card-" + s.key]); }));
+  g.appendChild(gh);
   const lines = s.lines.length ? s.lines : [null];
+  let notes = null;   // the card's one Note box, kept on its first line (lines/<key>.1); older pages had Script and On screen notes
   lines.forEach((text, k) => {
     const id = s.key + "." + (k + 1);
     const orig = text == null ? "" : clean(text), toCheck = text != null && /\[check/.test(text);
     const row = document.createElement("div"); row.className = "line";
-    row.innerHTML = (text == null ? '<div class="none">No narration on this shot.</div>' :
+    row.innerHTML = (text == null ? '<div class="none">Nothing is said in this scene.</div>' :
       '<label class="sr" for="say-' + id + '">Narration</label><textarea class="say" id="say-' + id + '" rows="1"></textarea>') +
-      '<div><label class="f" for="note-' + id + '">Script</label><textarea class="note" id="note-' + id + '" rows="1"></textarea>' +
-      '<label class="f" for="scr-' + id + '">On screen</label><textarea class="note" id="scr-' + id + '" rows="1"></textarea></div>' +
       '<div class="meta">' + (toCheck ? '<span class="check">to check in the app</span>' : '') +
       '<span class="orig" hidden>Original: <i></i></span><button type="button" class="reset" hidden>Undo my edit</button><span class="saved">Saved</span></div>';
-    const say = row.querySelector(".say"), note = row.querySelector('[id="note-' + id + '"]'), scr = row.querySelector('[id="scr-' + id + '"]');
+    const say = row.querySelector(".say");
+    let note = null;
+    if (k === 0) {
+      notes = document.createElement("div"); notes.className = "blk notes";
+      notes.innerHTML = '<div class="nhead"><label class="f" for="note-' + id + '">Note</label><span class="saved">Saved</span></div><textarea class="note" id="note-' + id + '" rows="1" placeholder="What should change in this scene?"></textarea>';
+      note = notes.querySelector("textarea");
+    }
     if (say) { say.value = orig; row.querySelector(".orig i").textContent = orig; }
     if (say && (s.en || [])[k]) { const en = document.createElement("div"); en.className = "en"; en.lang = "en"; en.innerHTML = "<b>English</b>"; en.append(s.en[k]); say.after(en); }
     const d = (s.diffs || [])[k];
@@ -347,26 +921,67 @@ shots.forEach((s, i) => {
       }
     }
     g.appendChild(row);
-    const r = rows[id] = { id, row, say, note, scr, orig, shot: s.key, timer: null };
-    for (const ta of [say, note, scr]) if (ta) {
+    const r = rows[id] = { id, row, say, note, orig, shot: s.key, timer: null };
+    r.flashFor = (ta) => ta === note ? notes : row;
+    for (const ta of [say, note]) if (ta) {
       ta.addEventListener("focus", () => { if (cur !== i) show(i, false); });
-      ta.addEventListener("input", () => { fit(ta); refresh(r); clearTimeout(r.timer); r.timer = setTimeout(() => saveRow(r), 800); });
+      ta.addEventListener("input", () => { fit(ta); refresh(r); clearTimeout(r.timer); r.timer = setTimeout(() => saveRow(r, r.flashFor(ta)), 800); });
     }
     row.querySelector(".reset").addEventListener("click", () => { say.value = r.orig; fit(say); refresh(r); saveRow(r); });
   });
+  const wb = s.screen.length ? screenBlock(s, i) : null;   // the words first: a title sits above its photos
+  if (wb) g.appendChild(wb);
+  if (s.lead) { const pb = picBlock(s, i); g.appendChild(pb); notes.querySelector(".nhead").appendChild(pb.querySelector(".addp")); }   // any first card of a moment can take a photo
+  g.appendChild(notes);
+  if (i < shots.length - 1) { const nx = document.createElement("div"); nx.className = "nextsc";
+    nx.innerHTML = '<button type="button" class="btn">Next scene ›</button>'; nx.firstChild.addEventListener("click", () => { for (let j = i + 1; j < shots.length; j++) if (visible(j)) return show(j, true); }); g.appendChild(nx); }   // the scene after this card, not after the highlighted one
   groups.push(g); $("list").appendChild(g);
 });
-const fitAll = () => Object.values(rows).forEach((r) => [r.say, r.note, r.scr].forEach((t) => t && fit(t)));
+// ---- questions from Claude (answers/<id> {title, answer: "ok" | "change", note}), all at the top; one with "at" (a shot key) links to that card
+const QS = {};
+for (const q of DATA.questions || []) {
+  const d = document.createElement("div"); d.className = "q";
+  d.innerHTML = '<div class="qhead"><span class="qt">✓ OK</span><b></b><button type="button" class="pen">✎ Edit</button></div><ul></ul>' +
+    '<div class="qa"><button type="button" class="btn ok">OK</button><button type="button" class="btn ch">Change it</button></div><textarea placeholder="What should change?" hidden></textarea>';
+  d.querySelector("b").textContent = q.title;
+  for (const t of q.points || []) { const li = document.createElement("li"); li.textContent = t; d.querySelector("ul").appendChild(li); }
+  if (!(q.points || []).length) d.querySelector("ul").remove();
+  if (q.img) { const b = document.createElement("button"); b.type = "button"; b.className = "qimg"; b.innerHTML = '<img alt="">'; b.querySelector("img").src = q.img;
+    b.addEventListener("click", () => { $("lbwrap").innerHTML = '<img alt="">'; $("lbwrap").firstChild.src = q.img; $("lb").hidden = false; }); d.querySelector(".qa").before(b); }
+  const ta = d.querySelector("textarea"), st = { id: q.id, title: q.title, answer: "", note: "", timer: null };
+  const save = () => { clearTimeout(st.timer); st.timer = setTimeout(() => { if (db) db.collection("answers").doc(q.id).set({ title: q.title, answer: st.answer, note: st.note, at: new Date().toISOString() }).catch((e) => console.error(e)); }, 600); };
+  st.set = (answer, note, sv = true) => { st.answer = answer; st.note = note; d.classList.toggle("ok", answer === "ok");
+    d.querySelector(".ok").setAttribute("aria-pressed", answer === "ok"); d.querySelector(".ch").setAttribute("aria-pressed", answer === "change");
+    ta.hidden = answer !== "change" && !note; if (document.activeElement !== ta) ta.value = note; if (sv) save(); updQs(); };
+  d.querySelector(".ok").addEventListener("click", () => st.set("ok", ta.value));
+  d.querySelector(".ch").addEventListener("click", () => { st.set("change", ta.value); ta.focus(); });
+  d.querySelector(".pen").addEventListener("click", () => st.set("", st.note));
+  ta.addEventListener("input", () => { st.note = ta.value; save(); });
+  QS[q.id] = st;
+  const i = q.at != null ? shots.findIndex((x) => x.key === q.at) : -1;
+  if (i >= 0) { const b = document.createElement("button"); b.type = "button"; b.className = "qgo"; b.textContent = "Show the scene";
+    b.addEventListener("click", () => { setGood("card-" + q.at, false); show(i, true); }); d.querySelector(".qa").appendChild(b); }
+  $("qlist").appendChild(d);
+}
+function updQs() {
+  const all = Object.values(QS); if (!all.length) return;
+  $("qs").hidden = false; const open = all.filter((q) => !q.answer).length;
+  $("qsh").textContent = "Questions from Claude" + (open ? " (" + open + " to answer)" : ": all answered");
+}
+updQs();
+(DATA.good || []).forEach((k) => { if (GT["card-" + k]) setGood("card-" + k, true, false); });
+
+const fitAll = () => Object.values(rows).forEach((r) => [r.say, r.note].forEach((t) => t && fit(t)));
 const general = $("general"); let gTimer = null;
 general.addEventListener("input", () => { clearTimeout(gTimer); gTimer = setTimeout(async () => {
   if (!db) return;
   try { await db.collection("notes").doc("general").set({ text: general.value, updatedAt: new Date().toISOString() }); flash($("saved-general")); } catch (e) { console.error(e); }
 }, 800); });
 window.addEventListener("resize", fitAll);
-const nUpd = shots.reduce((n, s) => n + (s.diffs || []).filter(Boolean).length, 0);
+const nUpd = shots.reduce((n, s) => n + (s.diffs || []).filter(Boolean).length + (s.sdiffs || []).filter(Boolean).length, 0);
 if (DATA.since && nUpd) {
   $("filter").hidden = false;
-  $("filter-txt").textContent = "Yellow marks what changed since draft " + DATA.since + ": the new wording is highlighted.";
+  $("filter-txt").textContent = "Yellow: changed since draft " + DATA.since + ".";
   const btn = $("only"), label = () => { btn.textContent = only() ? "Show all lines" : "Show only changed (" + nUpd + ")"; };
   label();
   btn.addEventListener("click", () => {
@@ -375,8 +990,24 @@ if (DATA.since && nUpd) {
     requestAnimationFrame(fitAll);
   });
 }
-pic.addEventListener("load", () => { if (pic.naturalHeight) $("frame").style.setProperty("--ar", pic.naturalWidth / pic.naturalHeight); drawSpots(); });
+pic.addEventListener("load", () => { if (pic.naturalHeight) { $("frame").style.setProperty("--ar", pic.naturalWidth / pic.naturalHeight); $("frame").parentNode.style.setProperty("--ar", pic.naturalWidth / pic.naturalHeight); } drawSpots(); });
+Object.keys(PIC).forEach(paintPic); refreshMinis();
 show(0, false); requestAnimationFrame(fitAll);
+
+// ---- Simple or Detailed: a link ending #simple or #detailed wins, then this browser's last choice, then the page's default (DATA.mode).
+// Simple shows each scene's picture, what is said (not editable there) and the Note; the notes save to the same places.
+function setMode(m, remember) {
+  document.body.classList.toggle("simple", m === "simple");
+  document.querySelectorAll(".mode button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mode === m ? "true" : "false"));
+  Object.values(rows).forEach((r) => { if (r.say) r.say.readOnly = m === "simple"; });
+  if (remember) try { localStorage.setItem("sb-mode", m); } catch {}
+  show(cur, false); requestAnimationFrame(fitAll);
+}
+document.querySelectorAll(".mode button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode, true)));
+{ let m = DATA.mode === "detailed" ? "detailed" : "simple";
+  try { const x = localStorage.getItem("sb-mode"); if (x === "simple" || x === "detailed") m = x; } catch {}
+  const h = location.hash.slice(1); if (h === "simple" || h === "detailed") m = h;
+  setMode(m, false); }
 
 // ---- approval of this draft (nothing is recorded or voiced before it): notes/approval-draft-<N>
 function showAppr(a) {
@@ -397,7 +1028,7 @@ let scenes = [];
 function sceneCard(sc) {
   const g = document.createElement("div"); g.className = "grp added has-upd";
   const id = "scene-" + sc.id;
-  g.innerHTML = '<div class="add-head"><span class="ph">Picture<br>to come</span><span><b>New scene</b><br>Write what is said and what is shown. I will make the picture for the next draft.</span></div>' +
+  g.innerHTML = '<div class="add-head"><span class="ph">Picture<br>to come</span><span><b>New scene</b><br>Write what is said and what is shown. Claude will make the picture for the next draft.</span></div>' +
     '<div class="line"><label class="f" for="' + id + '-say" style="margin-top:0">Script</label><textarea class="note" id="' + id + '-say" rows="1"></textarea>' +
     '<label class="f" for="' + id + '-scr">On screen</label><textarea class="note" id="' + id + '-scr" rows="1"></textarea>' +
     '<div class="meta"><button type="button" class="rm">Remove this scene</button><span class="saved">Saved</span></div></div>';
@@ -438,23 +1069,33 @@ function setupScenes(saved) {
 
 (async () => {
   try { db = await window.claude?.use?.("db"); } catch { db = null; }
+  assetsP = Promise.resolve(window.claude?.use?.("assets")).catch(() => null);
   if (db) {
-    saveSpot = async (p) => { try { await db.collection("spots").doc(p.id).set({ shot: p.shot, x: p.x, y: p.y, text: p.text, ...(p.kind === "arrow" ? { kind: "arrow", x2: p.x2, y2: p.y2 } : {}), updatedAt: new Date().toISOString() }); } catch (e) { console.error(e); } };
+    saveSpot = async (p) => { try { await db.collection("spots").doc(p.id).set({ shot: p.shot, view: viewOfSpot(p), x: p.x, y: p.y, text: p.text, ...(p.kind === "arrow" ? { kind: "arrow", x2: p.x2, y2: p.y2 } : {}), updatedAt: new Date().toISOString() }); } catch (e) { console.error(e); } };
     dropSpot = async (p) => { try { await db.collection("spots").doc(p.id).delete(); } catch (e) { console.error(e); } };
   }
-  if (!db) { $("status").textContent = "Edits and notes can't be saved in this view. Open the published link while signed in."; return; }
+  if (!db) { $("status").textContent = "Notes can't be saved here. Open the published link while signed in."; return; }
   try {
     const snap = await db.collection("lines").get();
     snap.docs.forEach((d) => { const x = d.data(), r = rows[d.id]; if (!x || !r) return;
       if (x.text && r.say) { r.say.value = x.text; r.row.classList.add("editing"); }
-      if (typeof x.note === "string") r.note.value = x.note;
-      if (typeof x.screen === "string") r.scr.value = x.screen;
+      if (r.note) r.note.value = [x.note, x.screen].filter((t) => typeof t === "string" && t).join("\n");   // an older page's On screen note joins the Note
       refresh(r); });
+    const po = await db.collection("pics").get();
+    po.docs.forEach((d) => { const x = d.data(), p = PIC[d.id]; if (!x || !p) return;
+      for (const f of ["caption", "credit", "rights"]) if (typeof x[f] === "string") p[f] = x[f]; paintPic(d.id); });
+    const or = await db.collection("order").get();
+    or.docs.forEach((d) => { const s = shots.find((t) => t.group === d.id && t.applyOrder), x = d.data(); if (s && x && Array.isArray(x.pics) && s.applyOrder) s.applyOrder(x); });
+    const sc = await db.collection("screen").get();
+    sc.docs.forEach((d) => { const x = d.data(), r = SCR[d.id]; if (!x || !r || typeof x.text !== "string") return; r.input.value = x.text; r.mark(); });
+    show(cur, false); refreshMinis();
     const g = await db.collection("notes").get();
     g.docs.forEach((d) => { if (d.id === "general" && typeof d.data().text === "string") general.value = d.data().text; });
     showAppr((g.docs.find((d) => d.id === "approval-draft-" + DATA.draft) || { data: () => null }).data());
+    (await db.collection("good").get()).docs.forEach((d) => { const x = d.data() || {}; if (typeof x.good === "boolean" && GT[d.id]) setGood(d.id, x.good, false); });
+    (await db.collection("answers").get()).docs.forEach((d) => { const q = QS[d.id], x = d.data() || {}; if (q) q.set(x.answer || "", x.note || "", false); });
     const sp = await db.collection("spots").get();
-    spots = sp.docs.map((d) => { const x = d.data() || {}; return { id: d.id, shot: x.shot, x: x.x, y: x.y, text: x.text || "", ...(x.kind === "arrow" ? { kind: "arrow", x2: x.x2, y2: x.y2 } : {}) }; })
+    spots = sp.docs.map((d) => { const x = d.data() || {}; return { id: d.id, shot: x.shot, view: x.view, x: x.x, y: x.y, text: x.text || "", ...(x.kind === "arrow" ? { kind: "arrow", x2: x.x2, y2: x.y2 } : {}) }; })
       .filter((p) => typeof p.x === "number" && shots.some((s) => s.key === p.shot));
     drawSpots(); renderSpotList();
     fitAll();
@@ -462,6 +1103,6 @@ function setupScenes(saved) {
     setupScenes(sn.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((x) => shots.some((s) => s.key === x.after))
       .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))));
   } catch (e) { console.error(e); }
-  $("status").textContent = "Click any line to change its wording. Edits and notes save as you type, and I can read them. Click the picture to pin a note to a spot, or drag to draw an arrow; Full size shows it larger; the arrow keys move between shots. “+ Add a scene here” adds a new scene between two shots.";
+  $("status").textContent = "Notes save as you type. Claude reads them.";
 })();
 </script>

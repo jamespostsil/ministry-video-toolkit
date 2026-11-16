@@ -1,7 +1,8 @@
 <title>__TITLE__</title>
 <style>
-/* Video review page: the video on the left (pause it and click the picture to pin a note on that spot), one row
-   per narration sentence on the right with Script and On-screen notes. Change boxes mark what changed in this
+/* Video review page: the video on the left (pause it and click the picture to pin a note on that spot), one card
+   per scene on the right: what is said, the words on screen and the photos (drag to reorder; caption, credit,
+   permission), then one Note box. Change boxes mark what changed in this
    version; "Looks good" folds a change and takes it out of Previous / Next. Everything saves to the page's db. */
 :root{--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--hl:#eef0e6;--chg-bg:#fff3d6;--chg-line:#d9a72a;--chg-fg:#4a3a0c;--field:#fbfaf8;--pin:#d25f25;--pin-fg:#fff;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}}
@@ -13,9 +14,9 @@ h1{font-size:1.35rem;margin:0 0 12px;font-weight:700;text-wrap:balance}
 .vid{position:sticky;top:8px;min-width:0;display:grid;gap:6px}
 .frame{position:relative}
 video{width:100%;max-height:calc(100vh - 110px);background:#000;border-radius:6px;display:block}
-.overlay{position:absolute;left:0;right:0;top:0;bottom:52px;cursor:crosshair}
+.overlay{position:absolute;left:0;right:0;top:0;bottom:84px;cursor:crosshair}
 .overlay[hidden]{display:none}
-.hint{font-size:.85rem;color:var(--muted)}
+.hint{font-size:.9rem;color:var(--fg);font-weight:600}
 .pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--pin);color:var(--pin-fg);font:700 13px/28px var(--ui);text-align:center;box-shadow:0 0 0 3px #fff;cursor:pointer;border:0;padding:0}
 .arrows{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
 .pop{position:absolute;z-index:3;width:min(300px,80%);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0/.35);padding:10px;display:grid;gap:8px;border:2px solid var(--pin)}
@@ -44,30 +45,146 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px soli
 .link{font:600 .8rem var(--ui);background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
 .btn{font:600 .85rem var(--ui);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:4px;padding:5px 10px;cursor:pointer}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
-.cnav{position:sticky;top:0;z-index:2;display:flex;gap:8px;align-items:center;background:var(--bg);padding:0 0 8px}
-.cnav button{font:600 .85rem var(--ui);background:var(--chg-bg);color:var(--chg-fg);border:1px solid var(--chg-line);border-radius:4px;padding:5px 10px;cursor:pointer}
+.navs{position:sticky;top:0;z-index:3;background:var(--bg);padding:0 0 8px;display:grid;gap:6px}
+.cnav{display:flex;gap:6px;align-items:center}
+.cnav button{font:600 .8rem var(--ui);background:var(--chg-bg);color:var(--chg-fg);border:1px solid var(--chg-line);border-radius:4px;padding:3px 9px;cursor:pointer}
 .cnav button:disabled{opacity:.4;cursor:default}.cnav span{font-size:.85rem;color:var(--muted)}
 .cnav{flex-wrap:wrap}.cnav .ap{margin-left:auto;display:inline-flex;gap:5px;align-items:center;font-size:.85rem;color:var(--muted);cursor:pointer;white-space:nowrap}.cnav .ap input{accent-color:var(--accent);margin:0}
 .off{color:var(--muted);font-size:.9rem;margin:0 0 10px}
+/* instructions that fold away; moving between scenes */
+details.help{margin:0 0 10px;font-size:.88rem;color:var(--muted)}details.help summary{cursor:pointer;font-weight:700;color:var(--fg)}
+details.help ul{margin:6px 0 0;padding-left:1.2em}details.help li{margin:2px 0}
+.snav{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:0}
+.cnav[hidden]{display:none}.snav span{font-size:.85rem;color:var(--muted)}
+/* words on screen and photos in a card */
+.blk{margin-top:8px}.blk.words{border-top:1px solid var(--line);padding-top:6px}.blk .lab{font:700 .72rem var(--ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.blk-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.hint2{font-size:.75rem;color:var(--muted)}
+.scr{display:grid;grid-template-columns:minmax(0,7em) minmax(0,1fr) auto;gap:6px 8px;align-items:center;margin-top:4px}
+.scr label{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+input.in,select.rt{font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:4px;padding:3px 6px;background:var(--field);color:var(--fg);width:100%;min-width:0}
+input.in.edited,select.rt.edited{box-shadow:inset 3px 0 0 var(--accent)}
+.plist{display:grid;gap:6px;margin-top:4px}
+.prow{display:grid;grid-template-columns:24px 84px minmax(0,1fr);gap:8px;align-items:start;border:1px solid var(--line);border-radius:6px;padding:6px 6px 6px 2px;background:var(--panel)}
+.prow.dragging{border-color:var(--accent);box-shadow:0 6px 18px rgb(0 0 0/.22);position:relative;z-index:1}
+.handle{align-self:stretch;border:0;background:none;color:var(--muted);cursor:grab;touch-action:none;font:700 1rem var(--ui);padding:0;border-radius:4px}.handle:hover{background:var(--hl)}
+.thb{padding:0;border:0;background:none;cursor:zoom-in;line-height:0}.thb img{width:80px;height:56px;object-fit:cover;border-radius:3px}
+.fld{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center}.fld label{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+select.rt{font-weight:700}select.rt.ok{background:#e3f1e6;color:#1f5a2d}select.rt.ask{background:#fff1c7;color:#5c4500}select.rt.no{background:#f7dede;color:#7a1f1f}
+.rs{font:inherit;font-size:.75rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}.rs[hidden]{display:none}
+.lb{position:fixed;inset:0;background:rgb(0 0 0/.85);display:flex;align-items:center;justify-content:center;z-index:20;cursor:zoom-out;padding:16px}.lb[hidden]{display:none}
+.lb img{max-width:100%;max-height:100%;border-radius:6px}
+/* the web copy is smaller than the real video: say so on the picture, full screen included */
+.nothd{position:absolute;left:8px;top:8px;z-index:2;background:rgb(0 0 0/.62);color:#fff;font:600 .78rem var(--ui);padding:3px 8px;border-radius:4px;pointer-events:none;transition:opacity .5s}
+.nothd.gone{opacity:0}
+.frame:fullscreen{background:#000;display:flex;align-items:center;justify-content:center}.frame:fullscreen video{max-height:100vh;height:100%;border-radius:0}
+video::cue{font:600 18px system-ui,sans-serif;background:rgb(0 0 0/.62);color:#fff}
+.frame:fullscreen .nothd{left:16px;top:16px;font-size:1rem;padding:5px 12px}
+/* "Looks good": a card, its words or its photos fold to one line; ✎ Edit opens them again */
+.gc{display:inline-flex;gap:8px;align-items:center;flex:none;margin-left:auto}
+.okb{font:600 .75rem var(--ui);background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:2px 9px;cursor:pointer;white-space:nowrap}
+.okb:hover{border-color:var(--accent);color:var(--fg)}
+.gtag{display:none;font:700 .78rem var(--ui);color:var(--accent);white-space:nowrap}
+.pen{display:none;font:600 .78rem var(--ui);background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap}
+.good>.top .okb,.good>.blk-h .okb{display:none}.good>.top .gtag,.good>.top .pen,.good>.blk-h .gtag,.good>.blk-h .pen{display:inline-block}
+.row.good .pen{visibility:hidden}.row.good:hover .pen,.row.good:focus-within .pen{visibility:visible}
+.row.good{padding:6px 10px;background:transparent}.row.good>:not(.top):not(.q){display:none}
+.row.good .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;color:var(--muted);flex:1}
+.blk.good>:not(.blk-h){display:none}.blk.good .hint2{display:none}
+/* the card's "Looks good" fills in on the current card or the one pointed at; "+ Add a photo" on a card without photos shows on pointing */
+.row:hover>.top .okb,.row.on>.top .okb,.row:focus-within>.top .okb{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.nhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.nhead .add{opacity:0;transition:opacity .15s}
+.row:hover .nhead .add,.row.on .nhead .add,.nhead .add:focus-visible{opacity:1}
+.gsum{display:none;gap:3px;min-width:0;overflow:hidden;color:var(--muted);font-size:.85rem;white-space:nowrap;text-overflow:ellipsis}.blk.good .gsum{display:flex}
+.gsum img{width:36px;height:24px;object-fit:cover;border-radius:2px}
+.secd{display:flex;gap:8px;align-items:center;margin:16px 0 6px;font:700 .78rem var(--ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+/* questions from Claude */
+.qs{margin:0 0 10px}.qs[hidden]{display:none}.qs h2{font-size:1rem;margin:0}
+.q{background:var(--chg-bg);border:1px solid var(--chg-line);color:var(--chg-fg);border-radius:6px;padding:8px 10px;margin-top:8px}
+.qhead{display:flex;gap:8px;align-items:baseline}.qhead b{flex:1;min-width:0}
+.q ul{margin:4px 0 0;padding-left:1.2em;font-size:.9rem}.q li{margin:2px 0}
+.q .qimg{padding:0;border:0;background:none;cursor:zoom-in;line-height:0;margin-top:6px}.q .qimg img{max-width:220px;border-radius:4px}
+.q .qa{display:flex;gap:8px;align-items:center;margin-top:8px}.q .qa .rs{margin-left:auto}.q .qa .btn[aria-pressed="true"]{outline:2px solid var(--chg-line)}
+.q textarea{margin-top:6px;background:var(--panel)}.q textarea[hidden]{display:none}
+.q .qt,.q .pen{display:none}.q.ok{background:transparent;border-style:dashed;padding:5px 10px}.q.ok>:not(.qhead){display:none}.q.ok .qt,.q.ok .pen{display:inline-block}
+.q.ok .qt{color:var(--accent);font-weight:700;font-size:.8rem}.q.ok .qhead b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* removing and adding photos */
+.prow{grid-template-columns:24px 84px minmax(0,1fr) auto}.plist.one .prow{grid-template-columns:84px minmax(0,1fr) auto;padding-left:6px}.plist.one .handle{display:none}
+.prm{align-self:start;font:700 .9rem/1 var(--ui);background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:4px}.prm:hover{background:var(--hl);color:var(--fg)}
+.rmd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-size:.8rem;color:var(--muted)}.rmd[hidden]{display:none}
+.rmd .chip{display:inline-flex;gap:5px;align-items:center;border:1px dashed var(--line);border-radius:4px;padding:2px 6px 2px 2px}.rmd img{width:40px;height:28px;object-fit:cover;border-radius:2px;opacity:.6}
+.pacts{display:flex;gap:14px;margin-top:6px}
+.pblk.empty{display:none}.pacts:not(:has(:not([hidden]))){display:none}
+dialog.pick{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg);padding:14px;width:min(720px,92vw);max-height:84vh}
+dialog.pick::backdrop{background:rgb(0 0 0/.5)}
+.pick h2{font-size:1.05rem;margin:0 0 8px}.pick .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
+.pick .lib button{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}.pick .lib button:hover,.pick .lib button:focus-visible{border-color:var(--accent)}
+.pick .lib img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px}
+.pick .pfoot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}.pick .up{font-size:.85rem;color:var(--muted)}
+/* Simple / Detailed: Simple is the video, a click to leave a note, and the list of notes; Detailed is everything above */
+.head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin:0 0 12px}.head h1{margin:0}
+.mode{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
+.mode button{font:600 .85rem var(--ui);border:0;background:var(--panel);color:var(--muted);padding:5px 12px;cursor:pointer}
+.mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+body.simple .navs,body.simple .qs,body.simple #rows,body.simple #help{display:none}
+body:not(.simple) #mine{display:none}
+#mine{margin-top:4px}#mine h2{font-size:1rem;margin:0 0 6px}#mine .pinnote{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px}
+#mine .none{color:var(--muted);font-size:.9rem;margin:0}
+/* ---- 2026-11 tidy-up: fewer boxes, labels and instructions; the page explains itself ---- */
+.head{justify-content:flex-start}.head h1{margin-right:auto}
+.stat,.head .off{font-size:.8rem;color:var(--muted)}.head .off{margin:0;color:var(--chg-fg);background:var(--chg-bg);border:1px solid var(--chg-line);border-radius:4px;padding:2px 8px}
+.head .off:not([hidden])+.stat{display:none}
+.gen{font-size:.9rem;color:var(--muted)}
+.hint{font-weight:400;color:var(--muted)}
+/* "saved" takes no room of its own */
+.nhead{justify-content:flex-start}.nhead .add{margin-left:auto}
+.save{font-size:.72rem;font-weight:600;color:var(--muted);margin-left:8px;min-height:0}
+/* a change box: its text on the left and "Looks good" at the right, in the same place whether ticked or not */
+.chg{display:flex;gap:10px;align-items:flex-start}.chg .ctext{flex:1;min-width:0}
+.chg label.ok{flex:none;margin:0}.chg.done{align-items:center}
+/* fields read as plain text until pointed at or typed in */
+input.in{border-color:transparent;background:transparent;text-overflow:ellipsis}
+input.in:hover,input.in:focus{border-color:var(--line);background:var(--field)}
+input.in::placeholder{color:var(--muted);font-style:italic;opacity:.8}
+.scr{grid-template-columns:minmax(0,6.5em) minmax(0,1fr) auto;gap:2px 8px;margin-top:2px}
+/* a photo: its picture, the caption over the credit, the permission as a small tag */
+.prow{align-items:center;padding:5px 5px 5px 2px}
+.fld{grid-template-columns:minmax(0,1fr) auto;gap:0 6px}.fld .cap{grid-column:1/-1;font-weight:600}.fld .cred{font-size:.82rem;color:var(--muted)}
+select.rt{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
+.blk-h:not(:has(>:not([hidden]):not(.gsum))){display:none}.blk.good>.blk-h{display:flex}
+/* the two rows that move through the video sit on one quiet bar */
+.navs{gap:4px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.snav .btn{padding:4px 9px}
+details.help{margin:0 0 8px}
 @media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}.vid{position:static}.side{height:auto;overflow:visible}video{max-height:none}}
 </style>
-<h1>__TITLE__</h1>
+<div class="head"><h1>__TITLE__</h1><span class="off" id="off" hidden>Notes can't be saved here. Open the published link while signed in.</span><span class="stat" id="stat">Notes save as you type. Claude reads them.</span><span class="mode" role="group" aria-label="How much to show"><button type="button" data-mode="simple" aria-pressed="false">Simple</button><button type="button" data-mode="detailed" aria-pressed="true">Detailed</button></span></div>
 <div class="wrap">
   <div class="vid">
-    <div id="gen" class="chg" hidden></div>
+    <div id="gen" class="gen" hidden></div>
+    <div class="hint" id="hint">Play the video. To leave a note, click the picture on the spot it is about.</div>
     <div class="frame" id="frame">
-      <video id="v" controls preload="metadata" src="__VIDEO__"></video>
+      <video id="v" controls disablepictureinpicture preload="metadata" src="__VIDEO__"></video>
+      <span class="nothd" id="nothd"></span>
       <div class="overlay" id="overlay" aria-label="Click the spot your note is about" hidden></div>
     </div>
-    <div class="hint" id="hint">Pause the video, then click anywhere on the picture to pin a note to that spot.</div>
   </div>
   <div class="side" id="side">
-    <div class="cnav" id="cnav" hidden><button type="button" id="cprev">&#9664; Previous change</button><button type="button" id="cnext">Next change &#9654;</button><span id="ccount" aria-live="polite"></span><label class="ap"><input type="checkbox" id="cplay" checked> Play when jumping</label></div>
-    <div class="row"><label class="f" for="n-all" style="margin-top:0">Anything else about the video</label><textarea id="n-all"></textarea><div class="save" id="s-all"></div></div>
-    <p class="off" id="off" hidden>Notes can't be saved in this view: open the published link while signed in.</p>
+    <details class="help" id="help"><summary>Tips</summary><ul>
+      <li>Click any words on screen or a caption to change it.</li>
+      <li>“Looks good” folds a scene, and Next scene skips it.</li>
+      <li>Yellow boxes show what changed in this version.</li>
+      <li>Keys: Space plays and pauses. F is full screen. Alt + ↓ and Alt + ↑ change scenes.</li></ul></details>
+    <div class="navs" id="navs"><div class="snav"><button type="button" class="btn" id="sprev">‹ Previous scene</button><span id="scount"></span><button type="button" class="btn" id="snext">Next scene ›</button></div>
+    <div class="cnav" id="cnav" hidden><button type="button" id="cprev" title="Previous change" aria-label="Previous change">&#9664;</button><button type="button" id="cnext" title="Next change" aria-label="Next change">&#9654;</button><span id="ccount" aria-live="polite"></span><label class="ap" title="Play from the change after jumping to it"><input type="checkbox" id="cplay" checked> Auto-play</label></div></div>
+    <section class="qs" id="qs" hidden><h2 id="qsh">Questions from Claude</h2><div id="qlist"></div></section>
+    <div class="row"><div class="nhead"><label class="f" for="n-all" style="margin-top:0">Anything else about the video</label><span class="save" id="s-all"></span></div><textarea id="n-all" placeholder="Notes about the whole video"></textarea></div>
+    <section id="mine"><h2>Your notes</h2><div class="pins" id="mylist"></div><p class="none" id="mynone">No notes yet. Click the picture to leave one.</p></section>
     <div id="rows"></div>
   </div>
 </div>
+<div class="lb" id="lb" hidden><img id="lbimg" alt=""></div>
+<dialog class="pick" id="pick"><h2>Add a photo</h2><div class="lib" id="plib"></div>
+  <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span><button type="button" class="btn" id="pclose">Close</button></div></dialog>
 <script>
 const D = __DATA__;
 const S = D.sentences, C = D.changes || {}, V = D.version;
@@ -78,12 +195,56 @@ const key = (id) => String(id).split(".").join("-"), fmt = (t) => { t = Math.flo
 const sentenceAt = (t) => { let b = S[0]; for (const s of S) if (t >= s.t - 0.3) b = s; return b; };
 const el = {};
 let navUpd = () => {}, saveOk = () => {}, savePin = () => {}, dropPin = () => {};
+// Simple or Detailed: a link ending #simple or #detailed wins, then this browser's last choice, then the page's default (D.mode)
+const simple = () => document.body.classList.contains("simple");
+let modeHook = () => {};
+function setMode(m, remember) {
+  document.body.classList.toggle("simple", m === "simple");
+  document.querySelectorAll(".mode button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mode === m ? "true" : "false"));
+  if (remember) try { localStorage.setItem("review-mode", m); } catch (e) {}
+  modeHook();
+}
+document.querySelectorAll(".mode button").forEach((b) => { b.onclick = () => setMode(b.dataset.mode, true); });
+{ let m = D.mode === "detailed" ? "detailed" : "simple";
+  try { const s = localStorage.getItem("review-mode"); if (s === "simple" || s === "detailed") m = s; } catch (e) {}
+  const h = location.hash.slice(1); if (h === "simple" || h === "detailed") m = h;
+  setMode(m, false); }
 const isOk = {};
+// what each scene shows (filled in by buildShown, below): photos, their order, the words on screen
+const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
+const PIC = {}, SCR = {}, ORDER = {}, seenGroup = new Set();
+let saveOrder = () => {}, savePicDb = () => {}, saveScr = () => {};
+const sameArr = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+const safe = (x) => String(x).replace(/[^A-Za-z0-9_.~:@+-]+/g, "-");
+// a photo's picture: an upload lives in the page's asset store, the rest are published next to the page
+const srcOf = (p, small) => p.asset ? "/_blob/" + p.asset : "pics/" + p.id + (small ? ".t.jpg" : ".jpg");
+// "Looks good" marks (good-v<N>/<doc>): card-<k>, one per scene. D.good: cards already good from the last version.
+const GOOD = {}, GT = {};
+let saveGood = () => {};
+const goodCtl = (doc, target, onSet) => {
+  const c = document.createElement("span"); c.className = "gc";
+  c.innerHTML = '<button type="button" class="okb">Looks good</button><span class="gtag">✓ Looks good</span><button type="button" class="pen" title="Open it for edits again">✎ Edit</button>';
+  GT[doc] = { target, onSet };
+  c.querySelector(".okb").onclick = () => setGood(doc, true); c.querySelector(".pen").onclick = () => setGood(doc, false);
+  return c;
+};
+function setGood(doc, on, save = true) {
+  GOOD[doc] = on; const t = GT[doc]; if (!t) return;
+  t.target.classList.toggle("good", on); if (t.onSet) t.onSet(on);
+  if (save) saveGood(doc, on); updCount();
+}
+let lastSec = null;
 for (const s of S) {
+  if (s.section && s.section !== lastSec) {   // a thin divider with the section's name
+    const sd = document.createElement("div"); sd.className = "secd"; sd.textContent = s.section;
+    rows.appendChild(sd); lastSec = s.section;
+  }
   const k = key(s.id), d = document.createElement("div"); d.className = "row"; d.dataset.k = k;
   d.innerHTML = '<div class="top"><button class="time" type="button"></button><div class="txt"></div></div>' +
-    '<label class="f" for="sc-' + k + '">Script</label><textarea id="sc-' + k + '" data-f="script"></textarea>' +
-    '<label class="f" for="on-' + k + '">On screen</label><textarea id="on-' + k + '" data-f="screen"></textarea><div class="pins"></div><div class="save"></div>';
+    '<div class="shown"></div>' +
+    '<div class="nhead"><label class="f" for="nt-' + k + '">Note</label><span class="save"></span></div><textarea id="nt-' + k + '" data-f="note" placeholder="What should change in this scene?"></textarea><div class="pins"></div>';
+  buildShown(s, d.querySelector(".shown"));
+  const addB = d.querySelector(".pblk .add"); if (addB) d.querySelector(".nhead").appendChild(addB);
   d.querySelector(".time").textContent = fmt(s.t);
   d.querySelector(".txt").textContent = s.text;
   if (C[s.id]) {
@@ -94,37 +255,227 @@ for (const s of S) {
     const cb = c.querySelector("input"); cb.onchange = () => { setOk(s.id, cb.checked); saveOk(s.id, cb.checked); };
   }
   d.querySelector(".time").onclick = () => { v.currentTime = Math.max(0, s.t - 0.2); v.play().catch(() => {}); };
+  // a card marked good also passes its change box
+  d.querySelector(".top").appendChild(goodCtl("card-" + k, d, (on) => { if (on && C[s.id] && !isOk[s.id]) { setOk(s.id, true); saveOk(s.id, true); } }));
   rows.appendChild(d); el[s.id] = d;
 }
-const setOk = (id, on) => { isOk[id] = on; const r = el[id]; r.querySelector(".chg").classList.toggle("done", on); r.querySelector(".chg input").checked = on; navUpd(); };
+// ---- what is shown in each scene: the words on screen and the photos (one group = one moment; later cards share it)
+// db: order-v<N>/<group> {pics}, pics-v<N>/<picture id> {caption, credit, rights, file, original}, screen-v<N>/<id> {label, text, original}
+function openLb(src) { $("lbimg").src = src; $("lb").hidden = false; }
+function buildShown(s, box) {
+  const g = s.group || s.id, lead = !seenGroup.has(g); seenGroup.add(g);
+  // words on screen
+  const fresh = (s.screen || []).filter((it) => !SCR[g + "." + (it.id || it.label)]);
+  if (fresh.length) {
+    const b = document.createElement("div"); b.className = "blk words"; b.setAttribute("aria-label", "Words on screen");
+    for (const it of fresh) {
+      const id = (g + "." + (it.id || it.label)).replace(/[^A-Za-z0-9_.~:@+-]+/g, "-");
+      const r = document.createElement("div"); r.className = "scr";
+      r.innerHTML = '<label></label><input class="in"><button type="button" class="rs" hidden>Undo</button>';
+      r.querySelector("label").textContent = it.label.replace(/^.*:\s*/, ""); r.querySelector("label").title = it.label; const inp = r.querySelector("input"); inp.value = it.text; inp.setAttribute("aria-label", it.label);
+      const o = SCR[g + "." + (it.id || it.label)] = { id, label: it.label, orig: it.text, inp };
+      const mark = () => { const ch = inp.value !== o.orig; inp.classList.toggle("edited", ch); r.querySelector(".rs").hidden = !ch; };
+      o.mark = mark;
+      inp.addEventListener("input", () => { mark(); saveScr(o); });
+      r.querySelector(".rs").onclick = () => { inp.value = o.orig; mark(); saveScr(o); };
+      b.appendChild(r);
+    }
+    box.appendChild(b);
+  }
+  // photos: the first card of a moment holds them (later cards of it share them); any first card can have one added
+  const pics = s.pictures || [];
+  if (lead) {
+    const b = document.createElement("div"); b.className = "blk pblk";
+    b.innerHTML = '<div class="blk-h"><span class="gsum"></span><span class="hint2" hidden></span></div><div class="plist" role="list"></div><div class="rmd" hidden></div>' +
+      '<div class="pacts"><button type="button" class="rs add">+ Add a photo</button><button type="button" class="rs back" hidden>Undo photo changes</button></div>';   // "add" moves to the Note row
+    const list = b.querySelector(".plist"), back = b.querySelector(".back"), rmd = b.querySelector(".rmd"), sum = b.querySelector(".gsum"), hint = b.querySelector(".hint2"), orig = pics.map((p) => p.id);
+    const O = ORDER[g] = { list, orig, cur: orig.slice(), removed: [], added: [], rows: {} };
+    const sync = () => { O.cur = [...list.children].map((r) => r.dataset.pid); back.hidden = sameArr(O.cur, orig);
+      b.classList.toggle("empty", !O.cur.length && !O.removed.length); list.classList.toggle("one", O.cur.length < 2);
+      [...list.children].forEach((r, i) => r.querySelector(".handle").setAttribute("aria-label", "Move photo " + (i + 1) + " of " + list.children.length + ". Drag, or use the up and down arrow keys."));
+      sum.innerHTML = ""; O.cur.forEach((id) => { const i = document.createElement("img"); i.alt = ""; i.src = srcOf(PIC[id], true); sum.appendChild(i); });
+      rmd.hidden = !O.removed.length; rmd.innerHTML = O.removed.length ? "Removed:" : "";
+      for (const id of O.removed) { const c = document.createElement("span"); c.className = "chip"; c.innerHTML = '<img alt=""><button type="button" class="rs">Put back</button>';
+        c.querySelector("img").src = srcOf(PIC[id], true); c.querySelector("button").onclick = () => { const before = O.cur.slice(); O.removed = O.removed.filter((q) => q !== id); list.appendChild(O.rows[id]); commit(before); };
+        rmd.appendChild(c); } };
+    const commit = (before) => { sync(); if (!sameArr(before, O.cur)) saveOrder(g); };
+    const makeRow = (p) => {
+      if (!PIC[p.id]) PIC[p.id] = { ...p, orig: { caption: p.caption || "", credit: p.credit || "", rights: p.rights || "ok" }, caption: p.caption || "", credit: p.credit || "", rights: p.rights || "ok", rows: [] };
+      const x = PIC[p.id], row = document.createElement("div"); row.className = "prow"; row.dataset.pid = p.id; row.setAttribute("role", "listitem"); O.rows[p.id] = row;
+      row.innerHTML = '<button type="button" class="handle" title="Drag to change the order">⠿</button><button type="button" class="thb" title="See it larger"><img alt=""></button>' +
+        '<div class="fld"><input class="in cap" placeholder="No caption" title="Caption"><input class="in cred" placeholder="No credit" title="Credit"><select class="rt" title="Permission to use this photo"></select></div>' +
+        '<button type="button" class="prm" title="Remove this photo" aria-label="Remove this photo">✕</button>';
+      row.querySelector("img").src = srcOf(x, true);
+      row.querySelector(".thb").onclick = () => openLb(srcOf(x, false));
+      row.querySelector(".prm").onclick = () => { const before = O.cur.slice(); O.removed.push(p.id); row.remove(); commit(before); };
+      const cap = row.querySelector(".cap"), cred = row.querySelector(".cred"), rt = row.querySelector(".rt");
+      cap.setAttribute("aria-label", "Caption"); cred.setAttribute("aria-label", "Credit"); rt.setAttribute("aria-label", "Permission");
+      for (const [val, txt] of RIGHTS) { const o = document.createElement("option"); o.value = val; o.textContent = txt; rt.appendChild(o); }
+      x.rows.push({ cap, cred, rt });
+      const paint = () => x.rows.forEach((q) => { if (document.activeElement !== q.cap) q.cap.value = x.caption; if (document.activeElement !== q.cred) q.cred.value = x.credit;
+        q.rt.value = x.rights; q.rt.className = "rt " + x.rights; q.cap.classList.toggle("edited", x.caption !== x.orig.caption);
+        q.cred.classList.toggle("edited", x.credit !== x.orig.credit); q.rt.classList.toggle("edited", x.rights !== x.orig.rights); });
+      x.paint = paint; paint();
+      cap.addEventListener("input", () => { x.caption = cap.value; paint(); savePicDb(x); });
+      cred.addEventListener("input", () => { x.credit = cred.value; paint(); savePicDb(x); });
+      rt.addEventListener("change", () => { x.rights = rt.value; paint(); savePicDb(x); });
+      const h = row.querySelector(".handle");
+      h.addEventListener("pointerdown", (e) => {   // listen on the window: moving the row drops a pointer capture on it
+        e.preventDefault(); h.focus(); row.classList.add("dragging"); const before = ORDER[g].cur.slice();
+        const move = (ev) => { const others = [...list.children].filter((q) => q !== row);
+          const nx = others.find((q) => { const bb = q.getBoundingClientRect(); return ev.clientY < bb.top + bb.height / 2; });
+          if (nx !== row.nextElementSibling) list.insertBefore(row, nx || null); };
+        const up = () => { removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); row.classList.remove("dragging"); commit(before); };
+        addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up);
+      });
+      h.addEventListener("keydown", (e) => { if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return; e.preventDefault(); const before = ORDER[g].cur.slice();
+        if (e.key === "ArrowUp" && row.previousElementSibling) list.insertBefore(row, row.previousElementSibling);
+        if (e.key === "ArrowDown" && row.nextElementSibling) list.insertBefore(row.nextElementSibling, row);
+        h.focus(); commit(before); });
+      return row;
+    };
+    pics.forEach((p) => list.appendChild(makeRow(p)));
+    // an added photo: from the script's photos (D.library) or uploaded ({id: "up-<asset>", asset, file, w, h})
+    O.addPhoto = (p) => { if (O.cur.includes(p.id)) return; const before = O.cur.slice();
+      O.removed = O.removed.filter((q) => q !== p.id);
+      if (!orig.includes(p.id) && !O.added.some((q) => q.id === p.id)) O.added.push({ id: p.id, file: p.file || "", w: p.w, h: p.h, ...(p.asset ? { asset: p.asset } : {}) });
+      list.appendChild(O.rows[p.id] || makeRow(p)); commit(before); };
+    b.querySelector(".add").onclick = () => openPicker(O);
+    back.onclick = () => { const before = O.cur.slice(); O.removed = O.added.map((p) => p.id); [...list.children].forEach((r) => r.remove());
+      orig.forEach((id) => list.appendChild(O.rows[id])); commit(before); };
+    // the saved state: {pics: the order, removed, added}
+    O.apply = (y) => { (y.added || []).forEach((p) => { if (p && p.id && !O.rows[p.id]) { O.added.push(p); makeRow(p); } });
+      O.removed = (Array.isArray(y.removed) ? y.removed : []).filter((id) => O.rows[id]); [...list.children].forEach((r) => r.remove());
+      (Array.isArray(y.pics) ? y.pics : orig).forEach((id) => { if (O.rows[id] && !O.removed.includes(id)) list.appendChild(O.rows[id]); }); sync(); };
+    sync(); box.appendChild(b);
+  }
+}
+$("lb").onclick = () => { $("lb").hidden = true; };
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("lb").hidden) { e.preventDefault(); $("lb").hidden = true; } });
+
+// ---- adding a photo: the script's photos (D.library), or one uploaded from the computer (asset store)
+let assetsP = Promise.resolve(null), pickFor = null;
+const pick = $("pick");
+function openPicker(O) {
+  pickFor = O; const lib = $("plib"); lib.innerHTML = "";
+  for (const p of D.library || []) { if (O.cur.includes(p.id)) continue;
+    const b = document.createElement("button"); b.type = "button"; b.title = p.file; b.innerHTML = '<img alt="">'; b.querySelector("img").src = srcOf(p, true); b.querySelector("img").alt = p.file;
+    b.onclick = () => { O.addPhoto(p); pick.close(); }; lib.appendChild(b); }
+  if (!lib.children.length) lib.textContent = "Every photo from the script is already here.";
+  $("pupst").textContent = ""; $("pup").hidden = true;
+  assetsP.then((a) => { $("pup").hidden = !a; });
+  pick.showModal();
+}
+$("pclose").onclick = () => pick.close();
+pick.addEventListener("click", (e) => { if (e.target === pick) pick.close(); });
+$("pfile").addEventListener("change", async () => {
+  const f = $("pfile").files[0], st = $("pupst"); $("pfile").value = ""; if (!f || !pickFor) return;
+  st.textContent = "Uploading…";
+  try {
+    const a = await assetsP, r = await a.upload(f);
+    const im = new Image(); im.src = r.url; await im.decode().catch(() => {});
+    pickFor.addPhoto({ id: "up-" + r.id, asset: r.id, file: f.name, w: im.naturalWidth || 1600, h: im.naturalHeight || 1200 }); pick.close();
+  } catch (e) { st.textContent = "Couldn't upload it" + (e && e.code ? " (" + e.code + ")" : "") + "."; }
+});
+
+// ---- questions from Claude (answers-v<N>/<id> {title, answer: "ok" | "change", note}), all at the top; one with "at" links to that scene
+let saveAnswer = () => {};
+const QS = {};
+for (const q of D.questions || []) {
+  const d = document.createElement("div"); d.className = "q";
+  d.innerHTML = '<div class="qhead"><span class="qt">✓ OK</span><b></b><button type="button" class="pen">✎ Edit</button></div><ul></ul>' +
+    '<div class="qa"><button type="button" class="btn ok">OK</button><button type="button" class="btn ch">Change it</button></div><textarea placeholder="What should change?" hidden></textarea>';
+  d.querySelector("b").textContent = q.title;
+  for (const t of q.points || []) { const li = document.createElement("li"); li.textContent = t; d.querySelector("ul").appendChild(li); }
+  if (!(q.points || []).length) d.querySelector("ul").remove();
+  if (q.img) { const b = document.createElement("button"); b.type = "button"; b.className = "qimg"; b.innerHTML = '<img alt="">'; b.querySelector("img").src = q.img; b.onclick = () => openLb(q.img); d.querySelector(".qa").before(b); }
+  const ta = d.querySelector("textarea"), st = { id: q.id, title: q.title, answer: "", note: "" };
+  st.set = (answer, note, save = true) => { st.answer = answer; st.note = note; d.classList.toggle("ok", answer === "ok");
+    d.querySelector(".ok").setAttribute("aria-pressed", answer === "ok"); d.querySelector(".ch").setAttribute("aria-pressed", answer === "change");
+    ta.hidden = answer !== "change" && !note; if (document.activeElement !== ta) ta.value = note; if (save) saveAnswer(st); updQs(); };
+  d.querySelector(".ok").onclick = () => st.set("ok", ta.value);
+  d.querySelector(".ch").onclick = () => { st.set("change", ta.value); ta.focus(); };
+  d.querySelector(".pen").onclick = () => st.set("", st.note);
+  ta.addEventListener("input", () => { st.note = ta.value; saveAnswer(st); });
+  QS[q.id] = st; st.el = d;
+  const sc = q.at != null && S.find((x) => x.id === q.at);
+  if (sc) { const b = document.createElement("button"); b.type = "button"; b.className = "rs"; b.textContent = "Show the scene";
+    b.onclick = () => { setGood("card-" + key(sc.id), false); v.currentTime = Math.max(0, sc.t - 0.2); scrollToRow(el[sc.id]); }; d.querySelector(".qa").appendChild(b); }
+  $("qlist").appendChild(d);
+}
+function updQs() {
+  const all = Object.values(QS); if (!all.length) return;
+  $("qs").hidden = false; const open = all.filter((q) => !q.answer).length;
+  $("qsh").textContent = "Questions from Claude" + (open ? " (" + open + " to answer)" : ": all answered");
+}
+updQs();
+
+// ---- the web copy is a preview, not the HD video; full screen keeps that label on (the browser's own would hide it)
+$("nothd").textContent = D.preview || "Preview copy: not HD"; $("nothd").title = "The finished video is full HD. This copy is smaller so the page loads quickly.";
+// the label shows while paused, and for a few seconds after play starts or full screen changes
+const hd = $("nothd"); let hdT = null;
+const hdShow = () => { hd.classList.remove("gone"); clearTimeout(hdT); if (!v.paused) hdT = setTimeout(() => hd.classList.add("gone"), 3000); };
+v.addEventListener("play", hdShow); v.addEventListener("pause", hdShow); document.addEventListener("fullscreenchange", hdShow);
+const fsToggle = () => { if (document.fullscreenElement) document.exitFullscreen(); else frame.requestFullscreen().catch(() => {}); };
+v.addEventListener("dblclick", (e) => { e.preventDefault(); fsToggle(); });
+// the player's own full-screen button puts just the video in full screen, where the label can't go (and the browser
+// refuses to swap in the frame without a fresh click): there the label is a caption line in the top-left corner instead
+let hdCue = null;
+try { const tr = v.addTextTrack("subtitles", "Preview copy", "en"); hdCue = new VTTCue(0, 86400, hd.textContent);
+  hdCue.line = 0; hdCue.position = 1; hdCue.positionAlign = "line-left"; hdCue.align = "left"; hdCue.size = 40; tr.addCue(hdCue); hdCue.tr = tr; tr.mode = "hidden"; } catch (e) {}
+const hdTrack = () => { if (!hdCue) return; const on = document.fullscreenElement === v && !hd.classList.contains("gone");
+  if (on !== (hdCue.tr.mode === "showing")) { hdCue.tr.mode = on ? "showing" : "hidden"; if (on && v.paused) v.currentTime = v.currentTime; } };   // a paused video only shows a new cue after a seek
+document.addEventListener("fullscreenchange", hdTrack); new MutationObserver(hdTrack).observe(hd, { attributes: true });
+document.addEventListener("keydown", (e) => { if ((e.key === "f" || e.key === "F") && !e.altKey && !e.ctrlKey && !e.metaKey && !e.target.closest("textarea,input,select,[contenteditable]")) { e.preventDefault(); fsToggle(); } });
+const setOk =(id, on) => { isOk[id] = on; const r = el[id]; r.querySelector(".chg").classList.toggle("done", on); r.querySelector(".chg input").checked = on; navUpd(); };
+
+// ---- Previous / Next scene: seek the video to the scene and bring its card to the top
+const sceneIdx = () => { const t = v.currentTime; let i = 0; S.forEach((s, k) => { if (t >= s.t - 0.3) i = k; }); return i; };
+// it skips the scenes marked good
+const isGood = (s) => !!GOOD["card-" + key(s.id)];
+const sceneTop = () => $("navs").offsetHeight + 4;
+function scrollToRow(r) { side.scrollTo({ top: r.getBoundingClientRect().top - side.getBoundingClientRect().top + side.scrollTop - sceneTop(), behavior: "smooth" }); }
+const goScene = (dir) => { let i = sceneIdx() + dir; while (i >= 0 && i < S.length && isGood(S[i])) i += dir;
+  if (i < 0 || i >= S.length) return; const s = S[i]; v.currentTime = Math.max(0, s.t - 0.2); scrollToRow(el[s.id]); };
+$("sprev").onclick = () => goScene(-1); $("snext").onclick = () => goScene(1);
+document.addEventListener("keydown", (e) => { if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp")) { e.preventDefault(); goScene(e.key === "ArrowDown" ? 1 : -1); } });
+function updCount() { const left = S.filter((s) => !isGood(s)).length;
+  $("scount").textContent = "Scene " + (sceneIdx() + 1) + " of " + S.length + (left < S.length ? (left ? " · " + left + " to check" : " · all good") : ""); }
+v.addEventListener("timeupdate", updCount);
+updCount();
+(D.good || []).forEach((id) => { if (GT["card-" + key(id)]) setGood("card-" + key(id), true, false); });
 
 // ---- Previous / Next change (only the changes not marked "Looks good"); no wrap-around
 let cur = null;
 const chgAll = S.filter((s) => C[s.id]), live = () => chgAll.filter((c) => !isOk[c.id]);
 if (chgAll.length) {
-  $("cnav").hidden = false;
   const bp = $("cprev"), bn = $("cnext"), cc = $("ccount");
   const upd = () => { const L = live(), pos = cur ? S.findIndex((s) => s.id === cur) : -1;
     bn.disabled = !L.some((c) => S.indexOf(c) > pos); bp.disabled = !L.some((c) => S.indexOf(c) < pos);
     const here = L.findIndex((c) => c.id === cur);
-    cc.textContent = !L.length ? "All changes look good" : here >= 0 ? "Change " + (here + 1) + " of " + L.length : L.length + (L.length > 1 ? " changes to check" : " change to check"); };
+    $("cnav").hidden = !L.length;   // once every change looks good, the row goes away
+    cc.textContent = here >= 0 ? "Change " + (here + 1) + " of " + L.length : L.length + (L.length > 1 ? " changes to check" : " change to check"); };
   navUpd = upd;
-  // "Play when jumping": off = jump to the change and stay paused (remembered in this browser only)
+  // "Auto-play": off = jump to the change and stay paused (remembered in this browser only)
   const cp = $("cplay");
   try { cp.checked = localStorage.getItem("review-jump-play") !== "off"; } catch (e) {}
   cp.onchange = () => { try { localStorage.setItem("review-jump-play", cp.checked ? "on" : "off"); } catch (e) {} };
   const go = (dir) => { const L = live(), pos = cur ? S.findIndex((s) => s.id === cur) : -1;
     const s = dir > 0 ? L.find((c) => S.indexOf(c) > pos) : [...L].reverse().find((c) => S.indexOf(c) < pos); if (!s) return;
     v.currentTime = Math.max(0, s.t - 0.2); if (cp.checked) v.play().catch(() => {}); else v.pause(); const r = el[s.id];
-    if (cur && cur !== s.id) el[cur].classList.remove("on"); cur = s.id; r.classList.add("on"); r.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (cur && cur !== s.id) el[cur].classList.remove("on"); cur = s.id; r.classList.add("on"); scrollToRow(r);
     r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 1200); upd(); };
   bn.onclick = () => go(1); bp.onclick = () => go(-1); v.addEventListener("timeupdate", upd); upd();
 }
+let handsOn = 0, follow = false;
+for (const ev of ["wheel", "pointerdown", "pointermove", "keydown", "touchstart"]) side.addEventListener(ev, () => { handsOn = Date.now(); }, { passive: true });
 v.addEventListener("timeupdate", () => {
   const best = sentenceAt(v.currentTime);
-  if (best && best.id !== cur) { if (cur) el[cur].classList.remove("on"); cur = best.id; el[cur].classList.add("on");
-    const r = el[cur], top = r.getBoundingClientRect().top - side.getBoundingClientRect().top + side.scrollTop;
-    if (side.scrollHeight > side.clientHeight && (top < side.scrollTop || top > side.scrollTop + side.clientHeight - r.offsetHeight)) side.scrollTo({ top: Math.max(0, top - 8), behavior: "smooth" }); }
+  if (best && best.id !== cur) { if (cur) el[cur].classList.remove("on"); cur = best.id; el[cur].classList.add("on"); follow = true; }
+  // keep the current card in view below the sticky scene bar (not under it); a scene that changed while the viewer was using the list catches up after
+  if (follow && !simple() && Date.now() - handsOn > 4000) { follow = false;
+    const r = el[cur], top = r.getBoundingClientRect().top - side.getBoundingClientRect().top + side.scrollTop, pad = sceneTop();
+    if (side.scrollHeight > side.clientHeight && (top - pad < side.scrollTop || top > side.scrollTop + side.clientHeight - Math.min(r.offsetHeight, side.clientHeight - pad))) side.scrollTo({ top: Math.max(0, top - pad), behavior: "smooth" }); }
   drawPins();
 });
 
@@ -136,9 +487,17 @@ const picRect = () => { const r = v.getBoundingClientRect(), fr = frame.getBound
 const pinNum = (p) => pins.indexOf(p) + 1;
 let started = false; // before the first play, a click on the picture plays it, as on any video
 v.addEventListener("play", () => { started = true; });
-const showOverlay = () => { overlay.hidden = !v.paused; $("hint").textContent = !started ? "Space or a click plays the video. Pause it, then click the picture to pin a note, or drag to draw an arrow." : v.paused ? "Click the picture to pin a note, or drag to draw an arrow to the spot. Space plays." : "Space pauses. Then click the picture to pin a note, or drag to draw an arrow."; };
-// Space plays and pauses, except while typing
-document.addEventListener("keydown", (e) => { if (e.code !== "Space" || e.target.closest("textarea,input,button,[contenteditable]")) return; e.preventDefault(); closePop(); if (v.paused) v.play().catch(() => {}); else v.pause(); });
+// Simple: the picture always takes a click (it pauses the video and opens a note there); Detailed: only while paused
+const showOverlay = () => { overlay.hidden = !v.paused && !simple();
+  $("hint").textContent = !started ? "Play the video. To leave a note, click the picture on the spot it is about."
+    : simple() ? "Click the picture to leave a note on that spot. Drag to draw an arrow."
+    : v.paused ? "Click the picture to leave a note on that spot. Drag to draw an arrow." : "Pause, then click the picture to leave a note on that spot."; };
+modeHook = () => { showOverlay(); closePop(); };
+// Space (or K) plays and pauses wherever the focus is, except while typing. One handler, caught before the video's own
+// controls or a focused button see it: otherwise a clicked video toggles twice (plays, then pauses at once).
+addEventListener("keydown", (e) => { if ((e.code !== "Space" && e.key !== "k" && e.key !== "K") || e.altKey || e.ctrlKey || e.metaKey || e.target.closest("textarea,input,select,[contenteditable]") || pick.open) return;
+  e.preventDefault(); e.stopPropagation(); if (e.repeat) return; closePop(); if (v.paused) v.play().catch(() => {}); else v.pause(); }, true);
+addEventListener("keyup", (e) => { if (e.code === "Space" && !e.target.closest("textarea,input,select,[contenteditable]")) e.preventDefault(); }, true);
 v.addEventListener("pause", showOverlay); v.addEventListener("play", () => { closePop(); showOverlay(); }); v.addEventListener("loadedmetadata", () => { showOverlay(); drawPins(); });
 let pop = null;
 const closePop = () => { if (pop) { pop.remove(); pop = null; } };
@@ -167,6 +526,7 @@ overlay.addEventListener("pointerdown", (e) => {
   const q = toPic(e);
   if (q.x < 0 || q.x > 1 || q.y < 0 || q.y > 1) return;
   if (pop) { closePop(); return; } // a click outside an open note just closes it
+  if (!v.paused) v.pause();   // Simple mode: a click on the playing video stops it on this moment
   drag = { x: q.x, y: q.y, x2: q.x, y2: q.y, sx: e.clientX, sy: e.clientY, moved: false };
   overlay.setPointerCapture(e.pointerId); e.preventDefault();
 });
@@ -217,9 +577,11 @@ function drawPins(preview) {
 }
 function renderRowPins() {
   for (const s of S) el[s.id].querySelector(".pins").innerHTML = "";
-  for (const p of pins) {
+  $("mylist").innerHTML = ""; $("mynone").hidden = pins.length > 0;
+  // each note shows twice: in its scene's card (Detailed) and in the "Your notes" list (Simple)
+  for (const p of pins) for (const box of [el[sentenceAt(p.t).id].querySelector(".pins"), $("mylist")]) {
     // empty pins still being typed show too, so the row matches the video
-    const s = sentenceAt(p.t), box = el[s.id].querySelector(".pins"), d = document.createElement("div"); d.className = "pinnote";
+    const d = document.createElement("div"); d.className = "pinnote";
     d.innerHTML = '<button type="button" class="pn" title="Show this spot"></button><div><div class="when"></div><div class="pt"></div></div>';
     d.querySelector(".pn").textContent = pinNum(p); d.querySelector(".when").textContent = (p.kind === "arrow" ? "Arrow on the picture at " : "On the picture at ") + fmt(p.t);
     d.querySelector(".pt").textContent = p.text || "(no text yet)";
@@ -228,15 +590,15 @@ function renderRowPins() {
   }
 }
 window.addEventListener("resize", () => { closePop(); drawPins(); });
-v.addEventListener("seeked", drawPins);
+v.addEventListener("seeked", () => drawPins());   // not drawPins itself: the event would be taken for an arrow
 
-// ---- saving: sentences-v<N>/<id> {id, text, script, screen, ok}, pins-v<N>/<pin id> {t, x, y, text, sentence, kind?: "arrow", x2, y2}, notes-v<N>/overall {text}
+// ---- saving: sentences-v<N>/<id> {id, text, note, ok} (older pages: script, screen), pins-v<N>/<pin id> {t, x, y, text, sentence, kind?: "arrow", x2, y2}, notes-v<N>/overall {text}
 (async () => {
   const db = await claude.use("db"); if (!db) { off.hidden = false; return; }
   const col = db.collection("sentences-v" + V), pcol = db.collection("pins-v" + V), all = db.collection("notes-v" + V);
   const cache = {}, failed = () => { off.hidden = false; };
   const saveRow = async (s, sv) => { const k = key(s.id); sv.textContent = "…";
-    try { await col.doc(k).set({ id: s.id, text: s.text, ...cache[k] }); sv.textContent = "saved"; } catch (e) { sv.textContent = "not saved"; failed(); } };
+    try { await col.doc(k).set({ id: s.id, text: s.text, ...cache[k] }); sv.textContent = "Saved"; } catch (e) { sv.textContent = "Not saved"; failed(); } };
   saveOk = (id, on) => { const s = S.find((x) => x.id === id), k = key(id); cache[k].ok = on; saveRow(s, el[id].querySelector(".save")); };
   savePin = async (p) => { try { await pcol.doc(p.id).set({ t: p.t, x: p.x, y: p.y, text: p.text, sentence: sentenceAt(p.t).id, ...(p.kind === "arrow" ? { kind: "arrow", x2: p.x2, y2: p.y2 } : {}) }); } catch (e) { failed(); } };
   dropPin = async (p) => { try { await pcol.doc(p.id).delete(); } catch (e) { failed(); } };
@@ -245,12 +607,29 @@ v.addEventListener("seeked", drawPins);
     for (const ta of d.querySelectorAll("textarea")) ta.addEventListener("input", () => { clearTimeout(timers.get(ta)); sv.textContent = "…";
       timers.set(ta, setTimeout(() => { cache[k][ta.dataset.f] = ta.value; saveRow(s, sv); }, 700)); });
   }
+  const ocol = db.collection("order-v" + V), picol = db.collection("pics-v" + V), scol = db.collection("screen-v" + V), tm = new Map();
+  const later = (k, fn) => { clearTimeout(tm.get(k)); tm.set(k, setTimeout(fn, 700)); };
+  const gcol = db.collection("good-v" + V), acol = db.collection("answers-v" + V);
+  saveOrder = (g) => later("o" + g, async () => { const O = ORDER[g]; try { await ocol.doc(safe(g)).set({ pics: O.cur, removed: O.removed, added: O.added }); } catch (e) { failed(); } });
+  savePicDb = (x) => later("p" + x.id, async () => { try { await picol.doc(x.id).set({ caption: x.caption, credit: x.credit, rights: x.rights, file: x.file || "", ...(x.asset ? { asset: x.asset } : {}), original: x.orig }); } catch (e) { failed(); } });
+  saveGood = (doc, on) => later("g" + doc, async () => { try { await gcol.doc(doc).set({ good: on, at: new Date().toISOString() }); } catch (e) { failed(); } });
+  saveAnswer = (q) => later("a" + q.id, async () => { try { await acol.doc(q.id).set({ title: q.title, answer: q.answer, note: q.note, at: new Date().toISOString() }); } catch (e) { failed(); } });
+  assetsP = claude.use("assets").catch(() => null);
+  saveScr = (o) => later("s" + o.id, async () => { try { await scol.doc(o.id).set({ label: o.label, text: o.inp.value, original: o.orig }); } catch (e) { failed(); } });
+  try {
+    (await picol.get()).docs.forEach((d) => { const x = PIC[d.id], y = d.data() || {}; if (!x) return; for (const f of ["caption", "credit", "rights"]) if (typeof y[f] === "string") x[f] = y[f]; x.paint(); });
+    (await ocol.get()).docs.forEach((d) => { const g = Object.keys(ORDER).find((k) => safe(k) === d.id), y = d.data() || {}; if (g && Array.isArray(y.pics)) ORDER[g].apply(y); });
+    // marks saved here win over the ones carried from the last version
+    (await gcol.get()).docs.forEach((d) => { const y = d.data() || {}; if (typeof y.good === "boolean" && GT[d.id]) setGood(d.id, y.good, false); });
+    (await acol.get()).docs.forEach((d) => { const q = QS[d.id], y = d.data() || {}; if (q) q.set(y.answer || "", y.note || "", false); });
+    (await scol.get()).docs.forEach((d) => { const o = Object.values(SCR).find((q) => q.id === d.id), y = d.data() || {}; if (o && typeof y.text === "string") { o.inp.value = y.text; o.mark(); } });
+  } catch (e) { failed(); }
   const na = $("n-all"), sa = $("s-all");
   na.addEventListener("input", () => { clearTimeout(timers.get(na)); sa.textContent = "…";
-    timers.set(na, setTimeout(async () => { try { await all.doc("overall").set({ text: na.value }); sa.textContent = "saved"; } catch (e) { sa.textContent = "not saved"; failed(); } }, 700)); });
+    timers.set(na, setTimeout(async () => { try { await all.doc("overall").set({ text: na.value }); sa.textContent = "Saved"; } catch (e) { sa.textContent = "Not saved"; failed(); } }, 700)); });
   col.onSnapshot((snap) => { for (const d of snap.docs) { const k = d.id, x = d.data() || {}; cache[k] = Object.assign({}, x); delete cache[k].id; delete cache[k].text;
     const row = rows.querySelector('[data-k="' + k + '"]'); if (!row) continue;
-    for (const ta of row.querySelectorAll("textarea")) if (document.activeElement !== ta) ta.value = x[ta.dataset.f] || "";
+    for (const ta of row.querySelectorAll("textarea")) if (document.activeElement !== ta) ta.value = x[ta.dataset.f] || [x.script, x.screen].filter(Boolean).join("\n");
     const s = S.find((y) => key(y.id) === k); if (s && C[s.id]) setOk(s.id, !!x.ok); } });
   all.onSnapshot((snap) => { for (const d of snap.docs) if (d.id === "overall" && document.activeElement !== na) na.value = (d.data() || {}).text || ""; });
   pcol.onSnapshot((snap) => { const open = pop && document.activeElement && pop.contains(document.activeElement);

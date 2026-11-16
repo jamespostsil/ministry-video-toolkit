@@ -20,3 +20,6 @@ remotion/public/_example/media/
 # src/projects/index.ts.)
 remotion/src/projects/*/
 !remotion/src/projects/_example/
+
+# Local safety copies made while editing
+backups/
