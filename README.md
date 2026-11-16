@@ -1,9 +1,12 @@
 # Ministry Video Toolkit
 
 Turn a talking-head recording and a written script into a finished ministry
-update video: photos, headings and lists timed to your words, a music bed, a
+update video: photos, headings and lists timed to your words, a music score, a
 closing frame with your photo, web address and QR code, and a YouTube
 thumbnail.
+
+**Watch an example:** [Ministry Update: September 2026](https://vimeo.com/1247402795/8ba2696695)
+(3:37), made with this toolkit.
 
 It is built for missionaries and ministry staff, and was made for Wycliffe and
 SIL ministry updates, but nothing in it is tied to one organisation or one
@@ -18,10 +21,6 @@ footage, photos, script and beat plan are all included, so your first render
 reproduces it, and you can see exactly how each moment was built. See
 [examples/example-script.md](examples/example-script.md) for the script it was
 made from.*
-
-**Watch it:** [Ministry Update: September 2026](https://vimeo.com/1247402795/8ba2696695)
-(3:37). This version's music was made for the video with `npm run music`, so it
-changes style at the big moments (see the `music` skill).
 
 ---
 
