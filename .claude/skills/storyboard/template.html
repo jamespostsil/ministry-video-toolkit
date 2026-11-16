@@ -294,7 +294,11 @@ select.rights{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
 .blk-h:not(:has(>:not([hidden]):not(.gsum))){display:none}.blk.good>.blk-h{display:flex}
 /* "+ Add a scene here" shows when the gap between two scenes is pointed at */
 .add-gap{opacity:0;margin:-4px 0;height:16px}.add-gap:hover,.add-gap:focus-within{opacity:1}
-.notes{margin-top:8px}.nextsc{margin-top:6px}
+.notes{margin-top:8px}
+/* the card's last row: "Saved" (when it flashes) and Next scene, at the bottom right under everything */
+.cardfoot{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:6px;min-height:1.4em}
+.cardfoot .saved{position:static;background:none;padding:0}.cardfoot .nextsc{margin:0}
+.grp.good>.cardfoot{display:none}body.simple .grp.good>.cardfoot{display:flex}
 details.help{margin:0 0 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root:not([data-theme="light"]) select.rights.ask{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root:not([data-theme="light"]) select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root:not([data-theme="light"]) .cap .beat{color:var(--text)}}
@@ -902,7 +906,7 @@ shots.forEach((s, i) => {
     let note = null;
     if (k === 0) {
       notes = document.createElement("div"); notes.className = "blk notes";
-      notes.innerHTML = '<div class="nhead"><label class="f" for="note-' + id + '">Note</label><span class="saved">Saved</span></div><textarea class="note" id="note-' + id + '" rows="1" placeholder="What should change in this scene?"></textarea>';
+      notes.innerHTML = '<div class="nhead"><label class="f" for="note-' + id + '">Note</label></div><textarea class="note" id="note-' + id + '" rows="1" placeholder="What should change in this scene?"></textarea>';
       note = notes.querySelector("textarea");
     }
     if (say) { say.value = orig; row.querySelector(".orig i").textContent = orig; }
@@ -922,7 +926,7 @@ shots.forEach((s, i) => {
     }
     g.appendChild(row);
     const r = rows[id] = { id, row, say, note, orig, shot: s.key, timer: null };
-    r.flashFor = (ta) => ta === note ? notes : row;
+    r.flashFor = (ta) => ta === note ? g.querySelector(".cardfoot") : row;
     for (const ta of [say, note]) if (ta) {
       ta.addEventListener("focus", () => { if (cur !== i) show(i, false); });
       ta.addEventListener("input", () => { fit(ta); refresh(r); clearTimeout(r.timer); r.timer = setTimeout(() => saveRow(r, r.flashFor(ta)), 800); });
@@ -933,8 +937,9 @@ shots.forEach((s, i) => {
   if (wb) g.appendChild(wb);
   if (s.lead) { const pb = picBlock(s, i); g.appendChild(pb); notes.querySelector(".nhead").appendChild(pb.querySelector(".addp")); }   // any first card of a moment can take a photo
   g.appendChild(notes);
+  { const ft = document.createElement("div"); ft.className = "cardfoot"; ft.innerHTML = '<span class="saved">Saved</span>'; g.appendChild(ft); }   // "Saved" for the Note: bottom right of the card
   if (i < shots.length - 1) { const nx = document.createElement("div"); nx.className = "nextsc";
-    nx.innerHTML = '<button type="button" class="btn">Next scene ›</button>'; nx.firstChild.addEventListener("click", () => { for (let j = i + 1; j < shots.length; j++) if (visible(j)) return show(j, true); }); g.appendChild(nx); }   // the scene after this card, not after the highlighted one
+    nx.innerHTML = '<button type="button" class="btn">Next scene ›</button>'; g.querySelector(".cardfoot").appendChild(nx); nx.firstChild.addEventListener("click", () => { for (let j = i + 1; j < shots.length; j++) if (visible(j)) return show(j, true); }); g.appendChild(nx); }   // the scene after this card, not after the highlighted one
   groups.push(g); $("list").appendChild(g);
 });
 // ---- questions from Claude (answers/<id> {title, answer: "ok" | "change", note}), all at the top; one with "at" (a shot key) links to that card

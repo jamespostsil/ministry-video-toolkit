@@ -137,7 +137,8 @@ body:not(.simple) #mine{display:none}
 .hint{font-weight:400;color:var(--muted)}
 /* "saved" takes no room of its own */
 .nhead{justify-content:flex-start}.nhead .add{margin-left:auto}
-.save{font-size:.72rem;font-weight:600;color:var(--muted);margin-left:8px;min-height:0}
+/* "Saved": bottom right of the card, under everything */
+.save{font-size:.72rem;font-weight:600;color:var(--muted);text-align:right;min-height:1.2em;margin-top:4px}
 /* a change box: its text on the left and "Looks good" at the right, in the same place whether ticked or not */
 .chg{display:flex;gap:10px;align-items:flex-start}.chg .ctext{flex:1;min-width:0}
 .chg label.ok{flex:none;margin:0}.chg.done{align-items:center}
@@ -177,7 +178,7 @@ details.help{margin:0 0 8px}
     <div class="navs" id="navs"><div class="snav"><button type="button" class="btn" id="sprev">‹ Previous scene</button><span id="scount"></span><button type="button" class="btn" id="snext">Next scene ›</button></div>
     <div class="cnav" id="cnav" hidden><button type="button" id="cprev" title="Previous change" aria-label="Previous change">&#9664;</button><button type="button" id="cnext" title="Next change" aria-label="Next change">&#9654;</button><span id="ccount" aria-live="polite"></span><label class="ap" title="Play from the change after jumping to it"><input type="checkbox" id="cplay" checked> Auto-play</label></div></div>
     <section class="qs" id="qs" hidden><h2 id="qsh">Questions from Claude</h2><div id="qlist"></div></section>
-    <div class="row"><div class="nhead"><label class="f" for="n-all" style="margin-top:0">Anything else about the video</label><span class="save" id="s-all"></span></div><textarea id="n-all" placeholder="Notes about the whole video"></textarea></div>
+    <div class="row"><label class="f" for="n-all" style="margin-top:0">Anything else about the video</label><textarea id="n-all" placeholder="Notes about the whole video"></textarea><div class="save" id="s-all"></div></div>
     <section id="mine"><h2>Your notes</h2><div class="pins" id="mylist"></div><p class="none" id="mynone">No notes yet. Click the picture to leave one.</p></section>
     <div id="rows"></div>
   </div>
@@ -242,7 +243,7 @@ for (const s of S) {
   const k = key(s.id), d = document.createElement("div"); d.className = "row"; d.dataset.k = k;
   d.innerHTML = '<div class="top"><button class="time" type="button"></button><div class="txt"></div></div>' +
     '<div class="shown"></div>' +
-    '<div class="nhead"><label class="f" for="nt-' + k + '">Note</label><span class="save"></span></div><textarea id="nt-' + k + '" data-f="note" placeholder="What should change in this scene?"></textarea><div class="pins"></div>';
+    '<div class="nhead"><label class="f" for="nt-' + k + '">Note</label></div><textarea id="nt-' + k + '" data-f="note" placeholder="What should change in this scene?"></textarea><div class="pins"></div><div class="save"></div>';
   buildShown(s, d.querySelector(".shown"));
   const addB = d.querySelector(".pblk .add"); if (addB) d.querySelector(".nhead").appendChild(addB);
   d.querySelector(".time").textContent = fmt(s.t);
