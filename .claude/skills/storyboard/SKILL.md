@@ -84,10 +84,22 @@ These came from review and are standing rules:
 
 ## After approval
 
-`python -I export_photos.py storyboard.json <script's image folder> remotion/public/images/<project> --crops
-crops.json` writes every photo turned upright and cropped exactly as the storyboard shows it, with a `photos.json`
-of sizes, captions, credits and permissions for `beats.ts` (pass `--edits` with the db's `pics` documents to apply
-the reviewer's changes). Then build the beats from the cards: one card is one screen.
+The video uses the photos exactly as the reviewer left them on the page. Three steps:
+
+1. Read the page's saved photo changes: ArtifactData `list` of the collections `order` and `pics`, each with the
+   same `out_dir` (for example `local/edits`), so the folder holds `order/<group>.json` and `pics/<id>.json`.
+2. If any `order` document lists an `added` photo with an `asset` (uploaded from the reviewer's computer), save it
+   with the Artifact tool (`action: "read"`, the page's `url`, `path` = the asset id) into one folder.
+3. `python -I export_photos.py storyboard.json <script's image folder> remotion/public/images/<project>
+   --crops crops.json --edits local/edits [--uploads <folder>]`
+
+The export applies the reviewer's captions, credits and permissions, and each moment's photo order, removed photos
+and added photos. It stops instead of guessing when the edits folder is missing (`--no-edits` only for a page never
+published), when an upload hasn't been saved, or when a photo is still "Ask first" or "Don't use" (settle it on the
+page, or pass `--skip-unapproved` to leave it out). It writes each photo cropped as shown, `photos.json` (sizes,
+captions, credits, permissions for `beats.ts`), `photo-order.json` (each moment's photos in the reviewer's order:
+build the beats from it) and `photo-credits.txt` (the end screen's "Photos by ..." line, from the photos used).
+Then build the beats from the cards: one card is one screen.
 
 ## Read it back
 
