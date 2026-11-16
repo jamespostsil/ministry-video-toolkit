@@ -31,6 +31,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser(); ap.add_argument("data"); ap.add_argument("out")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--out-pics")
 ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
+ap.add_argument("--library-link", help="web link to the shared photo folder, shown in the Shared photos tab")
 a = ap.parse_args(); data_path, out = a.data, a.out
 d = json.load(open(data_path, encoding="utf-8"))
 for k in ("title", "video", "version", "sentences"):
@@ -74,6 +75,7 @@ page = open(os.path.join(here, "template.html"), encoding="utf-8").read()
 esc = lambda s: s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 payload = {k: d.get(k) for k in ("version", "sentences", "changes", "general", "questions", "good", "preview", "mode")}
 payload["library"] = library
+if a.library_link: payload["libraryLink"] = a.library_link
 page = (page.replace("__TITLE__", esc(d["title"])).replace("__VIDEO__", esc(d["video"])).replace("__ACCENT__", d.get("accent", "#3a4720"))
         .replace("__DATA__", json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")))
 open(out, "w", encoding="utf-8").write(page)

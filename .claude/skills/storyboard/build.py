@@ -66,6 +66,7 @@ ap.add_argument("storyboard"); ap.add_argument("out")
 ap.add_argument("--pictures"); ap.add_argument("--boxes"); ap.add_argument("--drafts")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--logo")
 ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
+ap.add_argument("--library-link", help="web link to the shared photo folder, shown in the Shared photos tab")
 ap.add_argument("--subtitle", default="Real screenshots. Nothing has been recorded yet.")
 ap.add_argument("--accent", default="#b0561c"); ap.add_argument("--hero", default="#9a4a17")
 a = ap.parse_args()
@@ -174,6 +175,7 @@ if bad: raise SystemExit(f"questions for unknown shots: {bad}")
 esc = lambda t: t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 data = {"title": sb.get("title", ""), "draft": draft, "since": draft - 1 if prev is not None else None, "shots": shots,
         "library": library, "questions": sb.get("questions", []), "good": sb.get("good", []), "mode": sb.get("mode", "simple")}
+if a.library_link: data["libraryLink"] = a.library_link
 if a.logo:   # drawn under a name plate whose words include a "Logo" item
     dst = os.path.join(a.out, "logo.png")
     if not os.path.exists(dst) or not os.path.samefile(a.logo, dst): shutil.copy(a.logo, dst)

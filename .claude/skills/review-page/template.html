@@ -117,6 +117,7 @@ video::cue{font:600 18px system-ui,sans-serif;background:rgb(0 0 0/.62);color:#f
 dialog.pick{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg);padding:14px;width:min(720px,92vw);max-height:84vh}
 dialog.pick::backdrop{background:rgb(0 0 0/.5)}
 /* "+ Add a photo": the script's photos, then the shared photos (cleared to use) with their credit under each */
+.pick .ptabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:0 0 10px}.pick .ptabs button{border:0;border-bottom:3px solid transparent;margin-bottom:-1px;background:none;padding:8px 12px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}.pick .ptabs button:hover{color:var(--fg)}.pick .ptabs button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--accent)}.pick .pnote{font-size:.82rem;color:var(--muted);margin:0 0 10px}.pick .pnote a{color:var(--accent)}
 .pick .libh{grid-column:1/-1;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
 .pick .lib button{display:flex;flex-direction:column;text-align:left}
 .pick .lib .pc{line-height:1.25;font-size:.72rem;color:var(--muted);padding:3px 2px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -189,7 +190,7 @@ details.help{margin:0 0 8px}
   </div>
 </div>
 <div class="lb" id="lb" hidden><img id="lbimg" alt=""></div>
-<dialog class="pick" id="pick"><h2>Add a photo</h2><div class="lib" id="plib"></div>
+<dialog class="pick" id="pick"><h2>Add a photo</h2><div class="ptabs" id="ptabs" role="tablist" hidden></div><p class="pnote" id="pnote" hidden></p><div class="lib" id="plib"></div>
   <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span><button type="button" class="btn" id="pclose">Close</button></div></dialog>
 <script>
 const D = __DATA__;
@@ -365,15 +366,21 @@ let assetsP = Promise.resolve(null), pickFor = null;
 const pick = $("pick");
 function openPicker(O) {
   pickFor = O; const lib = $("plib"); lib.innerHTML = "";
-  const head = (t) => { const h = document.createElement("div"); h.className = "libh"; h.textContent = t; lib.appendChild(h); };
   const tile = (p) => { const b = document.createElement("button"); b.type = "button"; b.title = [p.caption, p.credit].filter(Boolean).join(" · ") || p.file;
     b.innerHTML = '<img alt="">'; b.querySelector("img").src = srcOf(p, true); b.querySelector("img").alt = p.caption || p.file;
     if (p.shared) { const c = document.createElement("span"); c.className = "pc"; c.textContent = p.credit || p.caption || ""; b.appendChild(c); }
     b.addEventListener("click", () => { O.addPhoto(p); pick.close(); }); lib.appendChild(b); };
   const mine = (D.library || []).filter((p) => !p.shared && !O.cur.includes(p.id)), shared = (D.library || []).filter((p) => p.shared && !O.cur.includes(p.id));
-  if (mine.length && shared.length) head("From the script"); mine.forEach(tile);
-  if (shared.length) { head("Shared photos, cleared to use"); shared.forEach(tile); }
-  if (!lib.children.length) lib.textContent = "Every photo is already here.";
+  const tabs = $("ptabs"), note = $("pnote"); tabs.innerHTML = "";
+  const fill = (w) => { lib.innerHTML = ""; (w === "shared" ? shared : mine).forEach(tile);
+    [...tabs.children].forEach((b) => b.setAttribute("aria-selected", String(b.dataset.w === w))); note.hidden = w !== "shared";
+    if (!lib.children.length) lib.textContent = "Every photo is already here."; };
+  const tab = (w, label) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.w = w; b.textContent = label; b.addEventListener("click", () => fill(w)); tabs.appendChild(b); };
+  tabs.hidden = !shared.length;
+  if (shared.length) { tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", "Shared photos (" + shared.length + ")"); }
+  note.textContent = "Cleared for SIL and Wycliffe videos. Keep the credit on screen. ";
+  if (D.libraryLink) { const a = document.createElement("a"); a.href = D.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL sign-in)"; note.appendChild(a); }
+  fill(mine.length || !shared.length ? "mine" : "shared");
   $("pupst").textContent = ""; $("pup").hidden = true;
   assetsP.then((a) => { $("pup").hidden = !a; });
   pick.showModal();

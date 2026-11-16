@@ -130,6 +130,14 @@ replace those paths as you add your own. To hear a music change without
 rendering any frames: `npm run render -- my-video --audio-only` writes
 `out/my-video-mix.wav`.
 
+**Shared photos of people with Bibles.** SIL and Wycliffe staff can use a set of
+photos already cleared for partnership videos, each with its on-screen credit:
+[People with Bibles: photos for partnership videos](https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq)
+(sign in with your SIL account; anyone else can press **Request access**).
+Download the folder once, or add a shortcut to it in Google Drive for desktop, and
+tell Claude where it is. The storyboard and review pages then offer them under
+**+ Add a photo > Shared photos**, with the caption and credit filled in.
+
 **Keeping your own project under version control.** Project folders are
 git-ignored here so nobody's video ends up in the shared toolkit. To track a
 video in your own repository, keep it in a separate repo and copy or link its

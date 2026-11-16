@@ -141,12 +141,18 @@ The page should explain itself. Keep these when changing the template:
 
 ## Shared photos in "+ Add a photo"
 
-`--library <folder>` (repeatable) offers a shared photo folder under "+ Add a photo", below the script's own photos,
-headed "Shared photos, cleared to use". If the folder has a `photo-credits.csv` (columns `file`, `caption`,
-`on-screen credit`), only the photos it lists are offered, each with its caption and credit filled in; otherwise
-every photo in the folder is offered. A shared photo the reviewer adds is saved with its caption and credit at once.
-The photos are copied into the page when it is built, so reviewers need nothing but the page link: no Google
-sign-in. Whoever builds the page needs the folder on their computer (Google Drive for desktop, or a download).
-The people-with-Bibles set: the SIL Drive folder "People with Bibles: photos for partnership videos".
+"+ Add a photo" has two tabs when there are shared photos: **This video's photos** and **Shared photos**. The
+Shared tab says the photos are cleared for SIL and Wycliffe videos and links to the whole folder.
+
+- `--library <folder>` (repeatable) adds a shared photo folder. If it has a `photo-credits.csv` (columns `file`,
+  `caption`, `on-screen credit`), only the photos it lists are offered, each with its caption and credit, and adding
+  one saves both at once. Otherwise every photo in the folder is offered.
+- `--library-link <url>` adds the folder's web link to the Shared tab.
+- Reviewers need only the page link: the photos are copied into the page when it is built. No Google sign-in.
+- Whoever builds the page needs the folder on their computer. Get it once from the link below (signed in with an
+  SIL account): **Download** gives a zip; with Google Drive for desktop, **Organize > Add shortcut** to My Drive keeps
+  it up to date. People outside SIL get Google's **Request access** button, which asks the folder's owner.
+
+The people-with-Bibles set ("People with Bibles: photos for partnership videos", SIL Drive): https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq
 
 After approval, pass the same folder to `export_photos.py --library <folder>` so it finds photos added from it.

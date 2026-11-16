@@ -129,10 +129,6 @@ The page should explain itself. Keep these when changing the template:
 
 ## Shared photos in "+ Add a photo"
 
-`--library <folder>` (repeatable) offers a shared photo folder under "+ Add a photo", below the script's own photos,
-headed "Shared photos, cleared to use". If the folder has a `photo-credits.csv` (columns `file`, `caption`,
-`on-screen credit`), only the photos it lists are offered, each with its caption and credit filled in; otherwise
-every photo in the folder is offered. A shared photo the reviewer adds is saved with its caption and credit at once.
-The photos are copied into the page when it is built, so reviewers need nothing but the page link: no Google
-sign-in. Whoever builds the page needs the folder on their computer (Google Drive for desktop, or a download).
-The people-with-Bibles set: the SIL Drive folder "People with Bibles: photos for partnership videos".
+Same as the storyboard (see its SKILL.md, "Shared photos"): `--library <folder>` (with `--out-pics`) adds the
+**Shared photos** tab, and `--library-link <url>` links the whole folder from it. Reviewers need only the page link.
+The people-with-Bibles set: https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq
