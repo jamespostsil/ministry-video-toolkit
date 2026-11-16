@@ -8,7 +8,9 @@ Wycliffe Bible Translators.
 **They are not covered by this repository's MIT licence.** You may use the
 example pictures in your own videos and publications with attribution: show each
 picture's credit as the example does (for example "Photo: Wycliffe"). The
-footage, the Wycliffe logo and the music have their own terms, below.
+exceptions are the two photos credited to individual photographers, Peris Kiriko
+(Ikizu) and Chris Gilmore (Zinza): ask them before using those. The footage, the
+Wycliffe logo and the music have their own terms, below.
 
 - **Scripture dedication photos** belong to the organisations and photographers
   credited in the video's captions: Wycliffe, SIL PNG, BTL, Peris Kiriko and
