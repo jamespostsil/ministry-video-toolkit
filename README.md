@@ -19,6 +19,10 @@ reproduces it, and you can see exactly how each moment was built. See
 [examples/example-script.md](examples/example-script.md) for the script it was
 made from.*
 
+**Watch it:** [Ministry Update: September 2026](https://vimeo.com/1247402795/8ba2696695)
+(3:37). This version's music was made for the video with `npm run music`, so it
+changes style at the big moments (see the `music` skill).
+
 ---
 
 ## Get started
