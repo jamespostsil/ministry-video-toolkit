@@ -31,6 +31,7 @@
     "new": "node scripts/new-project.mjs",
     "footage": "node scripts/build-footage.mjs",
     "transcribe": "node scripts/transcribe.mjs",
+    "music": "node scripts/make-music.mjs",
     "studio": "remotion studio",
     "still": "node scripts/still.mjs",
     "render": "node scripts/render-final.mjs",

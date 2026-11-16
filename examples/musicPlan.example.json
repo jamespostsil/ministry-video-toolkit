@@ -1,0 +1,47 @@
+{
+  "_comment": "Copy to remotion/src/projects/<your-project>/musicPlan.json, then: npm run music -- <your-project>. Times are VIDEO times (title card included): seconds or \"m:ss.s\". Each section starts where the previous one ends; the last one runs to the end of the video. loudness is the section's level in LUFS before the render's ducking curve: -18 matches the example's music bed, about 3 dB less for tender or quiet parts. Pick a preset from musicStyles.json after hearing samples (npm run music -- <project> --sample=upbeat-acoustic,calm-piano), or replace \"preset\" with your own \"style\": { \"positive\": [...], \"negative\": [...] } and \"bpm\". These are the real sections of the example (Sept 2026) video.",
+  "preset": "upbeat-acoustic",
+  "sections": [
+    {
+      "name": "opening",
+      "end": "0:20.2",
+      "loudness": -21.5,
+      "styles": ["bright welcoming groove", "strummed guitar, piano and claps"],
+      "avoid": ["slow fade in", "long intro"]
+    },
+    {
+      "name": "family-news",
+      "end": "0:49.3",
+      "loudness": -20.5,
+      "styles": ["tender and comforting", "soft solo piano with gentle sustained strings", "no percussion", "same key and tempo, half-time feel"],
+      "avoid": ["claps", "shaker", "drums", "upbeat", "strumming"]
+    },
+    {
+      "name": "ministry",
+      "end": "2:08.8",
+      "loudness": -17.5,
+      "styles": ["hopeful forward motion", "groove returns: guitar, ukulele, piano, bass", "light claps and shaker", "steady energy throughout, no breakdown"],
+      "avoid": ["dips", "breakdowns", "long intro"]
+    },
+    {
+      "name": "new-role",
+      "end": "2:39.15",
+      "loudness": -17.5,
+      "styles": ["light and friendly", "playful plucked guitar and piano", "bouncy bass"],
+      "avoid": ["long intro", "breakdown"]
+    },
+    {
+      "name": "vision-and-invitation",
+      "end": "3:21.6",
+      "loudness": -17,
+      "styles": ["building and inspiring", "fuller arrangement, warm strings join", "brighter and more energetic over time"],
+      "avoid": ["breakdown", "fade out"]
+    },
+    {
+      "name": "blessing-and-close",
+      "loudness": -20.5,
+      "styles": ["warm and joyful", "full groove continues"],
+      "avoid": ["fade out early", "silence", "slowing down early"]
+    }
+  ]
+}

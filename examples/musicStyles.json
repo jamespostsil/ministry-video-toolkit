@@ -1,0 +1,49 @@
+{
+  "_comment": "Starting points for musicPlan.json. Name one with \"preset\": \"<name>\", or write your own \"style\": { \"positive\": [...], \"negative\": [...] } and \"bpm\". Hear them first: npm run music -- <project> --sample=upbeat-acoustic,calm-piano (about 20 s each). Everyone's taste differs: these are only starting points. Every preset keeps one key and one tempo so separately made sections join smoothly, and rules out words.",
+  "noVocals": ["vocals", "singing", "choir", "humming", "spoken word", "whistling"],
+  "presets": {
+    "upbeat-acoustic": {
+      "about": "Warm, a little upbeat acoustic pop. Used for the example video.",
+      "bpm": 108,
+      "positive": ["upbeat warm acoustic pop instrumental", "non-profit ministry video background music", "D major", "steady groove",
+                   "acoustic guitar strumming", "ukulele", "bright piano", "warm bass", "light hand claps and shaker",
+                   "hopeful and joyful", "leaves room for a speaking voice, no busy lead melody"],
+      "negative": ["heavy drums", "electric guitar solo", "distortion", "EDM", "minor key", "dramatic orchestral hits"]
+    },
+    "calm-piano": {
+      "about": "Quiet, reflective piano with soft strings. Stays out of the way; can feel slow over a long video.",
+      "bpm": 76,
+      "positive": ["calm hopeful instrumental", "soft felt piano", "gentle sustained strings", "warm ambient pads", "C major",
+                   "sparse and spacious", "leaves room for a speaking voice"],
+      "negative": ["drums", "percussion", "busy melody", "minor key", "dramatic swells"]
+    },
+    "cinematic-hopeful": {
+      "about": "Light film-score feel: piano, strings and soft pulse that builds. Good for vision and big-picture stories.",
+      "bpm": 96,
+      "positive": ["hopeful cinematic underscore", "piano ostinato", "warm strings", "soft pulsing percussion", "E flat major",
+                   "gradual build", "inspiring but restrained", "leaves room for a speaking voice"],
+      "negative": ["epic trailer hits", "heavy drums", "brass fanfare", "minor key", "distortion"]
+    },
+    "worship-acoustic": {
+      "about": "Instrumental contemporary worship feel: acoustic guitar, piano, gentle band.",
+      "bpm": 72,
+      "positive": ["instrumental contemporary worship", "acoustic guitar", "warm piano", "soft pads", "light kick and brushes", "G major",
+                   "reverent and joyful", "leaves room for a speaking voice"],
+      "negative": ["rock drums", "electric guitar solo", "distortion", "minor key"]
+    },
+    "african-guitar": {
+      "about": "Bright East African benga-style guitars, bouncy bass, light hand percussion.",
+      "bpm": 116,
+      "positive": ["joyful East African benga-style instrumental", "bright interlocking clean electric guitars", "bouncy bass",
+                   "light hand percussion", "A major", "warm and upbeat", "leaves room for a speaking voice"],
+      "negative": ["heavy drums", "distortion", "EDM", "minor key"]
+    },
+    "latin-acoustic": {
+      "about": "Warm Latin American acoustic: nylon guitar, cajón, light percussion.",
+      "bpm": 100,
+      "positive": ["warm Latin American acoustic instrumental", "nylon-string guitar", "cajón", "light shaker", "soft piano", "E major",
+                   "friendly and hopeful", "leaves room for a speaking voice"],
+      "negative": ["reggaeton beat", "heavy drums", "brass", "minor key", "distortion"]
+    }
+  }
+}

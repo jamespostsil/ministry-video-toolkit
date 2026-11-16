@@ -211,6 +211,24 @@ how each beat's time comes from the words.
 
 ---
 
+## Optional: an ElevenLabs key, to make music
+
+You can always use your own music file (see
+[docs/finding-music.md](docs/finding-music.md)). If you'd rather have music
+made for your video, timed so it changes at your big moments,
+`npm run music -- <project>` can make it with ElevenLabs Music. That needs your
+own key from [elevenlabs.io](https://elevenlabs.io/app/settings/api-keys) with
+access to Music. Add it to the same `remotion/.env` file:
+
+```
+ELEVENLABS_API_KEY=your-key-here
+```
+
+Check what your plan's licence allows before publishing (free plans are
+non-commercial and need a credit). Each run spends credits from your account.
+
+---
+
 ## Optional: Python, for some checks
 
 The `review` and `partner-frame` skills include small Python snippets that

@@ -115,7 +115,7 @@ repository):
 | What | Where | Referred to as |
 |---|---|---|
 | Photos | `remotion/public/images/my-video/` | `images/my-video/photo.jpg` in `beats.ts` |
-| Music | `remotion/public/audio/` | `"music": { "src": "audio/my-music.m4a" }` in `project.json`. See [docs/finding-music.md](docs/finding-music.md) for free music you're allowed to use |
+| Music | `remotion/public/audio/` | `"music": { "src": "audio/my-music.m4a" }` in `project.json`. See [docs/finding-music.md](docs/finding-music.md) for free music you're allowed to use, or, with your own ElevenLabs key, make timed music with `npm run music` (the `music` skill) |
 | Cut footage, title still | `remotion/public/base/` | written by `npm run footage` |
 | Renders and stills | `remotion/out/` | |
 
@@ -168,6 +168,7 @@ this folder; they are also plain Markdown, worth reading yourself.
 | `script-to-beats` | Turning a script with images into a timed beat plan |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
+| `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |
 | `render` | Rendering and the audio mix |
 | `review` | Checking a render: flashes at cuts, audio clicks, sync, legibility, QR scanning |
 | `review-page` | The page a reviewer watches a version on: notes per sentence, notes pinned to a spot on the picture, what changed, Looks good |

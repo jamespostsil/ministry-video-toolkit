@@ -46,6 +46,11 @@ and [terms](https://elevenlabs.io/terms-of-use) say:
   "non-commercial" covers it, or use a paid plan.
 - Ask for a track at least as long as your video, or ask for one that loops
   cleanly.
+- **With an API key, the toolkit can make the music for you**, timed so it
+  changes on your video's big moments (tender under sad news, upbeat
+  elsewhere): `npm run music -- <project>`. See the `music` skill and
+  `examples/musicPlan.example.json`. This is optional: it needs your own
+  ElevenLabs key (SETUP.md), and your own music file always works instead.
 
 ## YouTube Audio Library
 
