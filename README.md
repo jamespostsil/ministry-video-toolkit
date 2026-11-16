@@ -19,6 +19,20 @@ reproduces it, and you can see exactly how each moment was built. See
 [examples/example-script.md](examples/example-script.md) for the script it was
 made from.*
 
+## Your first video, in five steps
+
+1. **Record yourself** talking to the camera, reading your script.
+2. **Write the script** in Notion or a Google Doc, with each picture placed just
+   before the words it goes with. Copy an example to start from:
+   [Google Doc](https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/edit)
+   or [Notion page](https://app.notion.com/p/41a598a5fd4081b5b0e3d442c76bef91).
+3. **Approve the storyboard.** Give Claude the recording and the script link.
+   Claude makes a page showing every scene with its words and pictures; change
+   anything there, then press Approve.
+4. **Review the video.** Claude renders it and makes a review page. Leave notes
+   on any scene until it looks right.
+5. **Share it.** Claude renders the final video and its YouTube thumbnail.
+
 ---
 
 ## Get started
@@ -40,7 +54,7 @@ npm run render -- _example      # render the example to out/Example.mp4
 ## Two ways to use it
 
 **With Claude Code (recommended).** Open Claude Code in this folder and
-describe what you want: *"Here's my recording and my Notion script. Make the
+describe what you want: *"Here's my recording and my Notion script (or Google Doc). Make the
 video."* The skills in `.claude/skills/` tell Claude how to trim the footage,
 plan the graphics, build the closing frame, render, and check the result for
 the problems renders actually have.
@@ -179,7 +193,8 @@ this folder; they are also plain Markdown, worth reading yourself.
 |---|---|
 | `footage-prep` | Trimming the opening hold and teleprompter pauses; where it is safe to cut |
 | `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked, Approve |
-| `script-to-beats` | Turning a script with images into a timed beat plan |
+| `script-to-beats` | Turning a script with images (Notion page or Google Doc) into a timed beat plan |
+| `photo-touchup` | Fixing washed-out photos gently, with a before / after page to choose from before anything is replaced |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |

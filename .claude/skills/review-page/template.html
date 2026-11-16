@@ -379,7 +379,7 @@ function openPicker(O) {
   tabs.hidden = !shared.length;
   if (shared.length) { tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", "Shared photos (" + shared.length + ")"); }
   note.textContent = "Cleared for SIL and Wycliffe videos. Keep the credit on screen. ";
-  if (D.libraryLink) { const a = document.createElement("a"); a.href = D.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL sign-in)"; note.appendChild(a); }
+  if (D.libraryLink) { const a = document.createElement("a"); a.href = D.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL accounts; anyone else can ask for access)"; note.appendChild(a); }
   fill(mine.length || !shared.length ? "mine" : "shared");
   $("pupst").textContent = ""; $("pup").hidden = true;
   assetsP.then((a) => { $("pup").hidden = !a; });
