@@ -15,8 +15,8 @@ them.
 **Google Doc.** Export it with the Google Drive connector, `download_file_content` with
 `exportMimeType: "application/zip"` (the doc's id is in its link, between `/d/` and `/edit`). The zip is saved to
 a file; then `python gdoc_import.py <that zip> <project folder>/script` writes `script.md` and `images/`, every
-picture numbered in reading order at the size it was uploaded, with its alt text and the words beside it (its
-caption and credit). Without the connector, the writer can use **File > Download > Web page (.html, zipped)** and
+picture numbered in reading order at the size it was uploaded, with its alt text and its caption and credit
+(the words beside it, or in italics on the line just under it). Without the connector, the writer can use **File > Download > Web page (.html, zipped)** and
 hand Claude the zip. Nothing expires, so there is no rush.
 
 **Notion page.**

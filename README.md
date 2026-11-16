@@ -24,8 +24,10 @@ made from.*
 1. **Record yourself** talking to the camera, reading your script.
 2. **Write the script** in Notion or a Google Doc, with each picture placed just
    before the words it goes with. Copy an example to start from:
-   [Google Doc](https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/edit)
-   or [Notion page](https://app.notion.com/p/41a598a5fd4081b5b0e3d442c76bef91).
+   [Google Doc](https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/copy)
+   (opens a "Make a copy" prompt) or
+   [Notion page](https://app.notion.com/p/ltuse/Example-ministry-update-script-41a598a5fd4081b5b0e3d442c76bef91)
+   (use Duplicate).
 3. **Approve the storyboard.** Give Claude the recording and the script link.
    Claude makes a page showing every scene with its words and pictures; change
    anything there, then press Approve.

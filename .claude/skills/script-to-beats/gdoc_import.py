@@ -8,7 +8,7 @@ Pictures keep the size they were uploaded at.
 
 Writes <out-folder>/script.md: one paragraph per line, bracketed markers kept as they are, **bold** and *italic*
 kept, and each picture as <img src="images/NN-name.jpg" alt="..."> where it sits, followed by any words on the same
-line (usually its caption and credit). Pictures go to <out-folder>/images/, numbered in reading order and named
+line or in italics on the line just under it (its caption and credit). Pictures go to <out-folder>/images/, numbered in reading order and named
 from their alt text. Nothing is uploaded anywhere.
 """
 import os, re, shutil, sys, zipfile
@@ -77,7 +77,19 @@ def main(zpath, out):
         with z.open(src) as f, open(os.path.join(out, "images", name), "wb") as g: shutil.copyfileobj(f, g)
         alt_attr = alt.replace('"', "&quot;")
         names.append(f'<img src="images/{name}" alt="{alt_attr}">')
-    md = "\n\n".join(re.sub(r"\0IMG(\d+)\0", lambda m: names[int(m.group(1))], ln) for ln in d.lines)
+    lines = [re.sub(r"\0IMG(\d+)\0", lambda m: names[int(m.group(1))], ln) for ln in d.lines]
+    out_lines = []
+    for ln in lines:   # an italic line right under a picture is its caption: keep it with the picture
+        prev = out_lines[-1] if out_lines else ""
+        if re.fullmatch(r"\**(<img [^>]+>\s*)+\**", prev) and re.fullmatch(r"\*[^*].*[^*]\*|\*[^*]\*", ln):
+            m = re.search(r'<img src="images/((\d+)-picture(\.\w+))" alt="">', prev)
+            if m:   # no alt text: name the file after its caption, and use the caption as the alt text
+                cap = ln.strip("*").strip(); new = slug(cap, int(m.group(2))) + m.group(3)
+                os.replace(os.path.join(out, "images", m.group(1)), os.path.join(out, "images", new))
+                prev = prev.replace(m.group(0), f'<img src="images/{new}" alt="{cap.replace(chr(34), "&quot;")}">')
+            out_lines[-1] = prev + " " + ln
+        else: out_lines.append(ln)
+    md = "\n\n".join(out_lines)
     md = re.sub(r"\*+(<img [^>]+>)\*+", r"\1", md)   # bold that Google spread over a picture
     open(os.path.join(out, "script.md"), "w", encoding="utf-8").write(md + "\n")
     print(f"{len(d.lines)} paragraphs, {len(names)} pictures -> {os.path.join(out, 'script.md')}")

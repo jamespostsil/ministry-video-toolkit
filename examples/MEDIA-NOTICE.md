@@ -5,9 +5,10 @@ The example video's footage, photos and end-frame images (downloaded by
 come from a real, published ministry update by James and Christina Post with
 Wycliffe Bible Translators.
 
-**They are not covered by this repository's MIT licence.** They are shared so
-you can see and learn how the toolkit works. Please don't reuse them in your own
-videos or publications.
+**They are not covered by this repository's MIT licence.** You may use the
+example pictures in your own videos and publications with attribution: show each
+picture's credit as the example does (for example "Photo: Wycliffe"). The
+footage, the Wycliffe logo and the music have their own terms, below.
 
 - **Scripture dedication photos** belong to the organisations and photographers
   credited in the video's captions: Wycliffe, SIL PNG, BTL, Peris Kiriko and
@@ -24,5 +25,5 @@ videos or publications.
   the file. Download it yourself and `npm run example:media -- --music <file>`
   builds the video's music bed from it; until then a generated stand-in plays.
 
-To make your own video, use your own footage and photos, or ones you have
+For everything else, use your own footage and photos, or ones you have
 permission to use.
