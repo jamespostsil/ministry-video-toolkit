@@ -35,7 +35,7 @@ Licences change, so **read the current terms on the site** before you rely on an
 - Free, including commercial use. No credit needed.
 - Don't suggest that the people in a clip (or a brand in it) support you, and don't show them in a bad light.
 - For Claude to search it, make a free API key at [pexels.com/api](https://www.pexels.com/api/) and put it in the
-  toolkit's `.env` file as `PEXELS_API_KEY=...`.
+  `remotion/.env` file as `PEXELS_API_KEY=...`.
 
 ## Pixabay
 
@@ -45,7 +45,7 @@ Licences change, so **read the current terms on the site** before you rely on an
 - Free, including commercial use. No credit needed (it's appreciated).
 - Don't use clips with recognisable logos or brands, and don't use any clip in a misleading way.
 - For Claude to search it, make a free API key at [pixabay.com/api/docs](https://pixabay.com/api/docs/) and put it
-  in `.env` as `PIXABAY_API_KEY=...`.
+  in `remotion/.env` as `PIXABAY_API_KEY=...`.
 
 ---
 

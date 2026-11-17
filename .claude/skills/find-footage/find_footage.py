@@ -10,7 +10,7 @@ search   Searches each source for each keyword and keeps only clips whose licenc
            Mixkit   "Mixkit Free License" clips only ("Restricted License" means personal use only)
            Pexels   needs PEXELS_API_KEY (free at pexels.com/api); every clip is under the Pexels License
            Pixabay  needs PIXABAY_API_KEY (free at pixabay.com/api/docs); every clip is under the Pixabay Content License
-         (The two keys can be environment variables or lines in the toolkit's .env file.)
+         (The two keys can be environment variables or lines in remotion/.env.)
          Adds them to <work folder>/candidates.json (each with a short key such as k007) and writes numbered contact
          sheets, sheets/<keyword>-<n>.jpg, for Claude to look at. Sources that block searching are reported, not retried.
 picker   Makes a short looping preview of each chosen clip and picker/picker.html, a page where the person marks the
@@ -37,9 +37,10 @@ class Blocked(Exception):
 
 
 def load_env():
-    """PEXELS_API_KEY / PIXABAY_API_KEY may also sit in the toolkit's .env file (beside the transcription keys)."""
-    env = os.path.join(HERE, "..", "..", "..", ".env")
-    if os.path.exists(env):
+    """PEXELS_API_KEY / PIXABAY_API_KEY may also sit in remotion/.env, beside the transcription and music keys
+    (a .env at the toolkit's top level works too)."""
+    for env in (os.path.join(HERE, "..", "..", "..", "remotion", ".env"), os.path.join(HERE, "..", "..", "..", ".env")):
+        if not os.path.exists(env): continue
         for line in open(env, encoding="utf-8"):
             k, sep, v = line.strip().partition("=")
             if sep and k in ("PEXELS_API_KEY", "PIXABAY_API_KEY") and not os.environ.get(k):

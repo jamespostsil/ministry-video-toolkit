@@ -30,7 +30,7 @@ anyone may use in a video that asks for support, with no credit, are kept:
 - **Mixkit:** only the Mixkit Free License. Its Restricted License is for personal use only. Mixkit blocks quick
   bursts of searching; the script goes slowly and says so when it is blocked. Try that source again later.
 - **Pexels, Pixabay:** need a free API key each (`PEXELS_API_KEY`, `PIXABAY_API_KEY`, as environment variables or
-  in the toolkit's `.env`). Without them they are skipped. Ask the person whether they want to make the keys; it
+  in `remotion/.env`). Without them they are skipped. Ask the person whether they want to make the keys; it
   takes a free account and a minute each.
 
 Coverr's topic pages also list unrelated popular clips, so many candidates won't fit.
