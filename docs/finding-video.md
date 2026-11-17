@@ -36,6 +36,7 @@ Licences change, so **read the current terms on the site** before you rely on an
 - Don't suggest that the people in a clip (or a brand in it) support you, and don't show them in a bad light.
 - For Claude to search it, make a free API key at [pexels.com/api](https://www.pexels.com/api/) and put it in the
   `remotion/.env` file as `PEXELS_API_KEY=...`.
+  In November 2026 Pexels paused giving out new keys; you can still browse and download its clips on the site.
 
 ## Pixabay
 
