@@ -129,7 +129,7 @@ The page should explain itself. Keep these when changing the template:
 
 ## Choosing a layout
 
-In Detailed, every card that shows photos has a teal **Layout** pill just above them: the same chooser as the storyboard
+In Detailed, the card that lists a moment's photos has a teal **Layout** pill just under them: the same chooser as the storyboard
 (see its SKILL.md, "Choosing a layout"), with the same example clips (`build.py` copies `layouts/` next to the
 page: publish them too). Give each sentence that has photos its `"layout"` in data.json, so the button names what
 the video shows now and the chooser marks it "In the video now". A choice is a request for the next version, saved

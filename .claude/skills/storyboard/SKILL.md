@@ -143,7 +143,8 @@ The page should explain itself. Keep these when changing the template:
 
 Every card that shows photos has a teal **Layout** pill above what is said (in Simple and Detailed; cards of one
 moment share the choice). It opens a chooser showing only the layouts that suit that number of photos, each with a
-small looping example (`layouts/*.mp4`, with a `.jpg` still for people who turn motion off); `build.py` copies them
+small looping example (`layouts/*.mp4`; `<id>.0.jpg` is its first frame, shown while it loads, and `<id>.jpg` a still
+of the full layout for people who turn motion off); `build.py` copies them
 to the out folder, so publish them too.
 
 | Photos | Offered |

@@ -249,7 +249,7 @@ function openLay(g) {
     if (n < lo || n > hi) continue;
     const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", String(id === L.cur));
     const m = document.createElement(moves && !still ? "video" : "img");
-    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
+    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".0.jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
     else { m.src = "layouts/" + id + ".jpg"; m.alt = name + ", an example"; }
     const tt = document.createElement("b"); tt.textContent = name; const d = document.createElement("span"); d.textContent = what; b.append(m, tt, d);
     if (id === L.cur) { const w = document.createElement("span"); w.className = "now"; w.textContent = id === L.orig ? "In the video now" : "Your choice"; b.appendChild(w); }
@@ -289,11 +289,11 @@ for (const s of S) {
     '<div class="nhead"><label class="f" for="nt-' + k + '">Note</label></div><textarea id="nt-' + k + '" data-f="note" placeholder="What should change in this scene?"></textarea><div class="pins"></div><div class="save"></div>';
   buildShown(s, d.querySelector(".shown"));
   const addB = d.querySelector(".pblk .add"); if (addB) d.querySelector(".nhead").appendChild(addB);
-  { // a Layout pill on every card of a moment, just above its photos (cards of one moment share the choice)
+  { // a Layout pill on the card that lists a moment's photos, just under them
     const g = s.group || s.id, lr = document.createElement("div"), lb = document.createElement("button"); lr.className = "layrow"; lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown";
     lb.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 2.5v11M6 8h8.5" stroke="currentColor" stroke-width="1.5"/></svg><span></span>'; lb.addEventListener("click", () => openLay(g)); lr.appendChild(lb);
     const known = LAYOUTS.some((l) => l[0] === s.layout) ? s.layout : ""; const L = LAY[g] = LAY[g] || { orig: known, cur: known, btns: [] }; if (!L.orig && known) L.orig = L.cur = known; L.btns.push(lb);
-    const pb = d.querySelector(".pblk"); if (pb) pb.before(lr); else d.querySelector(".shown").appendChild(lr); paintLay(g); }
+    const pb = d.querySelector(".pblk"); if (pb) { pb.after(lr); paintLay(g); } else L.btns.pop(); }   // only on the card that lists the photos, under them
   d.querySelector(".time").textContent = fmt(s.t);
   d.querySelector(".txt").textContent = s.text;
   if (C[s.id]) {

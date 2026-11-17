@@ -774,7 +774,7 @@ function openLay(s, i) {
     if (n < lo || n > hi) continue;
     const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", String(id === cur0));
     const m = document.createElement(moves && !still ? "video" : "img");
-    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
+    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".0.jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
     else { m.src = "layouts/" + id + ".jpg"; m.alt = name + ", an example"; }
     const t = document.createElement("b"); t.textContent = name; const d = document.createElement("span"); d.textContent = what;
     b.append(m, t, d);
