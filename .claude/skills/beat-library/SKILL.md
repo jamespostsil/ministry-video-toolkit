@@ -20,9 +20,18 @@ Start from the *shape of the content*, not from what looks nice.
 | 2–4 items meant to be compared | **Row** | Each at its own aspect ratio, shared height — nothing cropped |
 | 5–10 photos of the same kind, with captions | **Slider** | Cards drift across; reads as a set |
 | A list the narrator reads aloud | **Scatter** | Each photo lands on its own phrase and stays, building a pile |
+| 4–9 photos the speaker talks about as one set | **Grid** (`grid`) | Neat rows, every photo whole, arriving one by one and staying up together |
+| A story told photo by photo, nothing else on screen | **One at a time** (`onebyone`) | Each photo fills the screen in turn, with a soft fade. Every photo in the set gets the same look: if any is a portrait or square, all are shown whole over a blur |
+| "And another, and another", where each deserves a good look | **Stack** (`stack`) | Large photos land on one pile; only the top caption is readable, so there is one thing to read at a time |
+| 3–6 photos that each get a sentence | **Feature** (`feature`) | One large photo, the rest small beside it so the viewer sees what's coming; the large one changes on each photo's words |
+| Then and now: two photos | **Before and after** (`beforeafter`) | A line wipes from the first to the second. `split: 0.5` stops it half way, for two photos of the same view |
+| Photos captioned with a place (a language and country) | **On a map** (`map`) | Each photo pops up joined to its own place; the map frames itself around the places given. The caption and credit sit under each photo, never over it, and a photo squarer than 1.3:1 is shown whole over a blurred copy, so heads and Bibles are never cropped off |
+| A photo, or a few words, while the viewer should still see the speaker's face (a thank-you, the ask, a story about a person) | **Beside the speaker** (`beside`) | The live shot moves into a panel on one side, cropped in on the speaker; the photo or words take the other side |
+| Photos that deserve the whole screen, with the speaker still present | **Speaker in the corner** (`corner`) | The photo fills the frame; the speaker stays in a small window (`shape: "circle"` for one person) |
 | An ask, while the speaker keeps talking | **Call-to-action** | Words beside them over the live shot |
 | A person's photos under their name (a family update) | **Row** with `title` and `revealAt` | The name on top; each photo comes in on its own words |
 | A number worth dwelling on | **Counter** | Counts up, settles, one small pop; brand colours, no confetti |
+| Something the script talks about with no photo of it (the world, Scripture, travel, an opening shot) | **Clip** (`clip`) | A free stock video clip, full screen and muted, while the speaker keeps talking. Find and license it with `find-footage`; never use stock people as the people the ministry serves |
 | "Every language / the whole world" | **Globe** (`bibleAt`) | **Work in progress:** a real globe turning; a Bible fades in on the word that names Scripture. Check its render closely before using it. |
 
 **Never force mixed aspect ratios into one fixed card shape.** A 16:9 family
@@ -154,7 +163,9 @@ Beyond headings, add text when **a spoken idea has a shape the ear misses**:
 - **A direct ask** — the words on screen while they say them.
 - **A number or milestone** worth dwelling on.
 - **A thank-you or blessing** — a moment, not information. Keep it to the words
-  themselves and drop any explanatory subtext; it is punctuation.
+  themselves and drop any explanatory subtext; it is punctuation. The `thankyou`
+  beat's `style: "bubble"` draws the words alone in big rounded letters filled with
+  the brand gradient (Fredoka); the default is the words on a gradient panel.
 
 Do not caption what the speaker is already saying plainly. Overlay text is for
 structure and emphasis, not subtitles.
@@ -268,6 +279,36 @@ With a locked-off camera one measurement holds for the whole video. If the
 shot leaves no clear upper-left area at all — someone framed top-left — the
 overlay beats are the wrong choice for that video; use full-frame beats there
 instead.
+
+---
+
+## Layouts that keep the speaker on screen (`beside`, `corner`)
+
+These two are not overlays and not ordinary photo beats. The panel **starts as the whole live shot** and shrinks
+into place while cropping in on the speaker, then grows back at the end, so the speaker never blinks out.
+
+- **Leave the live shot before and after them.** Don't butt one against another graphic: it would cut from that
+  graphic to the full live shot for an instant. Half a second of plain footage either side is enough.
+- **`beside` takes photos, words, or both.** With photos, the speaker panel and the photo are two cells of one
+  grid: same top, same height, caption underneath (a landscape photo is cropped a little to fill its cell; a portrait
+  is shown whole). Several photos take turns in that cell (`showAt`); `title` and `lines` are a
+  heading and a short list (each line arriving at `linesAt`). Words alone are set larger. Use words when there is
+  no good photo: "You are helping through your: Prayers / Financial partnership".
+- **`side`** puts the speaker on the left (default) or right. Put them on the side they already stand on.
+- **`corner`** defaults to the bottom right; the caption moves to the other side by itself.
+
+### Setting `speaker`
+
+Both crop the footage to project.json `"speaker"`: a box around the head and shoulders that must stay in view, as
+fractions of the footage frame (`x`, `y` of its top-left corner, then `w`, `h`). **Measure it once per video**, on
+a still (`npm run still -- <project> <seconds>`): for one person, shoulder to shoulder and from just above the
+hair to mid-chest; for two people standing together, around both. The example's two-person shot is
+`{ "x": 0.13, "y": 0.1, "w": 0.74, "h": 0.9 }`.
+
+- The panel takes its shape from the box: one person gives a tall panel, two people a wider one (never wider than
+  5:4 in `beside`, so the other half stays large; the sides of a wide box are cropped a little).
+- When only one of two speakers is talking, give that beat its own `speaker` box around that person.
+- Then render a frame of each (`npm run still`) and look: no cut-off chin or forehead, nobody half in frame.
 
 ---
 

@@ -67,6 +67,9 @@ the next video starts from it.
   quieter.
 - **No words.** Put vocals, singing, choir, humming, whistling and spoken word in
   `style.negative`.
+- **Tender sections end early.** Soft piano takes often play about 10 s and then fade, whatever length was
+  asked for. If one winds down before its change, give it `"extraSeconds": 18` in its plan entry (the default is
+  6) and `--redo` it: only the start of the longer take is used.
 - **Levels** (`loudness`, LUFS, before the render's ducking): -17.5 for most
   sections, about -20.5 for tender ones, about -21.5 for the opening (an upbeat
   first section with percussion is too loud under the title card otherwise),
@@ -83,6 +86,9 @@ the next video starts from it.
   seems like the video is ending"). **Never let the music dip before a change.**
   Adjust in `musicPlan.json` → `"transitions": { "fadeOutBefore", "fadeOutAfter",
   "fadeIn", "joinCurve" }`.
+- **Where a take really starts and stops** is measured by level, not by silence: the first and last moments
+  within 10 dB of the take's typical level. So a soft swell at the start is skipped (the section enters at full
+  level on its change) and a fade before the change is caught and reported as winding down.
 - **Opening:** the music starts at its first sound (generations often begin with
   0.1 to 0.6 s of silence) and eases in over 2.5 s.
 - **Ending:** the last section is made long and entered part way in, on a bar

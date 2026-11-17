@@ -14,6 +14,7 @@ Promise.all([
   loadFont({ family: "Poppins", url: staticFile("fonts/Poppins-Medium.woff2"), weight: "500", style: "normal" }),
   loadFont({ family: "Poppins", url: staticFile("fonts/Poppins-SemiBold.woff2"), weight: "600", style: "normal" }),
   loadFont({ family: "Poppins", url: staticFile("fonts/Poppins-Bold.woff2"), weight: "700", style: "normal" }),
+  loadFont({ family: "Fredoka", url: staticFile("fonts/Fredoka-Bold.woff2"), weight: "700", style: "normal" }),
 ])
   .then(() => continueRender(handle))
   .catch((err) => cancelRender(err));

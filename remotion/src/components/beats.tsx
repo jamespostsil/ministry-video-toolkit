@@ -10,6 +10,9 @@ import { PartnerFrame } from "./PartnerFrame";
 import { Counter } from "./Counter";
 import { YouTubeThumbnail } from "./Thumbnail";
 import { Globe } from "./Globe";
+import { Grid, OneAtATime, Stack, Feature, BeforeAfter, PhotoMap } from "./PhotoLayouts";
+import { Beside, Corner } from "./SpeakerLayouts";
+import { Video } from "@remotion/media";
 const EASE_OUT = Easing.out(Easing.cubic);
 
 const kenBurns = (frame: number, durFrames: number, from: number, to: number) =>
@@ -180,28 +183,56 @@ const Cover: React.FC<{ beat: Extract<Beat, { kind: "cover" }>; durFrames: numbe
           }}
         />
       </AbsoluteFill>
-      {beat.caption ? (
-        <>
-          <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0) 72%, rgba(0,0,0,0.72) 100%)" }} />
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 44,
-              textAlign: "center",
-              opacity: capOpacity,
-              fontFamily: FONTS.secondary,
-              fontWeight: 600,
-              fontSize: 40,
-              color: "#fff",
-              textShadow: "0 0 2px rgba(0,0,0,0.98), 2px 2px 0 rgba(0,0,0,0.85), -2px 2px 0 rgba(0,0,0,0.85), 2px -2px 0 rgba(0,0,0,0.85), -2px -2px 0 rgba(0,0,0,0.85), 0 2px 18px rgba(0,0,0,0.9)",
-            }}
-          >
-            {beat.caption}
-          </div>
-        </>
-      ) : null}
+      <BottomCaption text={beat.caption} opacity={capOpacity} />
+    </AbsoluteFill>
+  );
+};
+
+// The caption along the bottom of a full-screen photo or clip, over a soft dark gradient.
+const BottomCaption: React.FC<{ text?: string; opacity: number }> = ({ text, opacity }) =>
+  text ? (
+    <>
+      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0) 72%, rgba(0,0,0,0.72) 100%)" }} />
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 44,
+          textAlign: "center",
+          opacity,
+          fontFamily: FONTS.secondary,
+          fontWeight: 600,
+          fontSize: 40,
+          color: "#fff",
+          textShadow: "0 0 2px rgba(0,0,0,0.98), 2px 2px 0 rgba(0,0,0,0.85), -2px 2px 0 rgba(0,0,0,0.85), 2px -2px 0 rgba(0,0,0,0.85), -2px -2px 0 rgba(0,0,0,0.85), 0 2px 18px rgba(0,0,0,0.9)",
+        }}
+      >
+        {text}
+      </div>
+    </>
+  ) : null;
+
+// ---------- full-screen stock video clip (B-roll) ----------
+// Muted: the speaker's voice keeps playing from the footage underneath. No Ken Burns: the clip already moves.
+const Clip: React.FC<{ beat: Extract<Beat, { kind: "clip" }>; durFrames: number }> = ({ beat }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const capOpacity = interpolate(frame, [0.5 * fps, 1.1 * fps], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: EASE_OUT,
+  });
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
+      <Video
+        src={staticFile(beat.src)}
+        muted
+        loop
+        trimBefore={beat.from ? Math.round(beat.from * fps) : undefined}
+        style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: beat.objectPosition ?? "50% 50%" }}
+      />
+      <BottomCaption text={beat.caption} opacity={capOpacity} />
     </AbsoluteFill>
   );
 };
@@ -521,6 +552,8 @@ export const BeatContent: React.FC<{ beat: Beat; durFrames: number }> = ({ beat,
       return <Opening beat={beat} durFrames={durFrames} />;
     case "cover":
       return <Cover beat={beat} durFrames={durFrames} />;
+    case "clip":
+      return <Clip beat={beat} durFrames={durFrames} />;
     case "blur":
       return <BlurBackdrop beat={beat} durFrames={durFrames} />;
     case "row":
@@ -537,6 +570,22 @@ export const BeatContent: React.FC<{ beat: Beat; durFrames: number }> = ({ beat,
       );
     case "scatter":
       return <GalleryScatter title={beat.title} photos={beat.photos} durFrames={durFrames} cardLongEdge={beat.cardLongEdge} revealAt={beat.revealAt} />;
+    case "grid":
+      return <Grid beat={beat} durFrames={durFrames} />;
+    case "onebyone":
+      return <OneAtATime beat={beat} durFrames={durFrames} />;
+    case "stack":
+      return <Stack beat={beat} durFrames={durFrames} />;
+    case "feature":
+      return <Feature beat={beat} durFrames={durFrames} />;
+    case "beforeafter":
+      return <BeforeAfter beat={beat} durFrames={durFrames} />;
+    case "map":
+      return <PhotoMap beat={beat} durFrames={durFrames} />;
+    case "beside":
+      return <Beside beat={beat} durFrames={durFrames} />;
+    case "corner":
+      return <Corner beat={beat} durFrames={durFrames} />;
     case "quote":
       return <CallToAction beat={beat} durFrames={durFrames} />;
     case "heading":

@@ -21,7 +21,8 @@ const EASE = Easing.inOut(Easing.ease);
 // These beats handle their own fade-out internally, so BeatLayer must not add
 // a second one. The title card is here because it must NOT dissolve to black:
 // nothing is underneath it until the footage starts.
-const SELF_FADING = new Set<Beat["kind"]>(["opening", "slider", "scatter"]);
+// `beside` and `corner` start as the live shot itself and move aside, so they must not dissolve either.
+const SELF_FADING = new Set<Beat["kind"]>(["opening", "slider", "scatter", "beside", "corner"]);
 const cfOf = (beat: Beat, fps: number) => (SELF_FADING.has(beat.kind) ? 20 / fps : 0.6);
 
 const trapezoid = (frame: number, on: number, off: number, cf: number) =>

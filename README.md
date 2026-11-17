@@ -84,12 +84,21 @@ the recording.
 | Title card (`opening`) | The footage's first frame, frozen, with your title over it. Then the picture starts moving | Opening |
 | Heading (`heading`) | A short label upper left (or right), over the live shot or a photo, with an optional subtitle, logo, or bullet list whose lines arrive on their own words | Naming each section or speaker; a few words over a photo |
 | Takeover (`cover`) | One photo, full screen, slowly zooming | A landscape photo worth the whole frame |
+| Video clip (`clip`) | A free stock video clip, full screen and silent, while you keep talking | A moment with no photos: the whole world, Scripture, travel, an opening shot (see [docs/finding-video.md](docs/finding-video.md)) |
 | Whole photo (`blur`) | The photo shown complete over a blurred copy of itself | Portraits, or anything with words on it that must not be cropped |
 | Row (`row`) | 2–4 images side by side, each at its own shape, with an optional title above; each can come in on its own words | Comparing things, such as screenshots; a person's photos under their name |
 | Counter (`counter`) | A number counting up, with a label | A milestone worth dwelling on ("600 projects started") |
-| Globe (`globe`) | **Work in progress.** A turning globe; a Bible fades in on a chosen word | "Every language in the world" |
+| Globe (`globe`) | **Work in progress.** A turning globe; a Bible fades in on a chosen word | "Every language in the world" (a stock clip of a real globe usually looks better for now) |
 | Slider (`slider`) | Cards drifting across the screen | A run of 5–10 captioned photos |
 | Scatter (`scatter`) | Photos dropping onto a pile, one at a time | A list you read out, each photo on its own phrase |
+| Grid (`grid`) | 4–9 photos in neat rows, arriving one by one | A set you talk about as a whole |
+| One at a time (`onebyone`) | Each photo fills the screen in turn | A story told photo by photo |
+| Stack (`stack`) | Large photos landing on one pile | "And another, and another" |
+| Feature (`feature`) | One large photo, the others small beside it; the large one changes | 3–6 photos that each get a sentence |
+| Before and after photos (`beforeafter`) | Two photos; a line wipes from one to the other | Then and now |
+| On a map (`map`) | Each photo pops up joined to its place on a map | Photos from named places |
+| Beside the speaker (`beside`) | You move to one side of the screen; a photo or a few words take the other | Keeping your face on screen with a photo, a thank-you or the ask |
+| Speaker in the corner (`corner`) | The photo fills the screen; you stay in a small window | Photos that deserve the whole screen while you talk |
 | Before / after (`compare`) | Two columns, each side appearing on its own word | "Used to take weeks, now days" |
 | Thank you (`thankyou`) | A small brand-coloured card beside you | A moment, not information |
 | Call to action (`quote`) | Your ask, beside you, over the live shot | The ask, while you keep talking |
@@ -146,6 +155,7 @@ repository):
 |---|---|---|
 | Photos | `remotion/public/images/my-video/` | `images/my-video/photo.jpg` in `beats.ts` |
 | Music | `remotion/public/audio/` | `"music": { "src": "audio/my-music.m4a" }` in `project.json`. See [docs/finding-music.md](docs/finding-music.md) for free music you're allowed to use, or, with your own ElevenLabs key, make timed music with `npm run music` (the `music` skill) |
+| Video clips | `remotion/public/clips/` | `clips/k010.mp4` in `beats.ts`; Claude fetches them there with their licence record, `clip-licenses.csv` |
 | Cut footage, title still | `remotion/public/base/` | written by `npm run footage` |
 | Renders and stills | `remotion/out/` | |
 
@@ -158,9 +168,13 @@ rendering any frames: `npm run render -- my-video --audio-only` writes
 photos already cleared for partnership videos, each with its on-screen credit:
 [People with Bibles: photos for partnership videos](https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq)
 (sign in with your SIL account; anyone else can press **Request access**).
-Download the folder once, or add a shortcut to it in Google Drive for desktop, and
-tell Claude where it is. The storyboard and review pages then offer them under
-**+ Add a photo > Shared photos**, with the caption and credit filled in.
+Download the folder once, or add a shortcut to it in Google Drive for desktop. Claude
+finds it there (in Google Drive, Downloads or Documents) and the storyboard and review
+pages offer the photos under **+ Add a photo > Shared photos**, with the caption and
+credit filled in. If the folder isn't on your computer, Claude asks whether you'd like
+to add it. Kept somewhere else? Add a line `SHARED_PHOTOS=<folder>` to `remotion/.env`. Claude
+can also suggest photos from the set for scenes that have none; you keep or
+remove each one on the storyboard.
 
 **Keeping your own project under version control.** Project folders are
 git-ignored here so nobody's video ends up in the shared toolkit. To track a
@@ -205,6 +219,7 @@ this folder; they are also plain Markdown, worth reading yourself.
 | `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked, Approve |
 | `script-to-beats` | Turning a script with images (Notion page or Google Doc) into a timed beat plan |
 | `photo-touchup` | Fixing washed-out photos gently, with a before / after page to choose from before anything is replaced |
+| `find-footage` | Free stock video clips you're allowed to use (Coverr, Mixkit, Pexels, Pixabay): a page of previews to choose from, then the full-size files with a licence record |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |
@@ -214,7 +229,8 @@ this folder; they are also plain Markdown, worth reading yourself.
 | `thumbnail` | The YouTube thumbnail |
 
 [docs/finding-music.md](docs/finding-music.md) covers free places to get music
-and what their licences allow.
+and what their licences allow; [docs/finding-video.md](docs/finding-video.md)
+does the same for video clips.
 
 [docs/gotchas.md](docs/gotchas.md) lists four bugs that produce a wrong video
 with no error message. Read it once.

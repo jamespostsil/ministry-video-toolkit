@@ -137,6 +137,7 @@ as `layout-v<N>/<group>` `{layout, original, photos}`: read it with the other no
 
 ## Shared photos in "+ Add a photo"
 
-Same as the storyboard (see its SKILL.md, "Shared photos"): `--library <folder>` (with `--out-pics`) adds the
-**Shared photos** tab, and `--library-link <url>` links the whole folder from it. Reviewers need only the page link.
+Same as the storyboard (see its SKILL.md, "Shared photos"): on by default when the people-with-Bibles folder is on
+this computer (`--out-pics` is needed for it); when it isn't, the build prints a NOTE and Claude asks the person
+whether to add it. `--library <folder>` (with `--out-pics`) adds a folder by hand, giving the **Shared photos** tab, and `--library-link <url>` links the whole folder from it. Reviewers need only the page link.
 The people-with-Bibles set: https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq

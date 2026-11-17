@@ -31,8 +31,15 @@ once more as a light suggestion where it fits better (music when they watch the 
   the video's big moments (`music`); without one, [docs/finding-music.md](docs/finding-music.md) lists free music
   they're allowed to use.
 - **Photos:** if the script has few photos, offer the shared "people with Bibles" photos (README, "Shared photos")
-  for SIL and Wycliffe staff. If photos look washed out, offer to touch them up (`photo-touchup`), always with a
-  before / after for them to choose from.
+  for SIL and Wycliffe staff: "Would you like me to suggest photos from the shared library for the scenes that have
+  none?" Claude looks through them and puts its suggestions on the storyboard for the person to keep or remove
+  (`storyboard`, "Suggesting shared photos"). If photos look washed out, offer to touch them up (`photo-touchup`),
+  always with a before / after for them to choose from.
+- **Video clips:** where the script talks about something it has no pictures for (the whole world, Scripture,
+  travel, an opening shot), offer free stock video: "Would you like me to find a short video clip for this part?"
+  Claude finds clips the person is allowed to use and gives them a page of previews to choose from
+  (`find-footage`, [docs/finding-video.md](docs/finding-video.md)). Pexels and Pixabay need a free key each; offer
+  them only if Coverr and Mixkit don't have what's needed.
 - **Headings and words on screen:** names and roles as people speak, section headings, a list over the live shot,
   a call to action for the ask (`beat-library`).
 - **The end frame:** their photo, web address and a QR code that scans (`partner-frame`).

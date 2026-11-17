@@ -99,6 +99,8 @@ published), when an upload hasn't been saved, or when a photo is still "Ask firs
 page, or pass `--skip-unapproved` to leave it out). It writes each photo cropped as shown, `photos.json` (sizes,
 captions, credits, permissions for `beats.ts`), `photo-order.json` (each moment's photos in the reviewer's order:
 build the beats from it) and `photo-credits.txt` (the end screen's "Photos by ..." line, from the photos used).
+Every layout shows each photo's credit under or on it, so when every credited photo is on screen with its credit,
+leave the end screen's credits line out (`credits` in the partner frame); use it only for photos shown without one.
 Then build the beats from the cards: one card is one screen.
 
 ## Read it back
@@ -143,37 +145,65 @@ The page should explain itself. Keep these when changing the template:
 
 Every card that shows photos has a teal **Layout** pill above what is said (in Simple and Detailed; cards of one
 moment share the choice). It opens a chooser showing only the layouts that suit that number of photos, each with a
-small looping example (`layouts/*.mp4`; `<id>.0.jpg` is its first frame, shown while it loads, and `<id>.jpg` a still
-of the full layout for people who turn motion off); `build.py` copies them
-to the out folder, so publish them too.
+still of the finished layout (`layouts/<id>.jpg`) that plays its short example (`<id>.mp4`) only while pointed at or
+focused, then goes back to the still (all of them moving at once was too busy). `<id>.0.jpg` is the example's
+first frame. `build.py` copies them to the out folder, so publish them too.
 
-| Photos | Offered |
+The chooser lists them under four headings (`LAY_GROUPS` in both templates; keep the two the same), each in the
+accent colour with a bar and a rule so the groups stand apart: **One photo**, **Photos together**, **Photos one
+after another**, **Speaker on screen**. A new layout goes into one of these lists, or it shows under "Other".
+
+| Layout | Photos |
 |---|---|
-| 1 | Fill the screen (`cover`), Whole photo (`blur`) |
-| 2 or 3 | Side by side (`row`), One after another (`slider`), Scattered cards (`scatter`) |
-| 4 or more | One after another, Scattered cards |
+| Fill the screen (`cover`), Whole photo (`blur`) | 1 |
+| Side by side (`row`) | 2 or 3 |
+| One after another (`slider`), Scattered cards (`scatter`) | 2 or more |
+| Grid (`grid`) | 4 to 9 |
+| One at a time, full screen (`onebyone`) | 2 to 12 |
+| Stack (`stack`) | 2 to 8 |
+| Feature and thumbnails (`feature`) | 3 to 6 |
+| Before and after (`beforeafter`) | 2 |
+| On a map (`map`) | 2 to 8 |
+| Beside the speaker (`beside`) | 1 to 6 |
+| Speaker in the corner (`corner`) | 1 to 12 |
+
+- **On a map** joins each photo to its place: give those `pictures` a `"lat"` and `"lon"` (degrees; south and west
+  are negative) when you write storyboard.json, from the place in each caption. If the reviewer chooses it for
+  photos that have none, look the places up when you change the beat.
+- **Beside the speaker** and **Speaker in the corner** crop the speaker out of the shot's own picture, so that
+  picture should be the footage frame from that moment. Copy project.json's `"speaker"` box to the top of
+  storyboard.json (`"speaker": {x, y, w, h}`), or the picture will crop to the middle of the frame.
 
 - The page starts on the shot's `layout` from storyboard.json, so most reviewers never touch it; the picture
   redraws as soon as one is chosen.
 - A choice is saved as `layout/<group>` `{layout, original, photos}`. `export_photos.py` reads it with the other
   edits and writes `photo-layouts.json`, listing every moment whose layout changed: change those beats' `kind`
-  in `beats.ts` to match (a `slider` or `scatter` needs a `title`; a `row` needs each photo's width and height).
+  in `beats.ts` to match (a `slider` or `scatter` needs a `title`; a `row` and every newer layout needs each
+  photo's width and height; `map` needs each photo's `lat` and `lon`; `beside` and `corner` need a gap of live
+  footage before and after: see the `beat-library` skill).
 - If photos are added or removed so the chosen layout no longer suits, the page and the export fall back to the
   usual one for that many photos.
 - Timing, card sizes and headings are not on the chooser: those stay as notes.
 - To refresh the examples after the beats change: cut 4 to 8 seconds of each beat from the example render
   (`ffmpeg -ss <t> -t <n> -i out/Example.mp4 -an -vf fps=12,scale=320:-2 -crf 30`), 15 to 65 KB each. Start each
   clip after the layout has fully arrived and end it before the beat ends, so the loop never shows the scene before
-  or after. Keep each example simple: one calm photo, nothing that distracts from the layout itself. "Whole photo"
-  and "Fill the screen" are not in the example video; they were rendered from temporary beats (a portrait photo as
-  `blur`, a landscape one as `cover`).
+  or after. Keep each example simple: one calm photo, nothing that distracts from the layout itself. "Whole photo",
+  "Fill the screen" and the eight newer layouts are not in the example video; they were rendered from temporary
+  beats in the example project. Start the two speaker layouts after the panel has moved aside (0.75s in), and a
+  layout that builds from nothing (Grid, Stack) as its first photo lands, so no example opens on an empty screen.
 
 ## Shared photos in "+ Add a photo"
 
 "+ Add a photo" has two tabs when there are shared photos: **This video's photos** and **Shared photos**. The
 Shared tab says the photos are cleared for SIL and Wycliffe videos and links to the whole folder.
 
-- `--library <folder>` (repeatable) adds a shared photo folder. If it has a `photo-credits.csv` (columns `file`,
+- **On by default.** `build.py` (and the review page's, and `export_photos.py`) look for the people-with-Bibles
+  folder on this computer (`shared_photos.py`: Google Drive for desktop's My Drive or Shared drives, Downloads,
+  Documents, or `SHARED_PHOTOS` in `remotion/.env`) and add it, with its link. `--no-library` leaves it out.
+- **Not on this computer:** the build prints a NOTE. Then ask the person, once, before showing the page: "Would you
+  like the shared People with Bibles photos in + Add a photo? You'd download the folder (or add a Drive shortcut)
+  from <link>." People outside SIL and Wycliffe can't open it, so for them leave it out without asking.
+- `--library <folder>` (repeatable) adds a shared photo folder by hand. If it has a `photo-credits.csv` (columns `file`,
   `caption`, `on-screen credit`), only the photos it lists are offered, each with its caption and credit, and adding
   one saves both at once. Otherwise every photo in the folder is offered.
 - `--library-link <url>` adds the folder's web link to the Shared tab.
@@ -185,3 +215,20 @@ Shared tab says the photos are cleared for SIL and Wycliffe videos and links to 
 The people-with-Bibles set ("People with Bibles: photos for partnership videos", SIL Drive): https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq
 
 After approval, pass the same folder to `export_photos.py --library <folder>` so it finds photos added from it.
+
+## Suggesting shared photos
+
+When the person says yes to suggestions (CLAUDE.md, "Offer the next step"), fill scenes that have no photos, or a
+long stretch of the speaker alone, from the shared library:
+
+- **Look at every photo** in the library folder, with its caption from `photo-credits.csv`; never pick by file
+  name. Without the folder on this computer, the Google Drive connector can list the shared folder and fetch
+  thumbnails to look at, but the page can only be built once the folder has been downloaded.
+- **Suggest only what fits what is said:** people reading Scripture where the script talks about Bibles reaching
+  people, a dedication where it talks about a finished translation. One to three photos for a scene, no more.
+- **Never a stand-in:** don't put library photos where the script names a particular people, place or person.
+  The photos show other communities, and their captions say which.
+- Add each suggestion to its card like any photo, with its caption and credit, and list them all in one
+  `questions` entry ("Photos suggested from the shared library", with `at` on the first): the reviewer keeps a
+  photo by leaving it and takes one out with ✕.
+- A video clip may fit better than a photo for a scene about the whole world or travel; that is `find-footage`.

@@ -10,7 +10,7 @@ data.json:
     "accent": "#3a4720",                             # optional, the page's main colour
     "sentences": [{"id": "1.1", "text": "...", "t": 3.5}, ...],   # t: when it starts in the video (s); one card each
         # optional per card, as on the storyboard: "section" (a thin divider where it changes; a section can be marked
-        # good at once), "group" (cards of one moment share their photos and words), "layout" ("cover" | "blur" | "row" | "slider" | "scatter": how the video shows this moment's photos now;
+        # good at once), "group" (cards of one moment share their photos and words), "layout" ("cover" | "blur" | "row" | "slider" | "scatter" | "grid" | "onebyone" | "stack" | "feature" | "beforeafter" | "map" | "beside" | "corner": how the video shows this moment's photos now;
         # the card's "Layout" button lets the reviewer ask for another, saved as layout-v<N>/<group>), "screen": [{"label", "text",
         # "id"?}] (the words on screen), "pictures": [{"id", "file", "caption", "credit", "rights"}] (the photos, in
         # order; their thumbnails pics/<id>.t.jpg and pics/<id>.jpg are published next to the page: --photos/--crops/
@@ -27,13 +27,20 @@ data.json:
   }
 With --photos, every photo in that folder is offered under "+ Add a photo" (data "library", made here).
 """
-import argparse, json, os, re
+import argparse, json, os, re, sys
 here = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser(); ap.add_argument("data"); ap.add_argument("out")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--out-pics")
 ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
 ap.add_argument("--library-link", help="web link to the shared photo folder, shown in the Shared photos tab")
+ap.add_argument("--no-library", action="store_true", help="leave the shared People with Bibles photos out (found on this computer by default)")
 a = ap.parse_args(); data_path, out = a.data, a.out
+if not a.library and not a.no_library:   # the shared "People with Bibles" photos, when they are on this computer
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../storyboard"))
+    import shared_photos
+    _shared = shared_photos.find()
+    if _shared: a.library = [_shared]; a.library_link = a.library_link or shared_photos.LINK; print("shared photos:", _shared)
+    else: print("NOTE:", shared_photos.MISSING)
 d = json.load(open(data_path, encoding="utf-8"))
 for k in ("title", "video", "version", "sentences"):
     if k not in d: raise SystemExit(f"data.json needs {k!r}")
