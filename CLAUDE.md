@@ -36,8 +36,6 @@ Offer only what applies, and don't repeat an offer they've turned down. Useful o
   a call to action for the ask (`beat-library`).
 - **The end frame:** their photo, web address and a QR code that scans (`partner-frame`).
 - **The thumbnail:** a separate picture for YouTube, readable when small (`thumbnail`).
-- **Sharing the pages:** storyboard and review pages are private until shared. Tell them to use the page's Share
-  menu to send it to the people who should review it.
 - **After the final video:** a short description for YouTube or Vimeo, or a newsletter paragraph to go with it.
 
 ## Before anything leaves their computer
