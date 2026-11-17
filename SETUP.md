@@ -177,7 +177,7 @@ claude
 Then describe the video you want to make, for example:
 
 > I've recorded a ministry update. The video is at `C:\Videos\update.mp4` and the
-> script is in Notion at [link]. Make the video.
+> script is in Notion (or a Google Doc) at [link]. Make the video.
 
 Claude will start a project, trim the footage, plan the graphics with you, and
 render and check it.

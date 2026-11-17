@@ -15,9 +15,9 @@ import { PARTNER } from "./partner";
 // "images/<your-project>/photo.jpg".
 
 export const BEATS: Beat[] = [
-  // Title card, over your footage's first frame. Its text is titleCard in
-  // project.json.
-  { kind: "opening", start: 0, end: json.titleCardSeconds, src: json.titleStill },
+  // Opening: the thumbnail's design (project.json "thumbnail"), then a dissolve to your footage's first frame (see
+  // beat-library "Opening"). style "still" puts the titleCard text over the frozen first frame instead.
+  { kind: "opening", start: 0, end: json.titleCardSeconds, src: json.titleStill, style: "thumbnail" },
 
   // A name plate while you introduce yourself. Time it to your own words.
   { kind: "heading", start: 1.5, end: 6.5, title: "Your Name Here", subtitle: "Your Organization" },

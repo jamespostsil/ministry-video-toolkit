@@ -96,6 +96,13 @@ than the pause you removed.
 Assemble with ffmpeg `xfade` (video) and `acrossfade` (audio) over a list of
 keep-segments. Output length = sum of segments − 0.4s per join.
 
+**A false start with almost no gap after it** ("A few… a few highlights"): the retake often
+starts 0.1s after the false start ends, too soon for a 0.4s dissolve, which would fade the
+retake's first word in. Write that segment as `[part, in, out, fade]` with a short dissolve
+(0.1–0.15s) that ends just before the retake's first sound, and cut the false start at the
+pause BEFORE it, so the previous speaker's pause stays natural. Find the false start in the
+loudness, not the transcript: Whisper often merges a repeated phrase into one long word.
+
 Keep the segment list in the project's `project.json`, under `footagePrep`, not
 in a shell command typed once: the boundaries encode real decisions and will need
 revisiting. Then run, from `remotion/`:
@@ -113,3 +120,11 @@ to touch the cut will need to know why each boundary is where it is.
 **After rebuilding, re-transcribe.** Every downstream timestamp moves. Word-level
 timings from the new file are the only safe source — do not shift old numbers by
 hand and hope.
+
+## A recording in several parts
+
+Phones and cameras often split a long recording, and people often record in sections. Give `footagePrep.source`
+the list of files in order, and write each segment as `[part, in, out]` (part counts from 1). Each part's retakes
+work like any other: when a part ends partway into a sentence that the next part starts again, end the first part
+before that sentence and start the next one where the speaker settles before it. The joins between parts get the
+same dissolve and the same silence checks as any other cut.

@@ -1,13 +1,35 @@
-"""Build the storyboard page (rule G15): every shot's real screenshot with its highlight boxes, the lines said
-over it (editable in place), Script and On-screen notes per line, notes pinned (click) or arrows drawn (drag)
-on the picture, what changed since the last draft marked
-word by word, and an Approve button. Published as an artifact with the db capability.
+"""Build the storyboard page: every shot's real picture with its highlight boxes, the lines said over it (editable
+in place), the photos shown with those lines (drag to reorder, each with its caption, credit and permission), the
+words that appear on screen (editable), one Note box per card, notes pinned (click) or arrows drawn
+(drag) on the picture, what changed since the last draft marked word by word, and an Approve button. Published as
+an artifact with the db capability.
 
-  python -I build.py <storyboard.json> <out folder> [--pictures DIR] [--boxes FILE] [--drafts DIR]
-                     [--subtitle TEXT] [--accent #hex] [--hero #hex]
+  python -I build.py <storyboard.json> <out folder> [--pictures DIR] [--photos DIR] [--crops FILE] [--boxes FILE]
+                     [--drafts DIR] [--logo PNG] [--subtitle TEXT] [--accent #hex] [--hero #hex]
 
-storyboard.json: {"title", "draft": N, "shots": [{"id", "key"?, "section", "note"?, "lines": [...],
-  "en"?: [...], "boxes"?: [{x, y, w, h}]}]}
+storyboard.json: {"title", "draft": N, "shots": [{"id", "key"?, "section", "beat"?, "note"?, "lines": [...],
+  "en"?: [...], "boxes"?: [{x, y, w, h}], "pictures"?: [...], "screen"?: [...], "sketch"?: true}]}
+  - beat: how the shot is shown, in plain words ("Row of 2 photos, each on its own words").
+  - group, show: one card per screen. When something appears partway through (a row's second photo, a heading
+    over a photo), split the lines there into cards with the same "group": the first card lists the photos and words,
+    later ones repeat the photos (shared order) and list the words still showing plus any new ones (same label = same
+    words, edited once). "show": how many of the row's photos are up by that card.
+  - layout: how the page draws the screen for a shot with photos, the way the video's beat lays them out:
+    "cover" (one photo, full screen), "blur" (one photo whole, over a blurred copy), "row" (side by side at a
+    shared height, captions under; "maxHeight" in video pixels, default 760), "slider" (cards drifting across) or
+    "scatter" (tilted cards under a title). It follows the reviewer's order, captions and permissions as they
+    change them. The reviewer can change it with the card's "Layout" button, which shows a small example of each
+    layout that suits the number of photos (layouts/*.mp4 and *.jpg, copied to the out folder).
+  - pictures: the photos on screen with these lines, in order: [{"file", "caption"?, "credit"?, "rights"?: "ok" |
+    "ask" | "no", "rightsNote"?}]. file is read from --photos, turned upright and cropped with its rectangle in
+    --crops ({"<file>": {x, y, w, h, why?}}, in the upright photo's pixels); the page shows the crop and lets the
+    reviewer see the whole photo. A shot with pictures shows them on the stage instead of its <id>.png, unless
+    "sketch" is true: then <id>.png is a sketch of the planned graphic and is shown first.
+  - screen: the words that appear on screen: [{"label", "text"}]. The page draws them on the picture where the video
+    puts them, chosen by label: "Title card: top line" / "Title card: title" / "Title card: names" / "Title card: date";
+    "Heading", "Subtitle", "Line N", "Word N", "Logo" (the --logo image) in the upper-left name plate; "Card" (the
+    Thank you card); "Title" across the top (a row's or slider's title). Any other label is listed only.
+    Photo captions and credits are drawn on their photo.
   - id: the picture's name: <pictures>/<id>.png (default pictures folder: local/storyboard beside the json).
   - key: what identifies the shot across drafts when its picture changes (default: id).
   - lines: the narration over the shot ([] for none). "[check]" in a line shows "to check in the app".
@@ -19,17 +41,35 @@ Each build keeps a copy of the draft in <drafts>/storyboard-draft-<N>.json (defa
 json); when the copy of draft N-1 is there, changed and new lines are marked.
 The out folder gets storyboard.html, shots/*.png and thumbs/*.jpg: publish them together (files).
 db: lines/<shot key>.<line n> {text (the reviewer's wording, or ""), note, screen, original, shot},
+order/<shot key> {pics: [picture ids in the reviewer's order]}, pics/<picture id> {caption, credit, rights, file,
+original: {caption, credit, rights}} (the reviewer's version of a picture's on-screen words and permission; the
+picture id is the file name made safe, shared by every shot that uses that file), screen/<shot key>.<n> {label,
+text, original} (the reviewer's wording of an on-screen text),
 notes/general {text}, notes/approval-draft-<N> {approved, at}, spots/<id> {shot (key), x, y, text, kind?: "arrow",
 x2, y2} (a note pinned to a spot on the shot's picture, or an arrow from x, y to the tip x2, y2; fractions of the picture),
 scenes/<id> {after (shot key), say, screen, createdAt} (a new scene the reviewer added after that shot: make its picture
-and add it to the next draft).
+and add it to the next draft), good/<doc> {good} (the reviewer's "Looks good": card-<key>),
+layout/<group> {layout, original, photos} (the layout the reviewer chose for that moment's photos),
+answers/<question id> {title, answer: "ok" | "change", note}. order/<group> also holds {removed: [picture ids],
+added: [{id, file, w, h, asset?}]}: photos the reviewer took out or added (an "asset" is an upload in the page's
+asset store, read it with the Artifact tool's read and path=<asset id>).
+Optional in storyboard.json: "questions": [{"id", "title", "points": [...], "img"?, "at"?: shot key}] (what Claude
+needs the reviewer's OK on, answered on the page: never a separate status page), "good": [shot keys] (cards marked
+good in the last draft and unchanged since: they start folded), "mode": "detailed" (open in Detailed instead of Simple; Simple is each scene's picture,
+what is said and a Note; default "simple"; a link ending #simple or
+#detailed opens that mode).
+With --photos, every photo in that folder is offered under "+ Add a photo".
+Publish with capabilities {db: {}, assets: {}} so uploads work.
 """
 import argparse, difflib, json, os, re, shutil
-from PIL import Image
+from PIL import Image, ImageOps
 
 ap = argparse.ArgumentParser()
 ap.add_argument("storyboard"); ap.add_argument("out")
 ap.add_argument("--pictures"); ap.add_argument("--boxes"); ap.add_argument("--drafts")
+ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--logo")
+ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
+ap.add_argument("--library-link", help="web link to the shared photo folder, shown in the Shared photos tab")
 ap.add_argument("--subtitle", default="Real screenshots. Nothing has been recorded yet.")
 ap.add_argument("--accent", default="#b0561c"); ap.add_argument("--hero", default="#9a4a17")
 a = ap.parse_args()
@@ -41,15 +81,20 @@ sb = json.load(open(a.storyboard, encoding="utf-8"))
 boxes = {s["id"]: s["boxes"] for s in json.load(open(a.boxes, encoding="utf-8"))["shots"]} if a.boxes else {}
 os.makedirs(os.path.join(a.out, "shots"), exist_ok=True)
 os.makedirs(os.path.join(a.out, "thumbs"), exist_ok=True)
+os.makedirs(os.path.join(a.out, "pics"), exist_ok=True)
+_lay = os.path.join(os.path.dirname(os.path.abspath(__file__)), "layouts")   # the layout chooser's example clips and stills
+if os.path.isdir(_lay): shutil.copytree(_lay, os.path.join(a.out, "layouts"), dirs_exist_ok=True)
+crops = json.load(open(a.crops, encoding="utf-8")) if a.crops else {}
 
 draft = sb.get("draft", 1)
 os.makedirs(drafts, exist_ok=True)
 shutil.copy(a.storyboard, os.path.join(drafts, f"storyboard-draft-{draft}.json"))
 prev_path = os.path.join(drafts, f"storyboard-draft-{draft - 1}.json")
-prev = None
+prev = prev_screen = None
 if os.path.exists(prev_path):
     p = json.load(open(prev_path, encoding="utf-8"))
     prev = {s.get("key", s["id"]): s["lines"] for s in p["shots"]}
+    prev_screen = {s.get("key", s["id"]): [x["text"] for x in s.get("screen", [])] for s in p["shots"]}
 
 
 def word_diff(old, new):
@@ -65,6 +110,42 @@ def word_diff(old, new):
     return out
 
 
+def line_diffs(old, new):
+    """Per line: None (same), "new", or a word diff against the last draft ([] when there is no last draft)."""
+    if prev is None: return []
+    return ["new" if old is None or k >= len(old) else word_diff(old[k], t) if old[k] != t else None for k, t in enumerate(new)]
+
+
+def shared_library(folder):
+    """A shared photo folder for "+ Add a photo": the photos listed in its photo-credits.csv (file, caption,
+    on-screen credit), or every photo in it when there is no sheet. These are cleared to use (permission "ok")."""
+    import csv
+    sheet = os.path.join(folder, "photo-credits.csv")
+    if os.path.isfile(sheet):
+        rows = list(csv.DictReader(open(sheet, encoding="utf-8-sig")))
+        return [{"file": r["file"], "caption": r.get("caption", ""), "credit": r.get("on-screen credit") or r.get("credit", "")}
+                for r in rows if os.path.isfile(os.path.join(folder, r["file"]))]
+    return [{"file": f} for f in sorted(os.listdir(folder)) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))]
+
+
+pics_done = {}
+def picture(p):
+    """Copy one photo in, upright and cropped; return what the page needs to know about it."""
+    pid = re.sub(r"[^A-Za-z0-9]+", "-", os.path.splitext(p["file"])[0]).strip("-").lower()
+    if pid not in pics_done:
+        if not a.photos and not p.get("dir"): raise SystemExit("shots have pictures: pass --photos <folder>")
+        src = os.path.join(p.get("dir") or a.photos, p["file"])
+        if not os.path.isfile(src): raise SystemExit(f"no photo {src}")
+        whole = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+        c = crops.get(p["file"])
+        im = whole.crop((c["x"], c["y"], c["x"] + c["w"], c["y"] + c["h"])) if c else whole
+        for name, pic, size in [(pid, im, 1600), (pid + ".t", im, 240)] + ([(pid + ".whole", whole, 1600)] if c else []):
+            pic = pic.copy(); pic.thumbnail((size, size)); pic.save(os.path.join(a.out, "pics", name + ".jpg"), quality=86)
+        pics_done[pid] = {"w": im.width, "h": im.height, "cropped": bool(c), "cropWhy": (c or {}).get("why", "")}
+    return {"id": pid, "file": p["file"], "caption": p.get("caption", ""), "credit": p.get("credit", ""),
+            "rights": p.get("rights", "ok"), "rightsNote": p.get("rightsNote", ""), **pics_done[pid]}
+
+
 shots = []
 for s in sb["shots"]:
     img = s["id"]
@@ -75,24 +156,39 @@ for s in sb["shots"]:
     im = Image.open(src).convert("RGB")
     im.thumbnail((360, 203))
     im.save(os.path.join(a.out, "thumbs", img + ".jpg"), quality=82)
-    diffs = []
-    if prev is not None:
-        old = prev.get(key)
-        for k, line in enumerate(s["lines"]):
-            if old is None: diffs.append("new")              # a new shot
-            elif k >= len(old): diffs.append("new")          # a new line
-            elif old[k] != line: diffs.append(word_diff(old[k], line))
-            else: diffs.append(None)
-    shots.append({"img": img, "key": key, "section": s["section"], "note": s.get("note", ""),
+    diffs = line_diffs(prev.get(key) if prev is not None else None, s["lines"])
+    screen = s.get("screen", [])
+    sdiffs = line_diffs(prev_screen.get(key) if prev is not None else None, [x["text"] for x in screen])
+    pics = [picture(p) for p in s.get("pictures", [])]
+    shots.append({"img": img, "key": key, "section": s["section"], "beat": s.get("beat", ""), "layout": s.get("layout", ""), "maxHeight": s.get("maxHeight"), "group": s.get("group"), "show": s.get("show"), "note": s.get("note", ""),
                   "lines": s["lines"], "en": s.get("en", []), "boxes": s.get("boxes", boxes.get(img, [])), "diffs": diffs,
+                  "pictures": pics, "sketch": bool(s.get("sketch")), "screen": screen, "sdiffs": sdiffs,
                   "isNew": prev is not None and key not in prev})
 
+library = []
+if a.photos:   # every photo in the script's folder, for "+ Add a photo"
+    for f in sorted(os.listdir(a.photos)):
+        if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+            p = picture({"file": f}); library.append({k: p[k] for k in ("id", "file", "w", "h", "cropped")})
+for folder in a.library:   # shared photos (people with Bibles...), with their caption and credit filled in
+    for q in shared_library(folder):
+        p = picture({**q, "dir": folder}); library.append({**{k: p[k] for k in ("id", "file", "w", "h", "cropped", "caption", "credit")}, "shared": True})
+keys = {s["key"] for s in shots}
+bad = [q.get("at") for q in sb.get("questions", []) if q.get("at") not in (None, *keys)]
+if bad: raise SystemExit(f"questions for unknown shots: {bad}")
+
 esc = lambda t: t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-data = {"title": sb.get("title", ""), "draft": draft, "since": draft - 1 if prev is not None else None, "shots": shots}
+data = {"title": sb.get("title", ""), "draft": draft, "since": draft - 1 if prev is not None else None, "shots": shots,
+        "library": library, "questions": sb.get("questions", []), "good": sb.get("good", []), "mode": sb.get("mode", "simple")}
+if a.library_link: data["libraryLink"] = a.library_link
+if a.logo:   # drawn under a name plate whose words include a "Logo" item
+    dst = os.path.join(a.out, "logo.png")
+    if not os.path.exists(dst) or not os.path.samefile(a.logo, dst): shutil.copy(a.logo, dst)
+    data["logo"] = "logo.png"
 html = open(tpl, encoding="utf-8").read()
 html = html.replace("/*DATA*/", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
 html = (html.replace("{{TITLE}}", esc(sb.get("title", ""))).replace("{{DRAFT}}", str(draft)).replace("{{SUBTITLE}}", esc(a.subtitle))
         .replace("{{ACCENT}}", a.accent).replace("{{HERO}}", a.hero))
 open(os.path.join(a.out, "storyboard.html"), "w", encoding="utf-8").write(html)
-n_changed = sum(1 for s in shots for d in s["diffs"] if d)
-print(len(shots), "shots,", sum(len(s["lines"]) for s in shots), "lines,", n_changed, "changed since the last draft" if prev else "")
+n_changed = sum(1 for s in shots for d in s["diffs"] + s["sdiffs"] if d)
+print(len(shots), "shots,", sum(len(s["lines"]) for s in shots), "lines,", len(pics_done), "photos,", n_changed, "changed since the last draft" if prev else "")

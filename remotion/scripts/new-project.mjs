@@ -50,6 +50,7 @@ try {
   // Placeholder titles: the example's are real people's names.
   json.titleCard = { eyebrow: "YOUR ORGANIZATION", title: "Ministry Update", byline: "Your Name Here", date: "Month Year" };
   json.thumbnail = { ...json.thumbnail, eyebrow: "YOUR ORGANIZATION", byline: "Your Name Here", date: "Month Year" };
+  json.titleCardSeconds = 4.5;   // the thumbnail opening: about 3s to read it, a 0.7s dissolve, a 0.3s freeze
   writeFileSync(jsonPath, JSON.stringify(json, null, 2) + "\n");
   // The end frame starts from labelled placeholders, never the example's real
   // name, web address and QR code, which would be easy to ship by mistake.

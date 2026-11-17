@@ -21,6 +21,7 @@
  *   --clean        delete the frames once the video is encoded (they take
  *                  several GB; keep them if more changes are likely)
  */
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { FFMPEG_QUIET, ROOT, exampleHint, fail, loadProject, publicPath, remotion, requireFfmpeg, requireImages, run } from "./lib.mjs";
@@ -90,7 +91,17 @@ console.log(`\n${frameFiles.length} frames (${durationSeconds.toFixed(2)}s)`);
 console.log("\n== building audio mix ==");
 const delayMs = Math.round(json.titleCardSeconds * 1000);
 const inputs = ["-i", footage];
-let graph = `[0:a]adelay=${delayMs}|${delayMs},apad[speech]`;
+// Bring the voices to a set loudness (project.json speechLoudness, default -16 LUFS: YouTube plays at about -14).
+// Phones often record quietly (-32 LUFS here once), and the music's gains are set against a normal voice level, so
+// a quiet recording would leave the title-card music far louder than the speakers. One fixed gain for the whole
+// track, measured once, so the speakers' own dynamics are kept; a limiter catches the odd peak.
+const report = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", footage, "-vn", "-af", "ebur128", "-f", "null", "-"], { encoding: "utf8" }).stderr ?? "";
+const measured = Number((report.match(/Integrated loudness:\s*\n\s*I:\s+(-?[\d.]+) LUFS/) ?? [])[1]);
+const target = json.speechLoudness ?? -16;
+const gainDb = Number.isFinite(measured) ? Math.max(-12, Math.min(24, target - measured)) : 0;
+console.log(`speech: ${Number.isFinite(measured) ? measured.toFixed(1) + " LUFS" : "loudness unknown"}, ${gainDb >= 0 ? "+" : ""}${gainDb.toFixed(1)} dB to ${target} LUFS`);
+const speechChain = `[0:a]volume=${gainDb.toFixed(2)}dB,alimiter=limit=0.89:level=false,adelay=${delayMs}|${delayMs},apad[speech]`;
+let graph = speechChain;
 let mixOut = "[speech]";
 if (music) {
   const envPath = join(proj.dir, "musicEnvelope.json");
@@ -98,7 +109,7 @@ if (music) {
   const points = musicCurve(json, envelope);
   inputs.push("-stream_loop", "-1", "-i", music);
   graph =
-    `[0:a]adelay=${delayMs}|${delayMs},apad[speech];` +
+    `${speechChain};` +
     `[1:a]volume='${envelopeExpr(points)}':eval=frame[music];` +
     `[speech][music]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[mixed]`;
   mixOut = "[mixed]";

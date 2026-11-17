@@ -1,6 +1,6 @@
 ---
 name: script-to-beats
-description: Turn a written script with inline images (typically a Notion doc) into a timed beat plan against the footage transcript. Use when given a script document for a video, when the script is updated and the video needs to follow, or when asked where the graphics should go.
+description: Turn a written script with inline images (a Notion page or a Google Doc) into a timed beat plan against the footage transcript. Use when given a script document for a video, when the script is updated and the video needs to follow, or when asked where the graphics should go.
 ---
 
 # Script to beats
@@ -11,6 +11,15 @@ them.
 ---
 
 ## 1. Get the images out of the script first
+
+**Google Doc.** Export it with the Google Drive connector, `download_file_content` with
+`exportMimeType: "application/zip"` (the doc's id is in its link, between `/d/` and `/edit`). The zip is saved to
+a file; then `python gdoc_import.py <that zip> <project folder>/script` writes `script.md` and `images/`, every
+picture numbered in reading order at the size it was uploaded, with its alt text and its caption and credit
+(the words beside it, or in italics on the line just under it). Without the connector, the writer can use **File > Download > Web page (.html, zipped)** and
+hand Claude the zip. Nothing expires, so there is no rush.
+
+**Notion page.**
 
 If the script lives in Notion, its images are served from signed S3 URLs that
 **expire in 300 seconds**. Fetch → write a download script → run it, and they

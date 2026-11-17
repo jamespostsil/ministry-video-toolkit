@@ -3,9 +3,12 @@
  * Cuts a project's camera original into the footage the video plays.
  *
  * Reads `footagePrep` from the project's project.json:
- *   source            the camera original (relative paths resolve from remotion/)
+ *   source            the camera original (relative paths resolve from remotion/),
+ *                     or a list of them when the recording came in parts
  *   segments          [in, out] pairs in SOURCE seconds; the gaps between rows
- *                     are removed. Omit to keep the whole recording.
+ *                     are removed. With several parts, [part, in, out] with
+ *                     part counting from 1 in the source list's order. Omit
+ *                     to keep the whole recording (every part, in order).
  *   crossfadeSeconds  each join is a short cross-dissolve, video and audio, so
  *                     an edit reads as a blend rather than a cut. Default 0.4.
  *
@@ -37,12 +40,16 @@ if (!prep?.source)
       : `${proj.folder}/project.json has no footagePrep.source — set it to your camera original.`
   );
 
-if (prep.source.startsWith("PATH/TO"))
+const sourceList = Array.isArray(prep.source) ? prep.source : [prep.source];
+if (sourceList.some((p) => p.startsWith("PATH/TO")))
   fail(`footagePrep.source in src/projects/${proj.folder}/project.json is still the placeholder.\n  Set it to your recording, e.g. "C:/Videos/my-update.mp4", then run this again.`);
-const src = isAbsolute(prep.source) ? prep.source : resolve(ROOT, prep.source);
-if (!existsSync(src)) fail(`footagePrep.source not found: ${src}${exampleHint(proj)}`);
-const srcInfo = probe(src);
-if (!srcInfo.hasAudio) fail(`${src} has no audio track. The narration comes from the footage's own audio.`);
+const srcs = sourceList.map((p) => (isAbsolute(p) ? p : resolve(ROOT, p)));
+const infos = srcs.map((src) => {
+  if (!existsSync(src)) fail(`footagePrep.source not found: ${src}${exampleHint(proj)}`);
+  const info = probe(src);
+  if (!info.hasAudio) fail(`${src} has no audio track. The narration comes from the footage's own audio.`);
+  return info;
+});
 
 // Always this project's own files under public/base/, so a project that
 // started out borrowing the example's footage never overwrites it.
@@ -54,43 +61,55 @@ mkdirSync(dirname(out), { recursive: true });
 mkdirSync(dirname(still), { recursive: true });
 
 const XFADE = prep.crossfadeSeconds ?? 0.4;
-const segments = prep.segments?.length ? prep.segments : [[0, srcInfo.duration]];
+// Every segment as {part (0-based), a, b, fade}: [in, out] means part 1. [part, in, out, fade] sets this join's
+// dissolve (the one INTO the segment) when the usual one doesn't fit: a retake that starts 0.1s after a false start.
+const segments = prep.segments?.length
+  ? prep.segments.map((g) => (g.length >= 3 ? { part: g[0] - 1, a: g[1], b: g[2], fade: g[3] ?? XFADE } : { part: 0, a: g[0], b: g[1], fade: XFADE }))
+  : infos.map((info, part) => ({ part, a: 0, b: info.duration, fade: XFADE }));
 
 // Sanity-check the segments before handing ffmpeg anything.
-segments.forEach(([a, b], i) => {
+segments.forEach(({ part, a, b, fade }, i) => {
+  if (!infos[part]) fail(`segment ${i + 1} names part ${part + 1}, but footagePrep.source lists ${infos.length}`);
   if (!(b > a)) fail(`segment ${i + 1} [${a}, ${b}]: out must be after in`);
-  if (b > srcInfo.duration + 0.05) fail(`segment ${i + 1} ends at ${b}s but the source is only ${srcInfo.duration.toFixed(2)}s`);
-  if (i > 0 && a < segments[i - 1][1]) fail(`segment ${i + 1} starts before segment ${i} ends`);
-  if (segments.length > 1 && b - a <= XFADE * 2) fail(`segment ${i + 1} is shorter than two crossfades (${(XFADE * 2).toFixed(2)}s)`);
+  if (b > infos[part].duration + 0.05) fail(`segment ${i + 1} ends at ${b}s but part ${part + 1} is only ${infos[part].duration.toFixed(2)}s`);
+  const prev = segments[i - 1];
+  if (prev && prev.part === part && a < prev.b) fail(`segment ${i + 1} starts before segment ${i} ends`);
+  const fades = (i > 0 ? fade : 0) + (segments[i + 1]?.fade ?? 0);
+  if (!(fade > 0)) fail(`segment ${i + 1}: its dissolve must be more than 0s`);
+  if (segments.length > 1 && b - a <= fades) fail(`segment ${i + 1} is shorter than its dissolves (${fades.toFixed(2)}s)`);
 });
 
-const lens = segments.map(([a, b]) => b - a);
+const lens = segments.map(({ a, b }) => b - a);
 const parts = [];
-segments.forEach(([a, b], i) => {
-  parts.push(`[0:v]trim=${a}:${b},setpts=PTS-STARTPTS[v${i}]`);
-  parts.push(`[0:a]atrim=${a}:${b},asetpts=PTS-STARTPTS[a${i}]`);
+// Parts recorded at a different size or rate would break xfade, so every segment is brought to part 1's.
+const { width: W, height: H } = infos[0];
+const FPS = json.fps ?? 30;
+segments.forEach(({ part, a, b }, i) => {
+  parts.push(`[${part}:v]trim=${a}:${b},setpts=PTS-STARTPTS,scale=${W}:${H},fps=${FPS},format=yuv420p[v${i}]`);
+  parts.push(`[${part}:a]atrim=${a}:${b},asetpts=PTS-STARTPTS,aresample=48000[a${i}]`);
 });
 // xfade offsets are measured in the ACCUMULATED output timeline.
 let acc = lens[0];
 let vPrev = "v0";
 let aPrev = "a0";
 for (let i = 1; i < segments.length; i++) {
-  const offset = (acc - XFADE).toFixed(3);
-  parts.push(`[${vPrev}][v${i}]xfade=transition=fade:duration=${XFADE}:offset=${offset}[vx${i}]`);
-  parts.push(`[${aPrev}][a${i}]acrossfade=d=${XFADE}:c1=tri:c2=tri[ax${i}]`);
+  const d = segments[i].fade;
+  const offset = (acc - d).toFixed(3);
+  parts.push(`[${vPrev}][v${i}]xfade=transition=fade:duration=${d}:offset=${offset}[vx${i}]`);
+  parts.push(`[${aPrev}][a${i}]acrossfade=d=${d}:c1=tri:c2=tri[ax${i}]`);
   vPrev = `vx${i}`;
   aPrev = `ax${i}`;
-  acc = acc + lens[i] - XFADE;
+  acc = acc + lens[i] - d;
 }
 
-console.log(`source: ${src} (${srcInfo.duration.toFixed(2)}s)`);
+srcs.forEach((src, k) => console.log(`source${srcs.length > 1 ? ` part ${k + 1}` : ""}: ${src} (${infos[k].duration.toFixed(2)}s)`));
 console.log(`segments: ${lens.map((l) => l.toFixed(2)).join(" + ")}, ${XFADE}s dissolves → ~${acc.toFixed(2)}s`);
 
 execFileSync(
   "ffmpeg",
   [
     "-hide_banner", "-loglevel", "error", "-stats",
-    "-y", "-i", src,
+    "-y", ...srcs.flatMap((src) => ["-i", src]),
     "-filter_complex", parts.join(";"),
     "-map", `[${vPrev}]`, "-map", `[${aPrev}]`,
     "-c:v", "libx264", "-preset", "slow", "-crf", "15", "-pix_fmt", "yuv420p",

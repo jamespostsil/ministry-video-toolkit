@@ -87,7 +87,8 @@ export const imageReport = (projectDir) => {
     const code = readFileSync(p, "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|\s)\/\/.*$/gm, "$1");
-    for (const m of code.matchAll(/["'`]([^"'`\n]+\.(?:png|jpe?g|webp|gif|svg))["'`]/gi)) named.add(m[1]);
+    // A path built in code (`images/x/${id}.jpg`) is a pattern, not a file name: skip it.
+    for (const m of code.matchAll(/["'`]([^"'`\n]+\.(?:png|jpe?g|webp|gif|svg))["'`]/gi)) if (!m[1].includes("${")) named.add(m[1]);
   }
   const paths = publicFilePaths();
   const missing = [...named].filter((n) => {

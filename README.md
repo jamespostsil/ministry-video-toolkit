@@ -22,6 +22,27 @@ reproduces it, and you can see exactly how each moment was built. See
 [examples/example-script.md](examples/example-script.md) for the script it was
 made from.*
 
+## Your first video, in five steps
+
+1. **Record yourself** talking to the camera, reading your script.
+2. **Write the script** in Notion or a Google Doc, with each picture placed just
+   before the words it goes with. Copy an example to start from:
+   [Google Doc](https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/copy)
+   (opens a "Make a copy" prompt) or
+   [Notion page](https://app.notion.com/p/ltuse/Example-ministry-update-script-41a598a5fd4081b5b0e3d442c76bef91)
+   (use Duplicate).
+3. **Approve the storyboard.** Give Claude the recording and the script link.
+   Claude makes a page showing every scene with its words and pictures; change
+   anything there, then press Approve. If the script doesn't say how to show the
+   pictures, Claude chooses a layout for each scene, and the **Layout** button
+   on that scene lets you pick another.
+4. **Review the video.** Claude renders it and makes a review page. Leave notes
+   on any scene until it looks right.
+5. **Finish it.** Claude renders the final video and its YouTube thumbnail.
+   Along the way it offers what usually comes next: music timed to the video,
+   headings and names on screen, an end frame with a QR code, and touching up
+   washed-out photos.
+
 ---
 
 ## Get started
@@ -43,7 +64,7 @@ npm run render -- _example      # render the example to out/Example.mp4
 ## Two ways to use it
 
 **With Claude Code (recommended).** Open Claude Code in this folder and
-describe what you want: *"Here's my recording and my Notion script. Make the
+describe what you want: *"Here's my recording and my Notion script (or Google Doc). Make the
 video."* The skills in `.claude/skills/` tell Claude how to trim the footage,
 plan the graphics, build the closing frame, render, and check the result for
 the problems renders actually have.
@@ -61,10 +82,12 @@ the recording.
 | Beat | What it looks like | Use it for |
 |---|---|---|
 | Title card (`opening`) | The footage's first frame, frozen, with your title over it. Then the picture starts moving | Opening |
-| Heading (`heading`) | A short label upper left, over the live shot, with an optional subtitle or bullet list | Naming each section or speaker |
+| Heading (`heading`) | A short label upper left (or right), over the live shot or a photo, with an optional subtitle, logo, or bullet list whose lines arrive on their own words | Naming each section or speaker; a few words over a photo |
 | Takeover (`cover`) | One photo, full screen, slowly zooming | A landscape photo worth the whole frame |
 | Whole photo (`blur`) | The photo shown complete over a blurred copy of itself | Portraits, or anything with words on it that must not be cropped |
-| Row (`row`) | 2–4 images side by side, each at its own shape | Comparing things, such as screenshots |
+| Row (`row`) | 2–4 images side by side, each at its own shape, with an optional title above; each can come in on its own words | Comparing things, such as screenshots; a person's photos under their name |
+| Counter (`counter`) | A number counting up, with a label | A milestone worth dwelling on ("600 projects started") |
+| Globe (`globe`) | **Work in progress.** A turning globe; a Bible fades in on a chosen word | "Every language in the world" |
 | Slider (`slider`) | Cards drifting across the screen | A run of 5–10 captioned photos |
 | Scatter (`scatter`) | Photos dropping onto a pile, one at a time | A list you read out, each photo on its own phrase |
 | Before / after (`compare`) | Two columns, each side appearing on its own word | "Used to take weeks, now days" |
@@ -90,14 +113,18 @@ From the `remotion/` folder:
    can replace things one at a time. Your project folders are git-ignored, so
    your video's details stay on your computer.
 2. **Point it at your recording.** In `src/projects/my-video/project.json`, set
-   `footagePrep.source` to your camera file, and list the `segments` to keep
+   `footagePrep.source` to your camera file (or a list of files, if it was
+   recorded in parts; segments are then `[part, in, out]`), and list the `segments` to keep
    (the `footage-prep` skill explains how to choose them). A relative path is
    read from the `remotion/` folder; in JSON, write Windows paths with forward
    slashes (`"C:/Videos/update.mp4"`). Then: `npm run footage -- my-video`
 3. **Get a transcript.** `npm run transcribe -- my-video` writes word-by-word
    timings, so graphics can land on the right words. It needs a Whisper API key
    ([SETUP.md](SETUP.md#optional-a-transcription-key)).
-4. **Plan the beats.** Edit `beats.ts`: which graphic appears, and when. Times
+4. **Storyboard it, then plan the beats.** The `storyboard` skill makes a page
+   where each scene shows its words with a mock-up of the screen; once it is
+   approved, its `export_photos.py` writes the cropped photos the video uses.
+   Then edit `beats.ts`: which graphic appears, and when. Times
    are seconds into your **footage**, read off the transcript. (`npm run still`
    takes seconds into the finished video instead, and prints both.)
 5. **Set the titles and end frame.** `titleCard` and `thumbnail` in
@@ -127,6 +154,14 @@ replace those paths as you add your own. To hear a music change without
 rendering any frames: `npm run render -- my-video --audio-only` writes
 `out/my-video-mix.wav`.
 
+**Shared photos of people with Bibles.** SIL and Wycliffe staff can use a set of
+photos already cleared for partnership videos, each with its on-screen credit:
+[People with Bibles: photos for partnership videos](https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq)
+(sign in with your SIL account; anyone else can press **Request access**).
+Download the folder once, or add a shortcut to it in Google Drive for desktop, and
+tell Claude where it is. The storyboard and review pages then offer them under
+**+ Add a photo > Shared photos**, with the caption and credit filled in.
+
 **Keeping your own project under version control.** Project folders are
 git-ignored here so nobody's video ends up in the shared toolkit. To track a
 video in your own repository, keep it in a separate repo and copy or link its
@@ -144,7 +179,7 @@ All run from `remotion/`. `<project>` is a folder name under `src/projects/`.
 |---|---|
 | `npm run doctor` | Checks your tools and every project, and says how to fix anything missing |
 | `npm run new -- <name>` | Starts a new project from the example |
-| `npm run example:media` | Downloads the example video's footage and photos (about 80 MB) |
+| `npm run example:media` | Downloads the example video's footage, photos and music (about 85 MB) |
 | `npm run footage -- <project>` | Cuts the recording, writes the title-card still, records the real length |
 | `npm run transcribe -- <project>` | Word-level transcript of the footage |
 | `npm run studio` | Preview in the browser: scrub, inspect, no rendering |
@@ -168,7 +203,8 @@ this folder; they are also plain Markdown, worth reading yourself.
 |---|---|
 | `footage-prep` | Trimming the opening hold and teleprompter pauses; where it is safe to cut |
 | `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked, Approve |
-| `script-to-beats` | Turning a script with images into a timed beat plan |
+| `script-to-beats` | Turning a script with images (Notion page or Google Doc) into a timed beat plan |
+| `photo-touchup` | Fixing washed-out photos gently, with a before / after page to choose from before anything is replaced |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |
