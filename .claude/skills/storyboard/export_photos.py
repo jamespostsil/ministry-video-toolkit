@@ -6,7 +6,7 @@
   python -I export_photos.py ... --no-edits     (only when the page was never published, so there is nothing to read)
 
 --edits: the storyboard page's saved data, read with ArtifactData list (out_dir = this folder) for the collections
-`order` and `pics`, so the folder holds order/<group>.json and pics/<picture id>.json. Every collection read is
+`order`, `pics` and `layout`, so the folder holds order/<group>.json, pics/<picture id>.json and layout/<group>.json. Every collection read is
 applied: the reviewer's captions, credits and permissions (pics), and each moment's photo order, the photos they
 removed and the photos they added (order). Without --edits (or --no-edits) the export stops, so the reviewer's
 changes can't be skipped by accident.
@@ -22,6 +22,8 @@ Writes into <out folder>:
   <picture id>.jpg     each photo turned upright and cropped as the storyboard shows it (same ids as build.py)
   photos.json          {picture id: {file, width, height, caption, credit, rights}} for beats.ts (photos used only)
   photo-order.json     {group: [picture ids in the reviewer's order]}: the photos each moment shows, in order
+  photo-layouts.json   {group: {layout, planned, photos}}: how each moment's photos are shown ("cover", "blur", "row",
+                       "slider", "scatter"): the reviewer's choice from the page's Layout button, or the planned one
   photo-credits.txt    the end screen's line, e.g. "Photos by Wycliffe, SIL PNG, and Chris Gilmore"
 """
 import argparse, glob, json, os, re, sys
@@ -36,7 +38,7 @@ ap.add_argument("--library", action="append", default=[], help="a shared photo f
 a = ap.parse_args()
 if not a.edits and not a.no_edits:
     sys.exit("Stopped: pass --edits <folder> with the storyboard page's saved data (ArtifactData list of the "
-             "collections order and pics, out_dir = that folder). Use --no-edits only for a page that was never published.")
+             "collections order, pics and layout, out_dir = that folder). Use --no-edits only for a page that was never published.")
 sb = json.load(open(a.storyboard, encoding="utf-8"))
 crops = json.load(open(a.crops, encoding="utf-8")) if a.crops else {}
 pid_of = lambda f: re.sub(r"[^A-Za-z0-9]+", "-", os.path.splitext(f)[0]).strip("-").lower()
@@ -53,6 +55,7 @@ def read_coll(name):
 
 edits = read_coll("pics") if a.edits else {}
 orders = read_coll("order") if a.edits else {}
+layouts = read_coll("layout") if a.edits else {}
 if a.edits and not os.path.isdir(a.edits):
     sys.exit(f"Stopped: the --edits folder doesn't exist: {a.edits}")
 
@@ -138,6 +141,21 @@ for pid in used:
 json.dump(out, open(os.path.join(a.out, "photos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 json.dump(final, open(os.path.join(a.out, "photo-order.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
+# each moment's layout: the reviewer's choice (layout/<group>) while it suits the number of photos, else the storyboard's
+FITS = {"cover": (1, 1), "blur": (1, 1), "row": (2, 3), "slider": (2, 99), "scatter": (2, 99)}
+fits = lambda L, n: L in FITS and FITS[L][0] <= n <= FITS[L][1]
+planned = {}
+for s_ in sb["shots"]:
+    if s_.get("layout"): planned.setdefault(s_.get("group") or s_.get("key") or s_["id"], s_["layout"])
+lay_out, lay_changed = {}, []
+for g, ids in final.items():
+    n, was, want = len(ids), planned.get(g, ""), (layouts.get(g) or {}).get("layout", "")
+    use = want if fits(want, n) else was if fits(was, n) else ("cover" if n == 1 else "row" if n <= 3 else "slider") if n else ""
+    if not use or not (was or fits(want, n)): continue   # a moment with no layout of its own (the end frame) keeps none
+    lay_out[g] = {"layout": use, "planned": was, "photos": n}
+    if use != was: lay_changed.append(f"  {g}: {was or '(none)'} -> {use} ({n} photo{'s' if n != 1 else ''})")
+json.dump(lay_out, open(os.path.join(a.out, "photo-layouts.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
 # the end screen's credit line, from the photos actually used ("Photo: X" -> X), in order of first appearance
 names = list(dict.fromkeys(re.sub(r"^\s*photos?\s*(by)?\s*:?\s*", "", v["credit"], flags=re.I).strip() for v in out.values() if v["credit"].strip()))
 line = ("Photos by " + (names[0] if len(names) == 1 else ", ".join(names[:-1]) + (", and " if len(names) > 2 else " and ") + names[-1])) if names else ""
@@ -146,3 +164,4 @@ open(os.path.join(a.out, "photo-credits.txt"), "w", encoding="utf-8").write(line
 changed = sum(1 for pid in used if pid in edits) + sum(1 for g in final if g in orders)
 print(f"{len(out)} photos -> {a.out}  ({len(final)} moments; reviewer's changes applied to {changed} photos/moments)")
 print("Credits:", line or "(none)")
+if lay_changed: print("Layouts to change in beats.ts (photo-layouts.json):", *lay_changed, sep="\n")

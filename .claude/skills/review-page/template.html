@@ -114,6 +114,15 @@ video::cue{font:600 18px system-ui,sans-serif;background:rgb(0 0 0/.62);color:#f
 .rmd .chip{display:inline-flex;gap:5px;align-items:center;border:1px dashed var(--line);border-radius:4px;padding:2px 6px 2px 2px}.rmd img{width:40px;height:28px;object-fit:cover;border-radius:2px;opacity:.6}
 .pacts{display:flex;gap:14px;margin-top:6px}
 .pblk.empty{display:none}.pacts:not(:has(:not([hidden]))){display:none}
+.laybtn{font:inherit;font-size:.85rem;background:none;border:0;color:var(--fg);text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
+.laybtn.edited{font-weight:700}.nhead .laybtn+.add{margin-left:0}
+dialog.pick.lay{width:min(980px,94vw)}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
+.lay .opt{font:inherit;color:var(--fg);text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:6px 6px 8px;cursor:pointer;line-height:1.3}
+.lay .opt:hover,.lay .opt:focus-visible{border-color:var(--accent)}.lay .opt[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.lay .opt video,.lay .opt img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;display:block;background:#000}
+.lay .opt b{display:block;margin:6px 2px 0}.lay .opt span{display:block;font-size:.8rem;color:var(--muted);margin:2px 2px 0}
+.lay .opt .now{font-size:.72rem;font-weight:600;color:var(--fg);margin:4px 2px 0}
+.lay .lnote{font-size:.85rem;color:var(--muted);margin:0 0 10px}
 dialog.pick{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--fg);padding:14px;width:min(720px,92vw);max-height:84vh}
 dialog.pick::backdrop{background:rgb(0 0 0/.5)}
 /* "+ Add a photo": the script's photos, then the shared photos (cleared to use) with their credit under each */
@@ -190,6 +199,7 @@ details.help{margin:0 0 8px}
   </div>
 </div>
 <div class="lb" id="lb" hidden><img id="lbimg" alt=""></div>
+<dialog class="pick lay" id="lay"><h2>Choose a layout</h2><p class="lnote" id="laynote"></p><div class="opts" id="layopts"></div><p style="margin:10px 0 0"><button type="button" class="btn" id="layclose">Close</button></p></dialog>
 <dialog class="pick" id="pick"><h2>Add a photo</h2><div class="ptabs" id="ptabs" role="tablist" hidden></div><p class="pnote" id="pnote" hidden></p><div class="lib" id="plib"></div>
   <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span><button type="button" class="btn" id="pclose">Close</button></div></dialog>
 <script>
@@ -220,7 +230,33 @@ const isOk = {};
 // what each scene shows (filled in by buildShown, below): photos, their order, the words on screen
 const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
 const PIC = {}, SCR = {}, ORDER = {}, seenGroup = new Set();
-let saveOrder = () => {}, savePicDb = () => {}, saveScr = () => {};
+let saveOrder = () => {}, savePicDb = () => {}, saveScr = () => {}, saveLay = () => {};
+// the layouts a reviewer can ask for: [id, name, what it does, fewest photos, most photos, has a moving preview]
+const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, false],
+  ["blur", "Whole photo", "One photo with nothing cropped, over a soft blur of itself.", 1, 1, true],
+  ["row", "Side by side", "The photos together, each one arriving on its own words.", 2, 3, true],
+  ["slider", "One after another", "Cards drift across the screen under a title.", 2, 99, true],
+  ["scatter", "Scattered cards", "Cards land one by one, like photos on a table.", 2, 99, true]];
+const LAY = {};   // group -> {orig (the video's layout, if the data says), cur, btn}
+const layName = (id) => (LAYOUTS.find((l) => l[0] === id) || [0, ""])[1];
+function paintLay(g) { const L = LAY[g], n = ORDER[g] ? ORDER[g].cur.length : 0; if (!L) return; L.btn.hidden = !n;
+  L.btn.textContent = layName(L.cur) ? "Layout: " + layName(L.cur) : "Layout"; L.btn.classList.toggle("edited", !!L.cur && L.cur !== L.orig); }
+function openLay(g) {
+  const L = LAY[g], n = ORDER[g].cur.length, box = $("layopts"), still = matchMedia("(prefers-reduced-motion: reduce)").matches; box.innerHTML = "";
+  $("laynote").textContent = (n === 1 ? "This scene has one photo." : "This scene has " + n + " photos.") + " Your choice goes into the next version of the video.";
+  for (const [id, name, what, lo, hi, moves] of LAYOUTS) {
+    if (n < lo || n > hi) continue;
+    const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", String(id === L.cur));
+    const m = document.createElement(moves && !still ? "video" : "img");
+    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
+    else { m.src = "layouts/" + id + ".jpg"; m.alt = name + ", an example"; }
+    const tt = document.createElement("b"); tt.textContent = name; const d = document.createElement("span"); d.textContent = what; b.append(m, tt, d);
+    if (id === L.cur) { const w = document.createElement("span"); w.className = "now"; w.textContent = id === L.orig ? "In the video now" : "Your choice"; b.appendChild(w); }
+    b.addEventListener("click", () => { $("lay").close(); L.cur = id; paintLay(g); saveLay(g); });
+    box.appendChild(b);
+  }
+  $("lay").showModal();
+}
 const sameArr = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 const safe = (x) => String(x).replace(/[^A-Za-z0-9_.~:@+-]+/g, "-");
 // a photo's picture: an upload lives in the page's asset store, the rest are published next to the page
@@ -251,7 +287,10 @@ for (const s of S) {
     '<div class="shown"></div>' +
     '<div class="nhead"><label class="f" for="nt-' + k + '">Note</label></div><textarea id="nt-' + k + '" data-f="note" placeholder="What should change in this scene?"></textarea><div class="pins"></div><div class="save"></div>';
   buildShown(s, d.querySelector(".shown"));
-  const addB = d.querySelector(".pblk .add"); if (addB) d.querySelector(".nhead").appendChild(addB);
+  const addB = d.querySelector(".pblk .add");
+  if (addB) { const g = s.group || s.id, lb = document.createElement("button"); lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown";
+    const known = LAYOUTS.some((l) => l[0] === s.layout) ? s.layout : ""; LAY[g] = { orig: known, cur: known, btn: lb };
+    lb.addEventListener("click", () => openLay(g)); d.querySelector(".nhead").append(lb, addB); paintLay(g); }
   d.querySelector(".time").textContent = fmt(s.t);
   d.querySelector(".txt").textContent = s.text;
   if (C[s.id]) {
@@ -305,7 +344,7 @@ function buildShown(s, box) {
       for (const id of O.removed) { const c = document.createElement("span"); c.className = "chip"; c.innerHTML = '<img alt=""><button type="button" class="rs">Put back</button>';
         c.querySelector("img").src = srcOf(PIC[id], true); c.querySelector("button").onclick = () => { const before = O.cur.slice(); O.removed = O.removed.filter((q) => q !== id); list.appendChild(O.rows[id]); commit(before); };
         rmd.appendChild(c); } };
-    const commit = (before) => { sync(); if (!sameArr(before, O.cur)) saveOrder(g); };
+    const commit = (before) => { sync(); paintLay(g); if (!sameArr(before, O.cur)) saveOrder(g); };
     const makeRow = (p) => {
       if (!PIC[p.id]) PIC[p.id] = { ...p, orig: { caption: p.caption || "", credit: p.credit || "", rights: p.rights || "ok" }, caption: p.caption || "", credit: p.credit || "", rights: p.rights || "ok", rows: [] };
       const x = PIC[p.id], row = document.createElement("div"); row.className = "prow"; row.dataset.pid = p.id; row.setAttribute("role", "listitem"); O.rows[p.id] = row;
@@ -611,7 +650,11 @@ function renderRowPins() {
 window.addEventListener("resize", () => { closePop(); drawPins(); });
 v.addEventListener("seeked", () => drawPins());   // not drawPins itself: the event would be taken for an arrow
 
-// ---- saving: sentences-v<N>/<id> {id, text, note, ok} (older pages: script, screen), pins-v<N>/<pin id> {t, x, y, text, sentence, kind?: "arrow", x2, y2}, notes-v<N>/overall {text}
+$("layclose").addEventListener("click", () => $("lay").close());
+$("lay").addEventListener("click", (e) => { if (e.target === $("lay")) $("lay").close(); });
+$("lay").addEventListener("close", () => { $("layopts").innerHTML = ""; });   // stop the previews
+
+// ---- saving: layout-v<N>/<group> {layout, original, photos}; sentences-v<N>/<id> {id, text, note, ok} (older pages: script, screen), pins-v<N>/<pin id> {t, x, y, text, sentence, kind?: "arrow", x2, y2}, notes-v<N>/overall {text}
 (async () => {
   const db = await claude.use("db"); if (!db) { off.hidden = false; return; }
   const col = db.collection("sentences-v" + V), pcol = db.collection("pins-v" + V), all = db.collection("notes-v" + V);
@@ -631,6 +674,9 @@ v.addEventListener("seeked", () => drawPins());   // not drawPins itself: the ev
   const gcol = db.collection("good-v" + V), acol = db.collection("answers-v" + V);
   saveOrder = (g) => later("o" + g, async () => { const O = ORDER[g]; try { await ocol.doc(safe(g)).set({ pics: O.cur, removed: O.removed, added: O.added }); } catch (e) { failed(); } });
   savePicDb = (x) => later("p" + x.id, async () => { try { await picol.doc(x.id).set({ caption: x.caption, credit: x.credit, rights: x.rights, file: x.file || "", ...(x.asset ? { asset: x.asset } : {}), original: x.orig }); } catch (e) { failed(); } });
+  const lcol = db.collection("layout-v" + V);
+  saveLay = async (g) => { const L = LAY[g], sv = (el[(S.find((x) => (x.group || x.id) === g) || {}).id] || document).querySelector(".save");
+    try { await lcol.doc(safe(g)).set({ layout: L.cur, original: L.orig, photos: ORDER[g].cur.length, at: new Date().toISOString() }); if (sv) sv.textContent = "Saved"; } catch (e) { if (sv) sv.textContent = "Not saved"; failed(); } };
   saveGood = (doc, on) => later("g" + doc, async () => { try { await gcol.doc(doc).set({ good: on, at: new Date().toISOString() }); } catch (e) { failed(); } });
   saveAnswer = (q) => later("a" + q.id, async () => { try { await acol.doc(q.id).set({ title: q.title, answer: q.answer, note: q.note, at: new Date().toISOString() }); } catch (e) { failed(); } });
   assetsP = claude.use("assets").catch(() => null);
@@ -638,6 +684,8 @@ v.addEventListener("seeked", () => drawPins());   // not drawPins itself: the ev
   try {
     (await picol.get()).docs.forEach((d) => { const x = PIC[d.id], y = d.data() || {}; if (!x) return; for (const f of ["caption", "credit", "rights"]) if (typeof y[f] === "string") x[f] = y[f]; x.paint(); });
     (await ocol.get()).docs.forEach((d) => { const g = Object.keys(ORDER).find((k) => safe(k) === d.id), y = d.data() || {}; if (g && Array.isArray(y.pics)) ORDER[g].apply(y); });
+    (await lcol.get()).docs.forEach((d) => { const g = Object.keys(LAY).find((k) => safe(k) === d.id), y = d.data() || {}; if (g && layName(y.layout)) { LAY[g].cur = y.layout; } });
+    Object.keys(LAY).forEach(paintLay);   // after the saved photo order is in
     // marks saved here win over the ones carried from the last version
     (await gcol.get()).docs.forEach((d) => { const y = d.data() || {}; if (typeof y.good === "boolean" && GT[d.id]) setGood(d.id, y.good, false); });
     (await acol.get()).docs.forEach((d) => { const q = QS[d.id], y = d.data() || {}; if (q) q.set(y.answer || "", y.note || "", false); });

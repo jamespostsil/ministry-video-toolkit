@@ -302,6 +302,15 @@ select.rights{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
 .add-gap{opacity:0;margin:-4px 0;height:16px}.add-gap:hover,.add-gap:focus-within{opacity:1}
 .notes{margin-top:8px}
 /* the card's last row: "Saved" (when it flashes) and Next scene, at the bottom right under everything */
+.laybtn{font:inherit;font-size:.85rem;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
+.nhead .laybtn+.addp{margin-left:0}
+dialog.pick.lay{width:min(980px,94vw)}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
+.lay .opt{font:inherit;color:var(--text);text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:6px 6px 8px;cursor:pointer;line-height:1.3}
+.lay .opt:hover,.lay .opt:focus-visible{border-color:var(--accent)}.lay .opt[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.lay .opt video,.lay .opt img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;display:block;background:#000}
+.lay .opt b{display:block;margin:6px 2px 0}.lay .opt span{display:block;font-size:.8rem;color:var(--muted);margin:2px 2px 0}
+.lay .opt .now{display:inline-block;font-size:.72rem;font-weight:600;color:var(--accent);margin:4px 2px 0}
+.lay .lnote{font-size:.85rem;color:var(--muted);margin:0 0 10px}
 .cardfoot{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:6px;min-height:1.4em}
 .cardfoot .saved{position:static;background:none;padding:0}.cardfoot .nextsc{margin:0}
 .grp.good>.cardfoot{display:none}
@@ -346,6 +355,7 @@ details.help{margin:0 0 10px}
   </aside>
 </div>
 <div class="lb" id="lb" hidden><div class="wrap" id="lbwrap"></div></div>
+<dialog class="pick lay" id="lay"><h2>Choose a layout</h2><p class="lnote" id="laynote"></p><div class="opts" id="layopts"></div><p style="margin:10px 0 0"><button type="button" class="btn" id="layclose">Close</button></p></dialog>
 <dialog class="pick" id="pick"><h2>Add a photo</h2><div class="ptabs" id="ptabs" role="tablist" hidden></div><p class="pnote" id="pnote" hidden></p><div class="lib" id="plib"></div>
   <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span><button type="button" class="btn" id="pclose">Close</button></div></dialog>
 <script>
@@ -360,10 +370,20 @@ const shots = DATA.shots;
 const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
 const PIC = {};   // picture id -> {caption, credit, rights, file, orig: {...}}, shared by every shot that uses it
 // cards of one moment share a group: the first one ("lead") holds the photo list, the later ones share its order
-shots.forEach((s, k) => { s.group = s.group || s.key; const lead = shots.slice(0, k).find((t) => t.group === s.group && t.pictures.length);
+shots.forEach((s, k) => { s.layout0 = s.layout; s.group = s.group || s.key; const lead = shots.slice(0, k).find((t) => t.group === s.group && t.pictures.length);
   s.lead = !lead; s.order = lead ? lead.order : s.pictures.map((p) => p.id); s.view = 0;
   s.pictures.forEach((p) => { if (!PIC[p.id]) PIC[p.id] = { ...p, orig: { caption: p.caption, credit: p.credit, rights: p.rights } }; }); });
 const picsOf = (s) => s.order.map((id) => PIC[id]).filter(Boolean);
+// the layouts a reviewer can choose: [id, name, what it does, fewest photos, most photos, has a moving preview]
+const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, false],
+  ["blur", "Whole photo", "One photo with nothing cropped, over a soft blur of itself.", 1, 1, true],
+  ["row", "Side by side", "The photos together, each one arriving on its own words.", 2, 3, true],
+  ["slider", "One after another", "Cards drift across the screen under a title.", 2, 99, true],
+  ["scatter", "Scattered cards", "Cards land one by one, like photos on a table.", 2, 99, true]];
+const layFits = (id, n) => LAYOUTS.some((l) => l[0] === id && n >= l[3] && n <= l[4]);
+// the layout a scene shows: its own while that suits the number of photos, else the usual one for that many
+const effLayout = (s) => { const n = picsOf(s).length; return layFits(s.layout, n) ? s.layout : n <= 1 ? (s.layout === "blur" ? "blur" : "cover") : n <= 3 ? "row" : "slider"; };
+const layName = (id) => (LAYOUTS.find((l) => l[0] === id) || [0, id])[1];
 // what can be on the stage for a shot: its own picture (footage frame or sketch) unless photos replace it, then its photos in order
 const viewsOf = (s) => (s.sketch || !s.order.length ? [{ id: "frame" }] : [{ id: "screen", screen: true }]).concat(picsOf(s).map((p) => ({ id: p.id, p })));
 let whole = false;
@@ -375,7 +395,7 @@ function drawScreen(box = $("frame"), s = shots[cur], v = curView(), small = fal
   box.querySelectorAll(".comp").forEach((n) => n.remove()); box.classList.remove("under"); delete box.dataset.aboveTop;
   if (!v.screen) return;
   const J = small ? ".t.jpg" : ".jpg";
-  const ps = picsOf(s).filter((p) => PIC[p.id].rights !== "no" || true), L = s.layout || "cover";
+  const ps = picsOf(s).filter((p) => PIC[p.id].rights !== "no" || true), L = effLayout(s);
   const c = document.createElement("div"); c.className = "comp"; c.setAttribute("aria-hidden", "true");
   const img = (src, cls, parent) => { const i = document.createElement("img"); i.src = src; i.alt = ""; if (cls) i.className = cls; (parent || c).appendChild(i); return i; };
   const card = (p, x, y, w, h) => { const d = document.createElement("div"); d.className = "card" + (PIC[p.id].rights === "no" ? " no" : "");
@@ -411,6 +431,17 @@ function drawScreen(box = $("frame"), s = shots[cur], v = curView(), small = fal
       const [cap, cr] = words(p);
       if (cap || cr) { const ch = document.createElement("div"); ch.className = "chip"; if (cap) ch.append(cap); if (cr) { const sp = document.createElement("span"); sp.textContent = cr; ch.appendChild(sp); } d.appendChild(ch); }
     });
+  } else if (L === "scatter") {
+    c.classList.add("field");   // as the video's scatter: one cell per card under the title, every card the same long edge, a small tilt
+    const n = ps.length, CW = 1860, CH = 1080 - 210 - 40, cols = Math.max(1, Math.ceil(Math.sqrt(n * CW / CH))), rws = Math.max(1, Math.ceil(n / cols));
+    const LE = Math.min(ps.some((p) => p.w < p.h) ? 790 : 860, Math.max(560, 900 - 25 * n)), TILT = [-5, 4, -3, 6, -4, 3];
+    ps.forEach((p, k) => {
+      const a = p.w / p.h, w = a >= 1 ? LE : LE * a, h = a >= 1 ? LE / a : LE;
+      const cx = Math.min(Math.max(30 + (k % cols + .5) * CW / cols, w / 2 + 10), 1910 - w / 2), cy = Math.min(Math.max(210 + (Math.floor(k / cols) + .5) * CH / rws, 210 + h / 2), 1040 - h / 2);
+      const d = card(p, cx - w / 2, cy - h / 2, w, h); d.style.transform = "rotate(" + TILT[k % 6] + "deg)";
+      const [cap, cr] = words(p);
+      if (cap || cr) { const ch = document.createElement("div"); ch.className = "chip"; if (cap) ch.append(cap); if (cr) { const sp = document.createElement("span"); sp.textContent = cr; ch.appendChild(sp); } d.appendChild(ch); }
+    });
   }
   box.appendChild(c);
 }
@@ -438,7 +469,7 @@ function show(i, scroll) {
   $("frame").querySelectorAll(".badge").forEach((n) => n.remove());
   const r = v.p && PIC[v.p.id].rights, badge = r === "ask" ? ["ask", "Permission: ask first"] : r === "no" ? ["no", "Marked: don't use"] : !v.p && s.sketch ? ["sk", "Sketch"] : null;
   if (badge) { const b = document.createElement("span"); b.className = "badge " + badge[0]; b.textContent = badge[1]; $("frame").appendChild(b); }
-  drawScreen(); drawOverlay();
+  drawScreen(); drawOverlay(); paintLay();
   $("sec").textContent = s.section; $("beat").hidden = true; $("note").textContent = s.note || "";
   renderOnscr(); renderViews();
   groups.forEach((g) => g.querySelectorAll(".th-btn").forEach((b) => b.setAttribute("aria-pressed", "false")));
@@ -488,7 +519,7 @@ function drawOverlay(box = $("frame"), s = shots[cur], v = curView()) {
   }
   items.filter((x) => x.g === "card").forEach((x) => el("ty", x.text));
   items.filter((x) => x.g === "above").forEach((x) => { const d = el("above sh", x.text); if (box.dataset.aboveTop) d.style.top = X(+box.dataset.aboveTop); });
-  const lone = v.p || (v.screen && /^(cover|blur)$/.test(s.layout || "cover") ? picsOf(s)[0] : null);
+  const lone = v.p || (v.screen && /^(cover|blur)$/.test(effLayout(s)) ? picsOf(s)[0] : null);
   if (lone && (PIC[lone.id].caption || PIC[lone.id].credit)) {
     const c = el("capn");
     if (PIC[lone.id].caption) { const b = document.createElement("b"); b.textContent = PIC[lone.id].caption; c.appendChild(b); }
@@ -732,6 +763,35 @@ function savePic(pid) {
       picRows.filter((r) => r.pid === pid).forEach((r) => flash(r.saved)); } catch (e) { console.error(e); }
   }, 600);
 }
+// ---- choosing a layout: layout/<group> {layout, original, photos}
+const layBtns = [];
+function paintLay() { for (const { b, s } of layBtns) { const n = picsOf(s).length; b.hidden = !n || !!s.sketch; b.textContent = "Layout: " + layName(effLayout(s)); } }
+function openLay(s, i) {
+  const n = picsOf(s).length, cur0 = effLayout(s), box = $("layopts"), still = matchMedia("(prefers-reduced-motion: reduce)").matches; box.innerHTML = "";
+  $("laynote").textContent = n === 1 ? "This scene has one photo." : "This scene has " + n + " photos. Add or remove photos to see other layouts.";
+  for (const [id, name, what, lo, hi, moves] of LAYOUTS) {
+    if (n < lo || n > hi) continue;
+    const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", String(id === cur0));
+    const m = document.createElement(moves && !still ? "video" : "img");
+    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
+    else { m.src = "layouts/" + id + ".jpg"; m.alt = name + ", an example"; }
+    const t = document.createElement("b"); t.textContent = name; const d = document.createElement("span"); d.textContent = what;
+    b.append(m, t, d);
+    if (id === cur0) { const w = document.createElement("span"); w.className = "now"; w.textContent = "Showing now"; b.appendChild(w); }
+    b.addEventListener("click", () => { $("lay").close(); setLay(s, i, id); });
+    box.appendChild(b);
+  }
+  $("lay").showModal();
+}
+async function setLay(s, i, id) {
+  shots.filter((t) => t.group === s.group).forEach((t) => { t.layout = id; });
+  paintLay(); show(cur, false); if (typeof refreshMinis === "function") refreshMinis();
+  if (!db) return;
+  try { await db.collection("layout").doc(s.group).set({ layout: id, original: s.layout0 || "", photos: picsOf(s).length, updatedAt: new Date().toISOString() }); flash(groups[i].querySelector(".cardfoot .saved")); } catch (e) { console.error(e); }
+}
+$("layclose").addEventListener("click", () => $("lay").close());
+$("lay").addEventListener("click", (e) => { if (e.target === $("lay")) $("lay").close(); });
+$("lay").addEventListener("close", () => { $("layopts").innerHTML = ""; });   // stop the previews
 async function saveOrder(i) {
   if (!db) return; const s = shots[i];
   try { await db.collection("order").doc(s.group).set({ pics: s.order, removed: s.removed, added: s.added, updatedAt: new Date().toISOString() }); flash(groups[i].querySelector(".osaved")); } catch (e) { console.error(e); }
@@ -955,7 +1015,8 @@ shots.forEach((s, i) => {
   });
   const wb = s.screen.length ? screenBlock(s, i) : null;   // the words first: a title sits above its photos
   if (wb) g.appendChild(wb);
-  if (s.lead) { const pb = picBlock(s, i); g.appendChild(pb); notes.querySelector(".nhead").appendChild(pb.querySelector(".addp")); }   // any first card of a moment can take a photo
+  if (s.lead) { const pb = picBlock(s, i); g.appendChild(pb); const lb = document.createElement("button"); lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown"; lb.addEventListener("click", () => { if (cur !== i) show(i, false); openLay(s, i); });
+    layBtns.push({ b: lb, s }); notes.querySelector(".nhead").append(lb, pb.querySelector(".addp")); }   // any first card of a moment can take a photo
   g.appendChild(notes);
   { const ft = document.createElement("div"); ft.className = "cardfoot"; ft.innerHTML = '<span class="saved">Saved</span>'; g.appendChild(ft); }   // "Saved" for the Note: bottom right of the card
   if (i < shots.length - 1) { const nx = document.createElement("div"); nx.className = "nextsc";
@@ -1111,6 +1172,7 @@ function setupScenes(saved) {
       for (const f of ["caption", "credit", "rights"]) if (typeof x[f] === "string") p[f] = x[f]; paintPic(d.id); });
     const or = await db.collection("order").get();
     or.docs.forEach((d) => { const s = shots.find((t) => t.group === d.id && t.applyOrder), x = d.data(); if (s && x && Array.isArray(x.pics) && s.applyOrder) s.applyOrder(x); });
+    (await db.collection("layout").get()).docs.forEach((d) => { const x = d.data() || {}; if (LAYOUTS.some((l) => l[0] === x.layout)) shots.filter((t) => t.group === d.id).forEach((t) => { t.layout = x.layout; }); });
     const sc = await db.collection("screen").get();
     sc.docs.forEach((d) => { const x = d.data(), r = SCR[d.id]; if (!x || !r || typeof x.text !== "string") return; r.input.value = x.text; r.mark(); });
     show(cur, false); refreshMinis();

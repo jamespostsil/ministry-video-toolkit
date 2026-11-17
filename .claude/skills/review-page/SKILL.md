@@ -127,6 +127,14 @@ The page should explain itself. Keep these when changing the template:
   use it to say that notes save: the page says that itself.
 - **The hint over the video** is one short sentence that follows the state (not started, playing, paused).
 
+## Choosing a layout
+
+In Detailed, each scene with photos has a **Layout** button beside its Note: the same chooser as the storyboard
+(see its SKILL.md, "Choosing a layout"), with the same example clips (`build.py` copies `layouts/` next to the
+page: publish them too). Give each sentence that has photos its `"layout"` in data.json, so the button names what
+the video shows now and the chooser marks it "In the video now". A choice is a request for the next version, saved
+as `layout-v<N>/<group>` `{layout, original, photos}`: read it with the other notes and change that beat's `kind`.
+
 ## Shared photos in "+ Add a photo"
 
 Same as the storyboard (see its SKILL.md, "Shared photos"): `--library <folder>` (with `--out-pics`) adds the

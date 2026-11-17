@@ -10,7 +10,8 @@ data.json:
     "accent": "#3a4720",                             # optional, the page's main colour
     "sentences": [{"id": "1.1", "text": "...", "t": 3.5}, ...],   # t: when it starts in the video (s); one card each
         # optional per card, as on the storyboard: "section" (a thin divider where it changes; a section can be marked
-        # good at once), "group" (cards of one moment share their photos and words), "screen": [{"label", "text",
+        # good at once), "group" (cards of one moment share their photos and words), "layout" ("cover" | "blur" | "row" | "slider" | "scatter": how the video shows this moment's photos now;
+        # the card's "Layout" button lets the reviewer ask for another, saved as layout-v<N>/<group>), "screen": [{"label", "text",
         # "id"?}] (the words on screen), "pictures": [{"id", "file", "caption", "credit", "rights"}] (the photos, in
         # order; their thumbnails pics/<id>.t.jpg and pics/<id>.jpg are published next to the page: --photos/--crops/
         # --out-pics make them from the script's photos)
@@ -75,6 +76,9 @@ page = open(os.path.join(here, "template.html"), encoding="utf-8").read()
 esc = lambda s: s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 payload = {k: d.get(k) for k in ("version", "sentences", "changes", "general", "questions", "good", "preview", "mode")}
 payload["library"] = library
+_lay = os.path.join(here, "..", "storyboard", "layouts")   # the layout chooser's example clips and stills
+if os.path.isdir(_lay):
+    import shutil; shutil.copytree(_lay, os.path.join(os.path.dirname(os.path.abspath(out)), "layouts"), dirs_exist_ok=True)
 if a.library_link: payload["libraryLink"] = a.library_link
 page = (page.replace("__TITLE__", esc(d["title"])).replace("__VIDEO__", esc(d["video"])).replace("__ACCENT__", d.get("accent", "#3a4720"))
         .replace("__DATA__", json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")))

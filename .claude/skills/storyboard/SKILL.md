@@ -139,6 +139,29 @@ The page should explain itself. Keep these when changing the template:
 - **"+ Add a scene here"** shows when the gap between two cards is pointed at.
 - **Simple** keeps a one-line legend for the yellow marks when a draft has changes, without the filter button.
 
+## Choosing a layout
+
+Each scene with photos has a **Layout** button beside its Note (in Simple and Detailed). It opens a chooser showing
+only the layouts that suit that number of photos, each with a small example from the toolkit's example video
+(`layouts/*.mp4`, and a still for "Fill the screen"); `build.py` copies them to the out folder, so publish them too.
+
+| Photos | Offered |
+|---|---|
+| 1 | Fill the screen (`cover`), Whole photo (`blur`) |
+| 2 or 3 | Side by side (`row`), One after another (`slider`), Scattered cards (`scatter`) |
+| 4 or more | One after another, Scattered cards |
+
+- The page starts on the shot's `layout` from storyboard.json, so most reviewers never touch it; the picture
+  redraws as soon as one is chosen.
+- A choice is saved as `layout/<group>` `{layout, original, photos}`. `export_photos.py` reads it with the other
+  edits and writes `photo-layouts.json`, listing every moment whose layout changed: change those beats' `kind`
+  in `beats.ts` to match (a `slider` or `scatter` needs a `title`; a `row` needs each photo's width and height).
+- If photos are added or removed so the chosen layout no longer suits, the page and the export fall back to the
+  usual one for that many photos.
+- Timing, card sizes and headings are not on the chooser: those stay as notes.
+- To refresh the examples after the beats change: cut 4 to 7 seconds of each beat from the example render
+  (`ffmpeg -ss <t> -t <n> -i out/Example.mp4 -an -vf fps=12,scale=320:-2 -crf 30`), about 30 KB each.
+
 ## Shared photos in "+ Add a photo"
 
 "+ Add a photo" has two tabs when there are shared photos: **This video's photos** and **Shared photos**. The

@@ -16,8 +16,10 @@ storyboard.json: {"title", "draft": N, "shots": [{"id", "key"?, "section", "beat
     words, edited once). "show": how many of the row's photos are up by that card.
   - layout: how the page draws the screen for a shot with photos, the way the video's beat lays them out:
     "cover" (one photo, full screen), "blur" (one photo whole, over a blurred copy), "row" (side by side at a
-    shared height, captions under; "maxHeight" in video pixels, default 760) or "slider" (cards drifting across).
-    It follows the reviewer's order, captions and permissions as they change them.
+    shared height, captions under; "maxHeight" in video pixels, default 760), "slider" (cards drifting across) or
+    "scatter" (tilted cards under a title). It follows the reviewer's order, captions and permissions as they
+    change them. The reviewer can change it with the card's "Layout" button, which shows a small example of each
+    layout that suits the number of photos (layouts/*.mp4 and *.jpg, copied to the out folder).
   - pictures: the photos on screen with these lines, in order: [{"file", "caption"?, "credit"?, "rights"?: "ok" |
     "ask" | "no", "rightsNote"?}]. file is read from --photos, turned upright and cropped with its rectangle in
     --crops ({"<file>": {x, y, w, h, why?}}, in the upright photo's pixels); the page shows the crop and lets the
@@ -47,6 +49,7 @@ notes/general {text}, notes/approval-draft-<N> {approved, at}, spots/<id> {shot 
 x2, y2} (a note pinned to a spot on the shot's picture, or an arrow from x, y to the tip x2, y2; fractions of the picture),
 scenes/<id> {after (shot key), say, screen, createdAt} (a new scene the reviewer added after that shot: make its picture
 and add it to the next draft), good/<doc> {good} (the reviewer's "Looks good": card-<key>),
+layout/<group> {layout, original, photos} (the layout the reviewer chose for that moment's photos),
 answers/<question id> {title, answer: "ok" | "change", note}. order/<group> also holds {removed: [picture ids],
 added: [{id, file, w, h, asset?}]}: photos the reviewer took out or added (an "asset" is an upload in the page's
 asset store, read it with the Artifact tool's read and path=<asset id>).
@@ -79,6 +82,8 @@ boxes = {s["id"]: s["boxes"] for s in json.load(open(a.boxes, encoding="utf-8"))
 os.makedirs(os.path.join(a.out, "shots"), exist_ok=True)
 os.makedirs(os.path.join(a.out, "thumbs"), exist_ok=True)
 os.makedirs(os.path.join(a.out, "pics"), exist_ok=True)
+_lay = os.path.join(os.path.dirname(os.path.abspath(__file__)), "layouts")   # the layout chooser's example clips and stills
+if os.path.isdir(_lay): shutil.copytree(_lay, os.path.join(a.out, "layouts"), dirs_exist_ok=True)
 crops = json.load(open(a.crops, encoding="utf-8")) if a.crops else {}
 
 draft = sb.get("draft", 1)
