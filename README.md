@@ -30,10 +30,15 @@ made from.*
    (use Duplicate).
 3. **Approve the storyboard.** Give Claude the recording and the script link.
    Claude makes a page showing every scene with its words and pictures; change
-   anything there, then press Approve.
+   anything there, then press Approve. If the script doesn't say how to show the
+   pictures, Claude chooses a layout for each scene, and the **Layout** button
+   on that scene lets you pick another.
 4. **Review the video.** Claude renders it and makes a review page. Leave notes
    on any scene until it looks right.
-5. **Share it.** Claude renders the final video and its YouTube thumbnail.
+5. **Finish it.** Claude renders the final video and its YouTube thumbnail.
+   Along the way it offers what usually comes next: music timed to the video,
+   headings and names on screen, an end frame with a QR code, and touching up
+   washed-out photos.
 
 ---
 
