@@ -3,10 +3,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Alegreya:wght@700&family=Poppins:wght@400;600&display=swap">
 <style>
 /* Storyboard page. Layout: slim header in the video's colour; big shot with boxes on the left (note, back/next, thumbnail strip); a sidebar that scrolls on its own, one card per shot: its photos (drag to reorder; caption, credit, permission), the words on screen, and its editable lines */
-:root{--bg:#f4f5f6;--surface:#fff;--text:#1c2430;--muted:#566272;--border:#d9dee4;--accent:{{ACCENT}};--accent-soft:#fbeee3;--now:#fdf3e7;--changed:#2f5f74;--upd:#b38600;--upd-text:#5c4500;--ins:#ffe98a;--del:#a33a3a;--box:#d64f3a;--pin:#d25f25;--hero-bg:{{HERO}};--hero-text:#fff;--hero-dim:#fbe3d2;--shade:rgba(16,20,26,.86);
+:root{--lay:#17645f;--lay-bg:#e0f1ef;--lay-line:#8cc5bf;--bg:#f4f5f6;--surface:#fff;--text:#1c2430;--muted:#566272;--border:#d9dee4;--accent:{{ACCENT}};--accent-soft:#fbeee3;--now:#fdf3e7;--changed:#2f5f74;--upd:#b38600;--upd-text:#5c4500;--ins:#ffe98a;--del:#a33a3a;--box:#d64f3a;--pin:#d25f25;--hero-bg:{{HERO}};--hero-text:#fff;--hero-dim:#fbe3d2;--shade:rgba(16,20,26,.86);
 --font:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lay:#8fd6cf;--lay-bg:#16302e;--lay-line:#2f6b66;--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}}
+:root[data-theme="dark"]{--lay:#8fd6cf;--lay-bg:#16302e;--lay-line:#2f6b66;--bg:#13171c;--surface:#1c2229;--text:#e7ebf0;--muted:#a7b1bd;--border:#323b45;--accent:#eea36f;--accent-soft:#33241a;--now:#2c2318;--changed:#9cc7da;--upd:#e3bd3c;--upd-text:#f6dc85;--ins:#5a4a12;--del:#f09a9a;--shade:rgba(0,0,0,.9);color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--font);display:flex;flex-direction:column}
@@ -302,8 +302,9 @@ select.rights{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
 .add-gap{opacity:0;margin:-4px 0;height:16px}.add-gap:hover,.add-gap:focus-within{opacity:1}
 .notes{margin-top:8px}
 /* the card's last row: "Saved" (when it flashes) and Next scene, at the bottom right under everything */
-.laybtn{font:inherit;font-size:.85rem;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
-.nhead .laybtn+.addp{margin-left:0}
+.laybtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;font-weight:600;line-height:1.2;color:var(--lay);background:var(--lay-bg);border:1px solid var(--lay-line);border-radius:999px;padding:4px 11px 4px 8px;cursor:pointer}.laybtn:hover,.laybtn:focus-visible{border-color:var(--lay)}.laybtn svg{flex:none}
+.layrow{margin:6px 0 2px}
+.grp.good>.layrow{display:none}
 dialog.pick.lay{width:min(980px,94vw)}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
 .lay .opt{font:inherit;color:var(--text);text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:6px 6px 8px;cursor:pointer;line-height:1.3}
 .lay .opt:hover,.lay .opt:focus-visible{border-color:var(--accent)}.lay .opt[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
@@ -375,7 +376,7 @@ shots.forEach((s, k) => { s.layout0 = s.layout; s.group = s.group || s.key; cons
   s.pictures.forEach((p) => { if (!PIC[p.id]) PIC[p.id] = { ...p, orig: { caption: p.caption, credit: p.credit, rights: p.rights } }; }); });
 const picsOf = (s) => s.order.map((id) => PIC[id]).filter(Boolean);
 // the layouts a reviewer can choose: [id, name, what it does, fewest photos, most photos, has a moving preview]
-const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, false],
+const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, true],
   ["blur", "Whole photo", "One photo with nothing cropped, over a soft blur of itself.", 1, 1, true],
   ["row", "Side by side", "The photos together, each one arriving on its own words.", 2, 3, true],
   ["slider", "One after another", "Cards drift across the screen under a title.", 2, 99, true],
@@ -765,7 +766,7 @@ function savePic(pid) {
 }
 // ---- choosing a layout: layout/<group> {layout, original, photos}
 const layBtns = [];
-function paintLay() { for (const { b, s } of layBtns) { const n = picsOf(s).length; b.hidden = !n || !!s.sketch; b.textContent = "Layout: " + layName(effLayout(s)); } }
+function paintLay() { for (const { b, s } of layBtns) { const n = picsOf(s).length; b.hidden = !n || !!s.sketch; b.parentNode.hidden = b.hidden; b.lastChild.textContent = "Layout: " + layName(effLayout(s)); } }
 function openLay(s, i) {
   const n = picsOf(s).length, cur0 = effLayout(s), box = $("layopts"), still = matchMedia("(prefers-reduced-motion: reduce)").matches; box.innerHTML = "";
   $("laynote").textContent = n === 1 ? "This scene has one photo." : "This scene has " + n + " photos. Add or remove photos to see other layouts.";
@@ -972,6 +973,8 @@ shots.forEach((s, i) => {
   gt.addEventListener("click", () => { show(i, false); openBig(s, viewsOf(s)[0]); });
   const gh = document.createElement("div"); gh.className = "ghead"; gh.append(gt, head, goodCtl("card-" + s.key, g, () => { const t = $("thumbs").children[i]; if (t) t.classList.toggle("good", !!GOOD["card-" + s.key]); }));
   g.appendChild(gh);
+  { const lr = document.createElement("div"); lr.className = "layrow"; const lb = document.createElement("button"); lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown";
+    lb.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 2.5v11M6 8h8.5" stroke="currentColor" stroke-width="1.5"/></svg><span></span>'; lb.addEventListener("click", () => { if (cur !== i) show(i, false); openLay(s, i); }); layBtns.push({ b: lb, s }); lr.appendChild(lb); g.appendChild(lr); }
   const lines = s.lines.length ? s.lines : [null];
   let notes = null;   // the card's one Note box, kept on its first line (lines/<key>.1); older pages had Script and On screen notes
   lines.forEach((text, k) => {
@@ -1015,8 +1018,7 @@ shots.forEach((s, i) => {
   });
   const wb = s.screen.length ? screenBlock(s, i) : null;   // the words first: a title sits above its photos
   if (wb) g.appendChild(wb);
-  if (s.lead) { const pb = picBlock(s, i); g.appendChild(pb); const lb = document.createElement("button"); lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown"; lb.addEventListener("click", () => { if (cur !== i) show(i, false); openLay(s, i); });
-    layBtns.push({ b: lb, s }); notes.querySelector(".nhead").append(lb, pb.querySelector(".addp")); }   // any first card of a moment can take a photo
+  if (s.lead) { const pb = picBlock(s, i); g.appendChild(pb); notes.querySelector(".nhead").appendChild(pb.querySelector(".addp")); }   // any first card of a moment can take a photo
   g.appendChild(notes);
   { const ft = document.createElement("div"); ft.className = "cardfoot"; ft.innerHTML = '<span class="saved">Saved</span>'; g.appendChild(ft); }   // "Saved" for the Note: bottom right of the card
   if (i < shots.length - 1) { const nx = document.createElement("div"); nx.className = "nextsc";

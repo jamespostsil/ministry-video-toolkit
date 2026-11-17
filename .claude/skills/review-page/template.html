@@ -4,9 +4,9 @@
    per scene on the right: what is said, the words on screen and the photos (drag to reorder; caption, credit,
    permission), then one Note box. Change boxes mark what changed in this
    version; "Looks good" folds a change and takes it out of Previous / Next. Everything saves to the page's db. */
-:root{--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--hl:#eef0e6;--chg-bg:#fff3d6;--chg-line:#d9a72a;--chg-fg:#4a3a0c;--field:#fbfaf8;--pin:#d25f25;--pin-fg:#fff;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}
+:root{--lay:#17645f;--lay-bg:#e0f1ef;--lay-line:#8cc5bf;--bg:#f6f5f2;--panel:#fff;--fg:#1e1d1b;--muted:#5f5b55;--line:#dcd8d0;--accent:__ACCENT__;--accent-fg:#fff;--hl:#eef0e6;--chg-bg:#fff3d6;--chg-line:#d9a72a;--chg-fg:#4a3a0c;--field:#fbfaf8;--pin:#d25f25;--pin-fg:#fff;--ui:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lay:#8fd6cf;--lay-bg:#16302e;--lay-line:#2f6b66;--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}}
+:root[data-theme="dark"]{--lay:#8fd6cf;--lay-bg:#16302e;--lay-line:#2f6b66;--bg:#151412;--panel:#1e1c1a;--fg:#ebe8e3;--muted:#aaa49b;--line:#36332f;--accent-fg:#151412;--hl:#2a2c22;--chg-bg:#3a3118;--chg-line:#b98a1d;--chg-fg:#f2dfae;--field:#191816;--pin:#d25f25;--pin-fg:#fff;--accent:color-mix(in oklab,__ACCENT__ 45%,#fff);color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--ui);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font-size:1.35rem;margin:0 0 12px;font-weight:700;text-wrap:balance}
@@ -114,8 +114,9 @@ video::cue{font:600 18px system-ui,sans-serif;background:rgb(0 0 0/.62);color:#f
 .rmd .chip{display:inline-flex;gap:5px;align-items:center;border:1px dashed var(--line);border-radius:4px;padding:2px 6px 2px 2px}.rmd img{width:40px;height:28px;object-fit:cover;border-radius:2px;opacity:.6}
 .pacts{display:flex;gap:14px;margin-top:6px}
 .pblk.empty{display:none}.pacts:not(:has(:not([hidden]))){display:none}
-.laybtn{font:inherit;font-size:.85rem;background:none;border:0;color:var(--fg);text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
-.laybtn.edited{font-weight:700}.nhead .laybtn+.add{margin-left:0}
+.laybtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;font-weight:600;line-height:1.2;color:var(--lay);background:var(--lay-bg);border:1px solid var(--lay-line);border-radius:999px;padding:4px 11px 4px 8px;cursor:pointer}.laybtn:hover,.laybtn:focus-visible{border-color:var(--lay)}.laybtn svg{flex:none}
+.layrow{margin:6px 0 2px}
+.laybtn.edited{border-color:var(--lay);box-shadow:0 0 0 1px var(--lay)}
 dialog.pick.lay{width:min(980px,94vw)}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
 .lay .opt{font:inherit;color:var(--fg);text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:6px 6px 8px;cursor:pointer;line-height:1.3}
 .lay .opt:hover,.lay .opt:focus-visible{border-color:var(--accent)}.lay .opt[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
@@ -232,15 +233,15 @@ const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
 const PIC = {}, SCR = {}, ORDER = {}, seenGroup = new Set();
 let saveOrder = () => {}, savePicDb = () => {}, saveScr = () => {}, saveLay = () => {};
 // the layouts a reviewer can ask for: [id, name, what it does, fewest photos, most photos, has a moving preview]
-const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, false],
+const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, true],
   ["blur", "Whole photo", "One photo with nothing cropped, over a soft blur of itself.", 1, 1, true],
   ["row", "Side by side", "The photos together, each one arriving on its own words.", 2, 3, true],
   ["slider", "One after another", "Cards drift across the screen under a title.", 2, 99, true],
   ["scatter", "Scattered cards", "Cards land one by one, like photos on a table.", 2, 99, true]];
 const LAY = {};   // group -> {orig (the video's layout, if the data says), cur, btn}
 const layName = (id) => (LAYOUTS.find((l) => l[0] === id) || [0, ""])[1];
-function paintLay(g) { const L = LAY[g], n = ORDER[g] ? ORDER[g].cur.length : 0; if (!L) return; L.btn.hidden = !n;
-  L.btn.textContent = layName(L.cur) ? "Layout: " + layName(L.cur) : "Layout"; L.btn.classList.toggle("edited", !!L.cur && L.cur !== L.orig); }
+function paintLay(g) { const L = LAY[g], n = ORDER[g] ? ORDER[g].cur.length : 0; if (!L) return;
+  for (const b of L.btns) { b.parentNode.hidden = !n; b.lastChild.textContent = layName(L.cur) ? "Layout: " + layName(L.cur) : "Choose a layout"; b.classList.toggle("edited", !!L.cur && L.cur !== L.orig); } }
 function openLay(g) {
   const L = LAY[g], n = ORDER[g].cur.length, box = $("layopts"), still = matchMedia("(prefers-reduced-motion: reduce)").matches; box.innerHTML = "";
   $("laynote").textContent = (n === 1 ? "This scene has one photo." : "This scene has " + n + " photos.") + " Your choice goes into the next version of the video.";
@@ -287,10 +288,12 @@ for (const s of S) {
     '<div class="shown"></div>' +
     '<div class="nhead"><label class="f" for="nt-' + k + '">Note</label></div><textarea id="nt-' + k + '" data-f="note" placeholder="What should change in this scene?"></textarea><div class="pins"></div><div class="save"></div>';
   buildShown(s, d.querySelector(".shown"));
-  const addB = d.querySelector(".pblk .add");
-  if (addB) { const g = s.group || s.id, lb = document.createElement("button"); lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown";
-    const known = LAYOUTS.some((l) => l[0] === s.layout) ? s.layout : ""; LAY[g] = { orig: known, cur: known, btn: lb };
-    lb.addEventListener("click", () => openLay(g)); d.querySelector(".nhead").append(lb, addB); paintLay(g); }
+  const addB = d.querySelector(".pblk .add"); if (addB) d.querySelector(".nhead").appendChild(addB);
+  { // a Layout pill on every card of a moment, just above its photos (cards of one moment share the choice)
+    const g = s.group || s.id, lr = document.createElement("div"), lb = document.createElement("button"); lr.className = "layrow"; lb.type = "button"; lb.className = "laybtn"; lb.title = "Change how these photos are shown";
+    lb.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 2.5v11M6 8h8.5" stroke="currentColor" stroke-width="1.5"/></svg><span></span>'; lb.addEventListener("click", () => openLay(g)); lr.appendChild(lb);
+    const known = LAYOUTS.some((l) => l[0] === s.layout) ? s.layout : ""; const L = LAY[g] = LAY[g] || { orig: known, cur: known, btns: [] }; if (!L.orig && known) L.orig = L.cur = known; L.btns.push(lb);
+    const pb = d.querySelector(".pblk"); if (pb) pb.before(lr); else d.querySelector(".shown").appendChild(lr); paintLay(g); }
   d.querySelector(".time").textContent = fmt(s.t);
   d.querySelector(".txt").textContent = s.text;
   if (C[s.id]) {

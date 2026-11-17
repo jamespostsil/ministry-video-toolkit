@@ -141,9 +141,10 @@ The page should explain itself. Keep these when changing the template:
 
 ## Choosing a layout
 
-Each scene with photos has a **Layout** button beside its Note (in Simple and Detailed). It opens a chooser showing
-only the layouts that suit that number of photos, each with a small example from the toolkit's example video
-(`layouts/*.mp4`, and a still for "Fill the screen"); `build.py` copies them to the out folder, so publish them too.
+Every card that shows photos has a teal **Layout** pill above what is said (in Simple and Detailed; cards of one
+moment share the choice). It opens a chooser showing only the layouts that suit that number of photos, each with a
+small looping example (`layouts/*.mp4`, with a `.jpg` still for people who turn motion off); `build.py` copies them
+to the out folder, so publish them too.
 
 | Photos | Offered |
 |---|---|
@@ -159,8 +160,12 @@ only the layouts that suit that number of photos, each with a small example from
 - If photos are added or removed so the chosen layout no longer suits, the page and the export fall back to the
   usual one for that many photos.
 - Timing, card sizes and headings are not on the chooser: those stay as notes.
-- To refresh the examples after the beats change: cut 4 to 7 seconds of each beat from the example render
-  (`ffmpeg -ss <t> -t <n> -i out/Example.mp4 -an -vf fps=12,scale=320:-2 -crf 30`), about 30 KB each.
+- To refresh the examples after the beats change: cut 4 to 8 seconds of each beat from the example render
+  (`ffmpeg -ss <t> -t <n> -i out/Example.mp4 -an -vf fps=12,scale=320:-2 -crf 30`), 15 to 65 KB each. Start each
+  clip after the layout has fully arrived and end it before the beat ends, so the loop never shows the scene before
+  or after. Keep each example simple: one calm photo, nothing that distracts from the layout itself. "Whole photo"
+  and "Fill the screen" are not in the example video; they were rendered from temporary beats (a portrait photo as
+  `blur`, a landscape one as `cover`).
 
 ## Shared photos in "+ Add a photo"
 
