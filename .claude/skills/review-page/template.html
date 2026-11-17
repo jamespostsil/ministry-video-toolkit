@@ -39,7 +39,7 @@ button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px soli
 .chg.done{background:transparent;border-style:dashed;display:flex;gap:10px;align-items:center}
 .chg.done .ctext{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.75}.chg.done label.ok{margin:0;flex:none}
 .pins{display:grid;gap:6px;margin-top:8px}
-.pinnote{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:start}
+.pinnote{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:start;cursor:pointer;border-radius:6px;padding:3px}.pinnote:hover{background:var(--hl)}
 .pinnote .pn{width:24px;height:24px;border-radius:50%;background:var(--pin);color:var(--pin-fg);font:700 12px/24px var(--ui);text-align:center;border:0;padding:0;cursor:pointer}
 .pinnote .when{font-size:.78rem;color:var(--muted)}.pinnote .pt{color:var(--fg);font-weight:600}
 .link{font:600 .8rem var(--ui);background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
@@ -646,7 +646,8 @@ function renderRowPins() {
     d.innerHTML = '<button type="button" class="pn" title="Show this spot"></button><div><div class="when"></div><div class="pt"></div></div>';
     d.querySelector(".pn").textContent = pinNum(p); d.querySelector(".when").textContent = (p.kind === "arrow" ? "Arrow on the picture at " : "On the picture at ") + fmt(p.t);
     d.querySelector(".pt").textContent = p.text || "(no text yet)";
-    d.querySelector(".pn").onclick = () => { v.pause(); v.currentTime = p.t; setTimeout(() => { drawPins(); openPop(p); }, 120); };
+    d.onclick = () => { v.pause(); v.currentTime = p.t; setTimeout(() => { drawPins(); openPop(p); }, 120); };   // anywhere on the note opens it; the number stays a button for the keyboard
+    d.title = "Show this spot";
     box.appendChild(d);
   }
 }

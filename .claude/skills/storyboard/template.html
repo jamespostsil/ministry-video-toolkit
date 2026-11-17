@@ -30,7 +30,7 @@ header p{margin:0;color:var(--hero-dim);font-size:.9rem}
 .pop{position:absolute;z-index:3;width:min(300px,80%);background:var(--surface);color:var(--text);border:2px solid var(--pin);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0/.35);padding:10px;display:grid;gap:8px;cursor:default}
 .pop .lab{color:var(--text)}.pop textarea{width:100%;font:inherit;font-size:.95rem;color:var(--text);background:var(--surface);border:1px solid var(--muted);border-radius:6px;padding:6px 8px;min-height:3em;resize:vertical}
 .pop .acts{display:flex;gap:10px;justify-content:flex-end;align-items:center}.pop .del{font:inherit;font-size:.85rem;background:none;border:0;color:var(--text);text-decoration:underline;cursor:pointer}
-.spots{display:grid;gap:5px;padding:4px 3px 2px}.spot{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:start}
+.spots{display:grid;gap:5px;padding:4px 3px 2px}.spot{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:start;cursor:pointer;border-radius:6px;padding:3px}.spot:hover{background:var(--now)}
 .spot .pn{width:24px;height:24px;border-radius:50%;background:var(--pin);color:#fff;font:700 12px/24px var(--font);text-align:center;border:0;padding:0;cursor:pointer}
 .spot .when{font-size:.78rem;color:var(--muted)}.spot .pt{font-weight:700}
 .frame img{display:block;width:100%;max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border);background:var(--surface)}
@@ -683,7 +683,7 @@ function renderSpotList() {
       d.querySelector(".pn").textContent = spotNum(p);
       d.querySelector(".when").textContent = p.kind === "arrow" ? "Arrow on the picture" : "On the picture";
       d.querySelector(".pt").textContent = p.text || "(no text yet)";
-      d.querySelector(".pn").onclick = () => { const k = viewsOf(s).findIndex((v) => v.id === viewOfSpot(p)); if (k >= 0) s.view = k; whole = false; show(i, false); openPop(p); };
+      d.title = "Show this spot"; d.onclick = () => { const k = viewsOf(s).findIndex((v) => v.id === viewOfSpot(p)); if (k >= 0) s.view = k; whole = false; show(i, false); openPop(p); };
       box.appendChild(d);
     }
   });
