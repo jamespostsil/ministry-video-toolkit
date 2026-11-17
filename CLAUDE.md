@@ -24,7 +24,8 @@ choice on the storyboard and tell the person once, in a sentence, that they can 
 ## Offer the next step
 
 At the end of each stage, say what's done and offer what usually comes next, in one or two short questions.
-Offer only what applies, and don't repeat an offer they've turned down. Useful ones:
+Offer only what applies. If they say no to something, don't keep asking at every stage; it's fine to mention it
+once more as a light suggestion where it fits better (music when they watch the finished video, say). Useful ones:
 
 - **Music:** "Would you like music under the video?" With their own ElevenLabs key, Claude can make music timed to
   the video's big moments (`music`); without one, [docs/finding-music.md](docs/finding-music.md) lists free music
