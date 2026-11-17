@@ -17,11 +17,17 @@ storyboard.json: {"title", "draft": N, "shots": [{"id", "key"?, "section", "beat
   - layout: how the page draws the screen for a shot with photos, the way the video's beat lays them out:
     "cover" (one photo, full screen), "blur" (one photo whole, over a blurred copy), "row" (side by side at a
     shared height, captions under; "maxHeight" in video pixels, default 760), "slider" (cards drifting across) or
-    "scatter" (tilted cards under a title). It follows the reviewer's order, captions and permissions as they
+    "scatter" (tilted cards under a title); or one of the newer ones: "grid" (4 to 9 photos in neat rows), "onebyone"
+    (each fills the screen in turn), "stack" (large photos on one pile), "feature" (one large, the rest small beside
+    it), "beforeafter" (2 photos, a line wiping across), "map" (each photo joined to its place: give those pictures
+    "lat" and "lon"), "beside" (the speaker in a panel on one side, the photo on the other; "side": "right" swaps
+    them) and "corner" (the photo on the whole screen, the speaker in a small window). For the last two the page
+    crops the speaker out of the shot's own picture with the top-level "speaker" box ({x, y, w, h} as fractions of
+    the frame: copy it from project.json), or the shot's own "speaker". It follows the reviewer's order, captions and permissions as they
     change them. The reviewer can change it with the card's "Layout" button, which shows a small example of each
     layout that suits the number of photos (layouts/*.mp4 and *.jpg, copied to the out folder).
   - pictures: the photos on screen with these lines, in order: [{"file", "caption"?, "credit"?, "rights"?: "ok" |
-    "ask" | "no", "rightsNote"?}]. file is read from --photos, turned upright and cropped with its rectangle in
+    "ask" | "no", "rightsNote"?, "lat"?, "lon"?}]. file is read from --photos, turned upright and cropped with its rectangle in
     --crops ({"<file>": {x, y, w, h, why?}}, in the upright photo's pixels); the page shows the crop and lets the
     reviewer see the whole photo. A shot with pictures shows them on the stage instead of its <id>.png, unless
     "sketch" is true: then <id>.png is a sketch of the planned graphic and is shown first.
@@ -61,7 +67,7 @@ what is said and a Note; default "simple"; a link ending #simple or
 With --photos, every photo in that folder is offered under "+ Add a photo".
 Publish with capabilities {db: {}, assets: {}} so uploads work.
 """
-import argparse, difflib, json, os, re, shutil
+import argparse, difflib, json, os, re, shutil, sys
 from PIL import Image, ImageOps
 
 ap = argparse.ArgumentParser()
@@ -70,9 +76,16 @@ ap.add_argument("--pictures"); ap.add_argument("--boxes"); ap.add_argument("--dr
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--logo")
 ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
 ap.add_argument("--library-link", help="web link to the shared photo folder, shown in the Shared photos tab")
+ap.add_argument("--no-library", action="store_true", help="leave the shared People with Bibles photos out (found on this computer by default)")
 ap.add_argument("--subtitle", default="Real screenshots. Nothing has been recorded yet.")
 ap.add_argument("--accent", default="#b0561c"); ap.add_argument("--hero", default="#9a4a17")
 a = ap.parse_args()
+if not a.library and not a.no_library:   # the shared "People with Bibles" photos, when they are on this computer
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "."))
+    import shared_photos
+    _shared = shared_photos.find()
+    if _shared: a.library = [_shared]; a.library_link = a.library_link or shared_photos.LINK; print("shared photos:", _shared)
+    else: print("NOTE:", shared_photos.MISSING)
 base = os.path.dirname(os.path.abspath(a.storyboard))
 pictures = a.pictures or os.path.join(base, "local", "storyboard")
 drafts = a.drafts or os.path.join(base, "local", "drafts")
@@ -142,8 +155,9 @@ def picture(p):
         for name, pic, size in [(pid, im, 1600), (pid + ".t", im, 240)] + ([(pid + ".whole", whole, 1600)] if c else []):
             pic = pic.copy(); pic.thumbnail((size, size)); pic.save(os.path.join(a.out, "pics", name + ".jpg"), quality=86)
         pics_done[pid] = {"w": im.width, "h": im.height, "cropped": bool(c), "cropWhy": (c or {}).get("why", "")}
+    place = {k: p[k] for k in ("lat", "lon") if isinstance(p.get(k), (int, float))}   # where it was taken, for "On a map"
     return {"id": pid, "file": p["file"], "caption": p.get("caption", ""), "credit": p.get("credit", ""),
-            "rights": p.get("rights", "ok"), "rightsNote": p.get("rightsNote", ""), **pics_done[pid]}
+            "rights": p.get("rights", "ok"), "rightsNote": p.get("rightsNote", ""), **place, **pics_done[pid]}
 
 
 shots = []
@@ -160,7 +174,7 @@ for s in sb["shots"]:
     screen = s.get("screen", [])
     sdiffs = line_diffs(prev_screen.get(key) if prev is not None else None, [x["text"] for x in screen])
     pics = [picture(p) for p in s.get("pictures", [])]
-    shots.append({"img": img, "key": key, "section": s["section"], "beat": s.get("beat", ""), "layout": s.get("layout", ""), "maxHeight": s.get("maxHeight"), "group": s.get("group"), "show": s.get("show"), "note": s.get("note", ""),
+    shots.append({"img": img, "key": key, "section": s["section"], "beat": s.get("beat", ""), "layout": s.get("layout", ""), "maxHeight": s.get("maxHeight"), "group": s.get("group"), "show": s.get("show"), "side": s.get("side"), "speaker": s.get("speaker"), "note": s.get("note", ""),
                   "lines": s["lines"], "en": s.get("en", []), "boxes": s.get("boxes", boxes.get(img, [])), "diffs": diffs,
                   "pictures": pics, "sketch": bool(s.get("sketch")), "screen": screen, "sdiffs": sdiffs,
                   "isNew": prev is not None and key not in prev})
@@ -181,6 +195,7 @@ esc = lambda t: t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"
 data = {"title": sb.get("title", ""), "draft": draft, "since": draft - 1 if prev is not None else None, "shots": shots,
         "library": library, "questions": sb.get("questions", []), "good": sb.get("good", []), "mode": sb.get("mode", "simple")}
 if a.library_link: data["libraryLink"] = a.library_link
+if sb.get("speaker"): data["speaker"] = sb["speaker"]   # where the speaker is in the footage (project.json "speaker")
 if a.logo:   # drawn under a name plate whose words include a "Logo" item
     dst = os.path.join(a.out, "logo.png")
     if not os.path.exists(dst) or not os.path.samefile(a.logo, dst): shutil.copy(a.logo, dst)

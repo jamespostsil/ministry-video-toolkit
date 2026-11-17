@@ -117,7 +117,7 @@ video::cue{font:600 18px system-ui,sans-serif;background:rgb(0 0 0/.62);color:#f
 .laybtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;font-weight:600;line-height:1.2;color:var(--lay);background:var(--lay-bg);border:1px solid var(--lay-line);border-radius:999px;padding:4px 11px 4px 8px;cursor:pointer}.laybtn:hover,.laybtn:focus-visible{border-color:var(--lay)}.laybtn svg{flex:none}
 .layrow{margin:6px 0 2px}
 .laybtn.edited{border-color:var(--lay);box-shadow:0 0 0 1px var(--lay)}
-dialog.pick.lay{width:min(980px,94vw)}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
+dialog.pick.lay{width:min(980px,94vw)}.lay .laygrp{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:20px 0 0;font-size:1.05rem;font-weight:700;color:var(--accent)}.lay .laygrp::before{content:"";width:5px;align-self:stretch;min-height:1.3em;border-radius:3px;background:var(--accent)}.lay .laygrp::after{content:"";flex:1;height:2px;border-radius:1px;background:var(--accent);opacity:.3}.lay .laygrp:first-child{margin-top:0}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
 .lay .opt{font:inherit;color:var(--fg);text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:6px 6px 8px;cursor:pointer;line-height:1.3}
 .lay .opt:hover,.lay .opt:focus-visible{border-color:var(--accent)}.lay .opt[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .lay .opt video,.lay .opt img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;display:block;background:#000}
@@ -237,19 +237,37 @@ const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edge
   ["blur", "Whole photo", "One photo with nothing cropped, over a soft blur of itself.", 1, 1, true],
   ["row", "Side by side", "The photos together, each one arriving on its own words.", 2, 3, true],
   ["slider", "One after another", "Cards drift across the screen under a title.", 2, 99, true],
-  ["scatter", "Scattered cards", "Cards land one by one, like photos on a table.", 2, 99, true]];
+  ["scatter", "Scattered cards", "Cards land one by one, like photos on a table.", 2, 99, true],
+  ["grid", "Grid", "All the photos together in neat rows, arriving one by one.", 4, 9, true],
+  ["onebyone", "One at a time, full screen", "Each photo fills the screen in turn, with a soft fade between.", 2, 12, true],
+  ["stack", "Stack", "Large photos land on one pile, so there is one caption to read at a time.", 2, 8, true],
+  ["feature", "Feature and thumbnails", "One large photo, the others small beside it. The large one changes.", 3, 6, true],
+  ["beforeafter", "Before and after", "A line wipes across from the first photo to the second.", 2, 2, true],
+  ["map", "On a map", "Each photo pops up beside a map, joined to its own place.", 2, 8, true],
+  ["beside", "Beside the speaker", "You stay on screen on one side, with the photo beside you.", 1, 6, true],
+  ["corner", "Speaker in the corner", "The photo fills the screen and you stay in a small window.", 1, 12, true]];
 const LAY = {};   // group -> {orig (the video's layout, if the data says), cur, btn}
+// the chooser shows the layouts in four groups, in this order
+const LAY_GROUPS = [["One photo", ["cover", "blur"]], ["Photos together", ["row", "grid", "feature", "map", "beforeafter"]],
+  ["Photos one after another", ["onebyone", "stack", "slider", "scatter"]], ["Speaker on screen", ["beside", "corner"]]];
+const LAY_SORTED = LAY_GROUPS.flatMap(([g, ids]) => ids.map((id) => [g, LAYOUTS.find((l) => l[0] === id)]).filter((x) => x[1]))
+  .concat(LAYOUTS.filter((l) => !LAY_GROUPS.some(([, ids]) => ids.includes(l[0]))).map((l) => ["Other", l]));
 const layName = (id) => (LAYOUTS.find((l) => l[0] === id) || [0, ""])[1];
 function paintLay(g) { const L = LAY[g], n = ORDER[g] ? ORDER[g].cur.length : 0; if (!L) return;
   for (const b of L.btns) { b.parentNode.hidden = !n; b.lastChild.textContent = layName(L.cur) ? "Layout: " + layName(L.cur) : "Choose a layout"; b.classList.toggle("edited", !!L.cur && L.cur !== L.orig); } }
 function openLay(g) {
   const L = LAY[g], n = ORDER[g].cur.length, box = $("layopts"), still = matchMedia("(prefers-reduced-motion: reduce)").matches; box.innerHTML = "";
-  $("laynote").textContent = (n === 1 ? "This scene has one photo." : "This scene has " + n + " photos.") + " Your choice goes into the next version of the video.";
-  for (const [id, name, what, lo, hi, moves] of LAYOUTS) {
+  $("laynote").textContent = (n === 1 ? "This scene has one photo." : "This scene has " + n + " photos.") + " Your choice goes into the next version of the video." + (!still && matchMedia("(hover: hover)").matches ? " Point at a layout to see it move." : "");
+  let lastGrp = null;
+  for (const [grp, [id, name, what, lo, hi, moves]] of LAY_SORTED) {
     if (n < lo || n > hi) continue;
+    if (grp !== lastGrp) { lastGrp = grp; const h = document.createElement("h3"); h.className = "laygrp"; h.textContent = grp; box.appendChild(h); }
     const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", String(id === L.cur));
     const m = document.createElement(moves && !still ? "video" : "img");
-    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.autoplay = true; m.playsInline = true; m.poster = "layouts/" + id + ".0.jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example"); }
+    if (m.tagName === "VIDEO") { m.muted = true; m.loop = true; m.playsInline = true; m.preload = "none"; m.poster = "layouts/" + id + ".jpg"; m.src = "layouts/" + id + ".mp4"; m.setAttribute("aria-label", name + ", an example");
+      // a still of the finished layout; it plays only while pointed at (or focused), then goes back to the still
+      const go = () => { m.play().catch(() => {}); }, stop = () => { m.pause(); if (m.currentTime) { m.currentTime = 0; m.load(); } };
+      b.addEventListener("mouseenter", go); b.addEventListener("focus", go); b.addEventListener("mouseleave", stop); b.addEventListener("blur", stop); }
     else { m.src = "layouts/" + id + ".jpg"; m.alt = name + ", an example"; }
     const tt = document.createElement("b"); tt.textContent = name; const d = document.createElement("span"); d.textContent = what; b.append(m, tt, d);
     if (id === L.cur) { const w = document.createElement("span"); w.className = "now"; w.textContent = id === L.orig ? "In the video now" : "Your choice"; b.appendChild(w); }

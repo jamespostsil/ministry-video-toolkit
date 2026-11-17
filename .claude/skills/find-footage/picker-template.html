@@ -1,0 +1,184 @@
+<title>Video Clip Picker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: a contact sheet of looping clips, grouped by what was searched for, with a sticky tally */
+:root{
+  --bg:#f5f4f1; --surface:#fffefc; --ink:#24262b; --muted:#666a73; --line:#e1dfda;
+  --accent:#3c6b79; --use:#2f6d5e; --use-bg:#dcefe8; --maybe:#8a6514; --maybe-bg:#f6ead0;
+  --display:"Fraunces",Georgia,serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1a1c20; --surface:#24272c; --ink:#eceef1; --muted:#a3a8b1; --line:#353941;
+  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1c20; --surface:#24272c; --ink:#eceef1; --muted:#a3a8b1; --line:#353941;
+  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1200px;margin:0 auto}
+header{max-width:760px;padding-top:36px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,4vw,36px);line-height:1.15;margin:0 0 10px;text-wrap:balance}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:16px 0 0}
+.term{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+.term b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.term a{color:var(--accent)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 0;margin-top:20px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tally{margin-left:auto;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tally strong{color:var(--ink)}
+.status{font-size:13px;color:var(--muted)}
+section{margin-top:28px}
+h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.card.use{border-color:var(--use);box-shadow:0 0 0 2px var(--use)}
+.card.maybe{border-color:var(--maybe)}
+.frame{position:relative;aspect-ratio:16/9;max-width:100%;background:#111}
+.frame video{width:100%;height:100%;object-fit:cover;display:block}
+.tag{position:absolute;font:600 11px var(--body);background:rgba(20,20,24,.72);color:#fff;padding:3px 7px;border-radius:4px}
+.src{left:8px;top:8px;letter-spacing:.05em;text-transform:uppercase}
+.dur{right:8px;bottom:8px;font-variant-numeric:tabular-nums}
+.info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.note{font-weight:600;line-height:1.35}
+.orig{font-size:13px;color:var(--muted)}
+.orig a{color:var(--accent)}
+.acts{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+.acts button{flex:1;font:600 14px var(--body);padding:8px 0;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.acts button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.acts button[data-v="use"][aria-pressed="true"]{background:var(--use-bg);border-color:var(--use);color:var(--use)}
+.acts button[data-v="maybe"][aria-pressed="true"]{background:var(--maybe-bg);border-color:var(--maybe);color:var(--maybe)}
+.acts button:disabled{opacity:.5;cursor:default}
+</style>
+
+<div class="wrap">
+<header>
+  <h1 id="title"></h1>
+  <p>Each clip is free to use in your video, with no credit needed. Tap <b>Use</b> or <b>Maybe</b> on the ones you like. Claude can read your choices and fetch the full-size files.</p>
+  <div class="terms" id="terms"></div>
+</header>
+<div class="bar" role="toolbar" aria-label="Filter clips">
+  <div class="chips" id="chips"></div>
+  <div class="tally" id="tally"></div>
+  <div class="status" id="status">Connecting…</div>
+</div>
+<main id="list"></main>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const CLIPS = DATA.clips;
+const GROUPS = [...new Set(CLIPS.map(c => c.group || 'Clips'))];
+const picks = {};
+let db = null, filter = 'All';
+document.getElementById('title').textContent = DATA.title;
+for (const t of DATA.terms) {
+  const d = document.createElement('div'); d.className = 'term';
+  const b = document.createElement('b'); b.textContent = t.src;
+  const a = document.createElement('a'); a.href = t.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'licence';
+  d.append(b, t.text + ' (', a, ')');
+  document.getElementById('terms').appendChild(d);
+}
+const fmt = s => { s = Math.round(s || 0); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+function setStatus(t) { document.getElementById('status').textContent = t; }
+
+function renderChips() {
+  const el = document.getElementById('chips'); el.textContent = '';
+  const names = GROUPS.length > 1 ? ['All', ...GROUPS, 'My picks'] : ['All', 'My picks'];
+  for (const t of names) {
+    const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = t;
+    b.setAttribute('aria-pressed', String(t === filter));
+    b.onclick = () => { filter = t; renderChips(); renderList(); };
+    el.appendChild(b);
+  }
+}
+
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+  for (const e of es) e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
+}, { rootMargin: '100px' }) : null;
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function card(c) {
+  const a = document.createElement('article'); a.className = 'card'; a.id = c.key;
+  a.innerHTML = `<div class="frame"><video muted loop playsinline preload="none"></video><span class="tag src"></span><span class="tag dur"></span></div>
+    <div class="info"><div class="note"></div><div class="orig"></div><div class="acts"></div></div>`;
+  const v = a.querySelector('video'); v.poster = `v/${c.key}.jpg`; v.src = `v/${c.key}.mp4`;
+  a.querySelector('.src').textContent = c.src;
+  a.querySelector('.dur').textContent = fmt(c.duration);
+  const note = a.querySelector('.note'); note.textContent = c.note || c.title; if (!c.note) note.style.fontWeight = 500;
+  const o = a.querySelector('.orig');
+  if (c.note) o.append('“' + c.title + '” · ');
+  const l = document.createElement('a'); l.href = c.page; l.target = '_blank'; l.rel = 'noopener'; l.textContent = 'Open on ' + c.src; o.append(l);
+  for (const [val, label] of [['use', 'Use'], ['maybe', 'Maybe']]) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.v = val; b.textContent = label; b.disabled = !db;
+    b.onclick = () => choose(c.key, picks[c.key] === val ? null : val);
+    a.querySelector('.acts').appendChild(b);
+  }
+  if (io && !still) io.observe(v);
+  return a;
+}
+
+function renderList() {
+  const main = document.getElementById('list'); main.textContent = '';
+  if (io) io.disconnect();
+  let shown = 0;
+  for (const g of GROUPS) {
+    if (filter !== 'All' && filter !== 'My picks' && filter !== g) continue;
+    let items = CLIPS.filter(c => (c.group || 'Clips') === g);
+    if (filter === 'My picks') items = items.filter(c => picks[c.key]);
+    if (!items.length) continue;
+    const s = document.createElement('section');
+    if (GROUPS.length > 1) { const h = document.createElement('h2'); h.textContent = g; s.appendChild(h); }
+    const grid = document.createElement('div'); grid.className = 'grid';
+    for (const c of items) { grid.appendChild(card(c)); shown++; }
+    s.appendChild(grid); main.appendChild(s);
+  }
+  if (!shown) { const p = document.createElement('p'); p.textContent = 'No picks yet. Tap Use or Maybe on a clip and it shows up here.'; main.appendChild(p); }
+  CLIPS.forEach(c => updateCard(c.key));
+}
+
+function updateCard(key) {
+  const el = document.getElementById(key);
+  if (el) {
+    const v = picks[key]; el.classList.remove('use', 'maybe'); if (v) el.classList.add(v);
+    el.querySelectorAll('.acts button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.v === v)); b.disabled = !db; });
+  }
+  const vals = Object.values(picks);
+  document.getElementById('tally').innerHTML =
+    `<strong>${vals.filter(v => v === 'use').length}</strong> to use · <strong>${vals.filter(v => v === 'maybe').length}</strong> maybe`;
+}
+
+async function choose(key, val) {
+  const prev = picks[key];
+  if (val) picks[key] = val; else delete picks[key];
+  updateCard(key);
+  try {
+    const ref = db.doc('picks/' + key);
+    if (val) await ref.set({ choice: val, at: new Date().toISOString() }); else await ref.delete();
+    setStatus('Saved');
+  } catch (e) {
+    if (prev) picks[key] = prev; else delete picks[key];
+    updateCard(key); setStatus('Couldn’t save that choice. Try again.');
+  }
+}
+
+renderChips(); renderList();
+(async () => {
+  const timer = setTimeout(() => setStatus('Choices can’t be saved in this view.'), 10000);
+  try { db = window.claude ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { clearTimeout(timer); setStatus('Choices can’t be saved in this view.'); return; }
+  db.collection('picks').onSnapshot(snap => {
+    clearTimeout(timer);
+    for (const k in picks) delete picks[k];
+    snap.docs.forEach(d => { const x = d.data(); if (x && (x.choice === 'use' || x.choice === 'maybe')) picks[d.id] = x.choice; });
+    setStatus('Choices save automatically');
+    if (filter === 'My picks') renderList(); else CLIPS.forEach(c => updateCard(c.key));
+  }, () => { clearTimeout(timer); setStatus('Couldn’t load saved choices.'); });
+})();
+</script>

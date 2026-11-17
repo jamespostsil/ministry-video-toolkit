@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from "react";
-import { Beat, BeatKind, DEFAULT_OVERLAY_KINDS, MusicEnvelope, blurWindowsFor } from "./beatTypes";
+import { Beat, BeatKind, DEFAULT_OVERLAY_KINDS, MusicEnvelope, SpeakerBox, blurWindowsFor } from "./beatTypes";
+export type { SpeakerBox } from "./beatTypes";
 import type { PartnerFrameProps } from "../components/PartnerFrame";
 
 // Everything that belongs to ONE video lives in that video's folder under
@@ -75,6 +76,10 @@ export type ProjectJson = {
    *  only: the overlay layouts sit in the top ~410px, so a measured bottom
    *  smaller than that means overlays will reach someone. Default 960 / 410. */
   overlaySafeArea?: { right: number; bottom: number };
+  /** Where the speaker is in the footage, for the layouts that crop in on them (`beside`, `corner`): a box
+   *  around the head and shoulders that must stay in view, as fractions of the footage frame. MEASURE THIS on
+   *  your own footage (see the beat-library skill). Default: the middle 60% of the width, nearly full height. */
+  speaker?: SpeakerBox;
 };
 
 export type Project = ProjectJson & {
@@ -85,6 +90,7 @@ export type Project = ProjectJson & {
 };
 
 export const DEFAULT_SAFE_AREA = { right: 960, bottom: 410 };
+export const DEFAULT_SPEAKER: SpeakerBox = { x: 0.2, y: 0.04, w: 0.6, h: 0.96 };
 
 export const durationInSeconds = (p: ProjectJson) => p.titleCardSeconds + p.footage.durationSeconds + p.endingSeconds;
 

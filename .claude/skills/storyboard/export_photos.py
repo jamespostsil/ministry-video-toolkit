@@ -23,7 +23,7 @@ Writes into <out folder>:
   photos.json          {picture id: {file, width, height, caption, credit, rights}} for beats.ts (photos used only)
   photo-order.json     {group: [picture ids in the reviewer's order]}: the photos each moment shows, in order
   photo-layouts.json   {group: {layout, planned, photos}}: how each moment's photos are shown ("cover", "blur", "row",
-                       "slider", "scatter"): the reviewer's choice from the page's Layout button, or the planned one
+                       "slider", "scatter", "grid", "onebyone", "stack", "feature", "beforeafter", "map", "beside", "corner"): the reviewer's choice from the page's Layout button, or the planned one
   photo-credits.txt    the end screen's line, e.g. "Photos by Wycliffe, SIL PNG, and Chris Gilmore"
 """
 import argparse, glob, json, os, re, sys
@@ -36,6 +36,10 @@ ap.add_argument("--uploads"); ap.add_argument("--long-edge", type=int, default=2
 ap.add_argument("--skip-unapproved", action="store_true")
 ap.add_argument("--library", action="append", default=[], help="a shared photo folder the reviewer may have added photos from")
 a = ap.parse_args()
+if not a.library:   # the shared "People with Bibles" photos, found on this computer as the page builds do
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import shared_photos
+    a.library = [f for f in [shared_photos.find()] if f]
 if not a.edits and not a.no_edits:
     sys.exit("Stopped: pass --edits <folder> with the storyboard page's saved data (ArtifactData list of the "
              "collections order, pics and layout, out_dir = that folder). Use --no-edits only for a page that was never published.")
@@ -142,7 +146,8 @@ json.dump(out, open(os.path.join(a.out, "photos.json"), "w", encoding="utf-8"), 
 json.dump(final, open(os.path.join(a.out, "photo-order.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 # each moment's layout: the reviewer's choice (layout/<group>) while it suits the number of photos, else the storyboard's
-FITS = {"cover": (1, 1), "blur": (1, 1), "row": (2, 3), "slider": (2, 99), "scatter": (2, 99)}
+FITS = {"cover": (1, 1), "blur": (1, 1), "row": (2, 3), "slider": (2, 99), "scatter": (2, 99), "grid": (4, 9), "onebyone": (2, 12),
+        "stack": (2, 8), "feature": (3, 6), "beforeafter": (2, 2), "map": (2, 8), "beside": (1, 6), "corner": (1, 12)}
 fits = lambda L, n: L in FITS and FITS[L][0] <= n <= FITS[L][1]
 planned = {}
 for s_ in sb["shots"]:

@@ -380,6 +380,38 @@ export const ThankYou: React.FC<{ beat: Extract<Beat, { kind: "thankyou" }>; dur
     extrapolateRight: "clamp",
     easing: EASE_OUT,
   });
+  if (beat.style === "bubble") {
+    // Big rounded letters filled with the panel's own gradient, a thick white outline and a soft shadow.
+    // Two layers: the outline and shadow behind, the gradient fill on top (a stroke on the filled text
+    // would eat into the letters).
+    const word: React.CSSProperties = { fontFamily: FONTS.bubble, fontWeight: 700, fontSize: 118, lineHeight: 1.1, whiteSpace: "nowrap", letterSpacing: 1, display: "inline-block", padding: "0 6px" };
+    return (
+      <AbsoluteFill style={{ opacity: Math.min(1, pop * 1.5) * out }}>
+        <div style={{ position: "absolute", left: 92, top: 150, width: 640, textAlign: "center", transform: `scale(${0.7 + 0.3 * pop}) rotate(${-4 * pop}deg)`, transformOrigin: "50% 60%" }}>
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <div aria-hidden style={{ ...word, position: "absolute", left: 0, top: 0, color: "#fff", WebkitTextStroke: "26px #fff", filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.45))" }}>
+              {beat.title}
+            </div>
+            <div
+              style={{
+                ...word,
+                position: "relative",
+                backgroundImage: `linear-gradient(160deg, ${COLORS.accentSoft} 10%, ${COLORS.accent} 55%, ${COLORS.ink} 95%)`,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              {beat.title}
+            </div>
+          </div>
+          {beat.subtitle ? (
+            <div style={{ marginTop: 26, fontFamily: FONTS.secondary, fontWeight: 600, fontSize: 36, color: "#fff", textShadow: "0 2px 10px rgba(0,0,0,0.6)" }}>{beat.subtitle}</div>
+          ) : null}
+        </div>
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill style={{ opacity: Math.min(1, pop * 1.5) * out }}>
       <div

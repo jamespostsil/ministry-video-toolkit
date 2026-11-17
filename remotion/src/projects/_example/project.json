@@ -45,5 +45,6 @@
     "date": "September 2026",
     "objectPosition": "0% 50%"
   },
-  "overlaySafeArea": { "right": 960, "bottom": 410 }
+  "overlaySafeArea": { "right": 960, "bottom": 410 },
+  "speaker": { "x": 0.13, "y": 0.1, "w": 0.74, "h": 0.9 }
 }

@@ -24,9 +24,10 @@ export const COLORS = {
   muted: "#789fad",
 } as const;
 
-// Both families are SIL Open Font License; the files and licence texts are in
+// All three families are SIL Open Font License; the files and licence texts are in
 // public/fonts/. Rendering never relies on system fonts.
 export const FONTS = {
   display: "Alegreya", // titles, headings (serif)
   secondary: "Poppins", // labels, captions, web addresses (sans)
+  bubble: "Fredoka", // rounded "bubble" letters (the thank-you title)
 } as const;

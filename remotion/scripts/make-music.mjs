@@ -80,6 +80,8 @@ const videoEnd = plan.videoEnd != null
 
 const T = { fadeOutBefore: 0, fadeOutAfter: 1.0, fadeIn: 0.05, joinCurve: "exp", openingFadeIn: 2.5, endingFadeOut: 0.6, ...plan.transitions };
 const EXTRA = 6; // generated past each slot, cut off here
+// A section whose takes keep ending early (tender piano pieces often wind down after about 10 s) can ask for
+// more with "extraSeconds" in its plan entry; only the start of the take is used.
 const sections = plan.sections.map((s, i, all) => ({
   ...s,
   index: i,
@@ -116,7 +118,7 @@ const request = (s) => {
         section_name: s.name,
         positive_local_styles: [...(s.styles ?? []), ...extras],
         negative_local_styles: s.avoid ?? [],
-        duration_ms: Math.round((slot + EXTRA) * 1000),
+        duration_ms: Math.round((slot + (s.extraSeconds ?? EXTRA)) * 1000),
         lines: [],
       }],
     },
@@ -181,7 +183,7 @@ if (todo.length && !dryRun && !KEY)
 for (const s of todo) {
   const body = request(s);
   if (dryRun) { console.log(`\n${s.file}:`, JSON.stringify(body, null, 1)); continue; }
-  console.log(`Making "${s.name}" (${(s.end - s.start + EXTRA).toFixed(1)} s)…`);
+  console.log(`Making "${s.name}" (${(s.end - s.start + (s.extraSeconds ?? EXTRA)).toFixed(1)} s)…`);
   const audio = await callMusic(body);
   // Keep the earlier take of a redone section next to it, never overwrite it.
   const mp3 = join(outDir, `${s.file}.mp3`);
@@ -199,19 +201,29 @@ if (dryRun) process.exit(0);
 const ff = (input, filter) =>
   spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", input, "-af", filter, "-f", "null", "-"], { encoding: "utf8" }).stderr ?? "";
 const lufs = (f) => Number([...ff(f, "ebur128").matchAll(/I:\s+(-?[\d.]+) LUFS/g)].pop()?.[1]);
-/** First sound (after any leading silence) and where the music ends (start of trailing silence). */
+/** Where the music really starts and stops: the first and last moments within 10 dB of the section's typical
+ *  level. A soft swell at the start or a fade at the end counts as quiet, not as music, so a section enters at
+ *  full level at its change and a section that fades out before its change is caught. (A silence test alone
+ *  missed both: a fade-in from -45 dB counted as already playing, and a fade-out only counted once fully silent.) */
 const edges = (f) => {
   const dur = probe(f).duration;
-  const quiet = [...ff(f, "silencedetect=noise=-45dB:d=0.05").matchAll(/silence_(start|end): ([\d.]+)/g)]
-    .map((m) => [m[1], Number(m[2])]);
-  const onset = quiet[0]?.[0] === "start" && quiet[0][1] < 0.01 ? (quiet[1]?.[1] ?? 0) : 0;
-  // ffmpeg closes a trailing silence with an "end" at the end of the file.
-  const starts = quiet.filter(([k]) => k === "start").map(([, t]) => t);
-  const ends = quiet.filter(([k]) => k === "end").map(([, t]) => t);
-  const lastStart = starts.at(-1);
-  const trailing = lastStart != null && lastStart > dur - 8 && (ends.length < starts.length || ends.at(-1) > dur - 0.1);
-  const musicEnd = trailing ? lastStart : dur;
-  return { onset, musicEnd, dur };
+  const raw = spawnSync("ffmpeg", ["-hide_banner", "-loglevel", "error", "-i", f, "-ac", "1", "-ar", "8000", "-f", "s16le", "-"], { maxBuffer: 1 << 28 }).stdout;
+  const x = new Int16Array(raw.buffer, raw.byteOffset, Math.floor(raw.length / 2));
+  const W = 800; // 0.1 s
+  const db = [];
+  for (let i = 0; i + W <= x.length; i += W) {
+    let e = 0;
+    for (let k = i; k < i + W; k++) e += (x[k] / 32768) ** 2;
+    db.push(10 * Math.log10(e / W + 1e-12));
+  }
+  // smooth over 0.3 s, so one quiet moment between notes isn't taken for the start or the end
+  const sm = db.map((_, i) => { const w = db.slice(Math.max(0, i - 1), i + 2); return w.reduce((p, q) => p + q, 0) / w.length; });
+  const loud = sm.filter((v) => v > -60).sort((p, q) => p - q);
+  const ref = loud.length ? loud[Math.floor(loud.length / 2)] : -20;
+  const first = sm.findIndex((v) => v >= ref - 10);
+  let last = sm.length - 1;
+  while (last > 0 && sm[last] < ref - 10) last--;
+  return { onset: Math.max(0, first) * 0.1, musicEnd: Math.min(dur, (last + 1) * 0.1), dur };
 };
 
 const bar = plan.bpm ? (60 / plan.bpm) * 4 : null;

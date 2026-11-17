@@ -19,6 +19,13 @@ import type { PartnerFrameProps } from "../components/PartnerFrame";
  *  lay each photo out at its own true aspect ratio. */
 export type BeatPhoto = GalleryPhoto & { width: number; height: number };
 
+/** A photo with its place on the map, in degrees. South and west are negative. */
+export type MapPhoto = BeatPhoto & { lat: number; lon: number };
+
+/** The part of the footage frame the speaker is in: head and shoulders, with a little room. Fractions of the
+ *  footage frame, measured from its top-left corner. */
+export type SpeakerBox = { x: number; y: number; w: number; h: number };
+
 export type Beat =
   // title card, the only beat timed in absolute composition seconds
   // style "thumbnail": open on the YouTube thumbnail's design (project.json "thumbnail"), its type rising in, then
@@ -30,6 +37,10 @@ export type Beat =
   | { kind: "blur"; start: number; end: number; src: string; caption?: string }
   // full-bleed landscape photo with a slow push
   | { kind: "cover"; start: number; end: number; src: string; caption?: string; objectPosition?: string }
+  // a stock video clip (B-roll) filling the screen, muted, while the speaker keeps talking. src: a file under
+  // public/ (clips/<name>.mp4). from: seconds into the clip to start (default 0). The clip loops if it is shorter
+  // than the beat; pick one that isn't. caption and objectPosition work as for `cover`.
+  | { kind: "clip"; start: number; end: number; src: string; from?: number; caption?: string; objectPosition?: string }
   // N photos in a row, each sized to its OWN aspect ratio at a shared height.
   // title: a heading above the row (a person's name, a place). revealAt: when
   // each photo comes in, in seconds from the beat's start, so each lands on its
@@ -43,6 +54,52 @@ export type Beat =
   | { kind: "globe"; start: number; end: number; bibleAt?: number; label?: string }
   | { kind: "slider"; start: number; end: number; title: string; photos: GalleryPhoto[]; cardWidth?: number; cardHeight?: number }
   | { kind: "scatter"; start: number; end: number; title: string; photos: GalleryPhoto[]; cardLongEdge?: number; revealAt?: number[] }
+  // ---- more photo layouts (components/PhotoLayouts.tsx). Every photo needs its real width and height. ----
+  // neat rows of one height, each photo at its own shape; they arrive one by one (revealAt: seconds from the
+  // beat's start, one per photo) and stay up together. For 4 to 9 photos; with 2 or 3 it is a row.
+  | { kind: "grid"; start: number; end: number; photos: BeatPhoto[]; title?: string; revealAt?: number[] }
+  // each photo fills the screen in turn (a portrait or square one is shown whole over a blur of itself), with a
+  // soft crossfade. showAt: when each photo takes over, in seconds from the beat's start; equal turns without it.
+  | { kind: "onebyone"; start: number; end: number; photos: BeatPhoto[]; showAt?: number[] }
+  // large photos land on one pile, each covering most of the last, so there is one caption to read at a time
+  | { kind: "stack"; start: number; end: number; photos: BeatPhoto[]; title?: string; revealAt?: number[] }
+  // one large photo shown whole, the others small down the right; the large one changes at showAt
+  | { kind: "feature"; start: number; end: number; photos: BeatPhoto[]; title?: string; showAt?: number[] }
+  // two photos; a line wipes across from the first to the second at wipeAt (seconds from the beat's start).
+  // labels default to "Before" / "After". split (0-1): stop the line that far across and keep both on screen,
+  // for two photos of the same view.
+  | { kind: "beforeafter"; start: number; end: number; photos: [BeatPhoto, BeatPhoto]; labels?: [string, string]; wipeAt?: number; split?: number }
+  // each photo pops up beside a map, joined to its own place (lat, lon in degrees; south and west are negative)
+  | { kind: "map"; start: number; end: number; photos: MapPhoto[]; title?: string; revealAt?: number[] }
+  // ---- layouts that keep the speaker on screen (components/SpeakerLayouts.tsx) ----
+  // the live shot moves into a panel on one side, cropped to the speaker, with photos (one at a time, at
+  // showAt) and/or words (a title and lines, each arriving at linesAt) on the other side.
+  // speaker: the box to crop to, when it isn't the project's (project.json "speaker").
+  // Leave a gap before and after it: it starts from the live shot, so it should not follow another graphic.
+  | {
+      kind: "beside";
+      start: number;
+      end: number;
+      side?: "left" | "right";
+      photos?: BeatPhoto[];
+      showAt?: number[];
+      title?: string;
+      lines?: string[];
+      linesAt?: number[];
+      speaker?: SpeakerBox;
+    }
+  // photos fill the screen in turn while the speaker stays in a small window in one corner
+  | {
+      kind: "corner";
+      start: number;
+      end: number;
+      photos: BeatPhoto[];
+      showAt?: number[];
+      corner?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
+      shape?: "rounded" | "circle";
+      size?: number;
+      speaker?: SpeakerBox;
+    }
   // words over the live shot, with a scrim behind the words only
   | { kind: "quote"; start: number; end: number; lines: [string, string]; heading?: string; linesAt?: number }
   // upper-left name plate / role / short bullet list, over the live shot (or over
@@ -85,7 +142,8 @@ export type Beat =
       title?: string;
       rows: { from: string; to: string; fromAt: number; toAt: number }[];
     }
-  | { kind: "thankyou"; start: number; end: number; title: string; subtitle?: string }
+  // style "bubble": the title alone in big rounded letters filled with the brand gradient (no panel behind it).
+  | { kind: "thankyou"; start: number; end: number; title: string; subtitle?: string; style?: "panel" | "bubble" }
   // The closing partner frame. It is composed at render time rather than
   // supplied as a flat image, so the name, web address, photo and QR can come
   // straight from the script's "[End frame]" block.
