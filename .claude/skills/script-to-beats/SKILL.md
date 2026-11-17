@@ -48,6 +48,8 @@ Scripts mark up their own intent. Typical conventions:
 | `[Scatter: Title]` | Same, as a scatter |
 | `[End frame]` | The closing partner frame — name, web address, photo, QR. Hand to `partner-frame` |
 | `[Side by side]` | The images that follow are one `row` beat |
+| `[Grid]`, `[Feature]`, `[Stack]`, `[One at a time]`, `[Before and after]`, `[Map]` | The images that follow are one beat of that layout (`grid`, `feature`, `stack`, `onebyone`, `beforeafter`, `map`); a `: Title` after the name is its title |
+| `[Beside]`, `[Corner]` | The speaker stays on screen with the images that follow (`beside`, `corner`) |
 | A bracketed note | An instruction — read it literally, e.g. `[Show each one as I name it]` |
 
 **Pairing rule: an image accompanies the paragraph that FOLLOWS it.**

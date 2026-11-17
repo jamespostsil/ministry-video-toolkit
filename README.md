@@ -30,7 +30,9 @@ made from.*
    [Google Doc](https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/copy)
    (opens a "Make a copy" prompt) or
    [Notion page](https://ltuse.notion.site/Example-ministry-update-script-41a598a5fd4081b5b0e3d442c76bef91)
-   (use Duplicate).
+   (use Duplicate). Want a certain layout? Write it in square brackets above
+   the pictures, like `[Grid: Scripture dedications]` or `[Map]`; the layouts
+   are listed under "Beats" below. Or leave it to Claude.
 3. **Approve the storyboard.** Give Claude the recording and the script link.
    Claude makes a page showing every scene with its words and pictures; change
    anything there, then press Approve. If the script doesn't say how to show the
