@@ -23,3 +23,6 @@ remotion/src/projects/*/
 
 # Local safety copies made while editing
 backups/
+
+# the layout chooser's small example clips are part of the storyboard skill
+!.claude/skills/storyboard/layouts/*.mp4
