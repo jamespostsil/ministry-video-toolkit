@@ -42,9 +42,11 @@ About our <ministry or organization name>
 
 ―――――――――――
 Photo credits: <place or subject>: <credit>. <place or subject>: <credit>.
+Music: <track> by <artist> (<source and licence, as the licence asks>)
 ```
 
-Leave out the credits block when no photo needs one (every credited photo already shows its credit on screen,
+Add the music line when the music's licence asks for a credit (a Creative Commons track, or ElevenLabs on a free plan:
+"Music: Eleven Music"). Leave out the credits block when nothing needs one: no photo needs one (every credited photo already shows its credit on screen,
 or the photos are the person's own).
 
 ## Chapters
