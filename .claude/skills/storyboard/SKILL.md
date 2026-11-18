@@ -197,8 +197,10 @@ after another**, **Speaker on screen**. A new layout goes into one of these list
 
 ## Shared photos in "+ Add a photo"
 
-"+ Add a photo" has two tabs when there are shared photos: **This video's photos** and **Shared photos**. The
-Shared tab says the photos are cleared for SIL and Wycliffe videos and links to the whole folder.
+"+ Add a photo" always has two tabs: **This video's photos** and **Shared photos**. With shared photos the Shared tab
+says they are cleared for SIL and Wycliffe videos and links to the whole folder. Without them (not on this computer, or
+`--no-library`) the tab still shows, with three short steps for getting them and the folder link, so the person always
+knows where to find them.
 
 - **On by default.** `build.py` (and the review page's, and `export_photos.py`) look for the people-with-Bibles
   folder on this computer (`shared_photos.py`: Google Drive for desktop's My Drive or Shared drives, Downloads,
@@ -235,3 +237,34 @@ long stretch of the speaker alone, from the shared library:
   `questions` entry ("Photos suggested from the shared library", with `at` on the first): the reviewer keeps a
   photo by leaving it and takes one out with ✕.
 - A video clip may fit better than a photo for a scene about the whole world or travel; that is `find-footage`.
+
+
+## Unapproved photos: "Add credit" (2026-11)
+
+Permission has four choices: **OK to use**, **Add credit**, **Ask first**, **Don't use**. A photo that is not yet
+approved and has no credit goes on the page set to **Add credit**, pre-selected (`"rights": "credit"` in `pictures`,
+with a `rightsNote` such as "No credit yet. Add one, then mark it OK to use."). The reviewer types the credit and
+switches it to OK to use. `export_photos.py` stops on these like it does on "Ask first".
+
+## The end screen (`"layout": "ending"`)
+
+The closing screen is drawn from three pictures, each in its own slot, so one can be changed without losing the others:
+give `pictures` a `"role"` of `photo` (left, in its card; crop it in `crops.json`), `qr` (right, on white) and `logo`
+(low right; a transparent PNG is laid on black and blended away). Its words come from the `screen` labels `Heading`
+(the headline between them), `Line 1` (name under the photo) and `Line 2` (web address under the QR code). A photo
+added later with "+ Add a photo" takes the first empty slot. Don't also give the shot a frame that already has the
+words on it: they would show twice.
+
+### First video and later videos
+
+- **First video:** leave the end shot's `pictures` empty. The card shows dashed fillers ("YOUR PHOTO HERE", "SAMPLE QR",
+  "YOUR LOGO") and the person adds each with "+ Add a photo", in that order. There is no Layout button on this card.
+- **Later videos:** pass `--end-from <the previous project's folder>` to `build.py`. The end screen then starts filled
+  in from that project's `partner.ts`: its photo (with its crop), QR code and logo, and its headline, name and web
+  address (when the end shot has no `screen` of its own). The person only checks it.
+- **The Wycliffe logo** the toolkit carries (`remotion/public/brand/`) is offered under "+ Add a photo" and goes into the
+  logo box; its note says to use it only as Wycliffe's brand guidelines allow (`--no-logos` leaves it out).
+- On the end card, "Put back" and "Undo photo changes" only show for changes made in the current visit. After a reload the
+  card keeps its photos and the two links are gone.
+
+- **The main area follows the card being worked in.** Typing in a card, pressing a button in it or clicking anywhere in it shows that scene in the big picture, without scrolling the list.

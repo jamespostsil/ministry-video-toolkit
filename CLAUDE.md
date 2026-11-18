@@ -13,6 +13,12 @@ Write to them in short, plain sentences, and never make them learn the toolkit's
 5. **Review page:** the person watches it and leaves notes (`review-page`). Repeat until they're happy.
 6. **Finish:** the final video, its thumbnail (`thumbnail`) and the photo credits line.
 
+## The end screen on a second video
+
+For someone who has made a video before, build the storyboard with `--end-from <their previous project folder>`
+(`storyboard` skill) so the closing screen starts with their photo, QR code, logo and web address already in place.
+Only a first video starts with empty fillers.
+
 ## When the script doesn't say how to show the pictures
 
 Most scripts won't. Choose for them, from what the pictures are, with the table in the `beat-library` skill
@@ -44,7 +50,12 @@ once more as a light suggestion where it fits better (music when they watch the 
   a call to action for the ask (`beat-library`).
 - **The end frame:** their photo, web address and a QR code that scans (`partner-frame`).
 - **The thumbnail:** a separate picture for YouTube, readable when small (`thumbnail`).
-- **After the final video:** a short description for YouTube or Vimeo, or a newsletter paragraph to go with it.
+- **Captions:** a captions file for the finished video (`npm run captions -- <project>`, from the transcript): a `.vtt` for
+  Vimeo and YouTube and an `.srt` for Facebook and editors. Offer it with the final video and run the command yourself (they never type it), then ask them to read it once
+  against their script, since names and places are where the transcription slips.
+- **After the final video:** the video's description with chapters (`description`: it asks once for their links, or
+  finds them on their website and offers them, and saves them for the next video), then a newsletter paragraph to
+  go with it if they want one.
 
 ## Before anything leaves their computer
 

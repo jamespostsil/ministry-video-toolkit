@@ -61,7 +61,7 @@ python -I find_footage.py picker <work folder> k010 k014 k022 --title "Clips for
 Write a short `--note` per clip saying the moment it is for, in plain words. The search word groups the page. Publish
 `picker/picker.html` as an artifact with the capabilities `{db: {}}` and every file in `picker/v/` as a published
 file (the page can't load videos from other sites). Read the choices back with ArtifactData `list` of the
-collection `picks` (`{choice: "use" | "maybe"}`, the doc id is the key).
+collection `picks` (`{choice: "use" | "maybe" | "remove"}`, the doc id is the key).
 
 ## 5. Fetch and use them
 

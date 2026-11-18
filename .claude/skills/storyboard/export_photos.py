@@ -101,7 +101,7 @@ def info(pid):
 # permission: nothing marked "Ask first" or "Don't use" goes into a video by accident
 blocked = [(pid, info(pid)["rights"]) for pid in used if info(pid)["rights"] != "ok"]
 if blocked and not a.skip_unapproved:
-    lines = "\n".join(f"  {'Ask first' if r == 'ask' else 'Do not use'}: {known[pid].get('file') or pid}" for pid, r in blocked)
+    lines = "\n".join(f"  {'Ask first' if r == 'ask' else 'Add a credit' if r == 'credit' else 'Do not use'}: {known[pid].get('file') or pid}" for pid, r in blocked)
     sys.exit("Stopped: these photos aren't cleared to use yet:\n" + lines +
              "\nSettle them on the storyboard page, or run again with --skip-unapproved to leave them out.")
 if blocked:

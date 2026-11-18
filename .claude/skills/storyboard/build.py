@@ -27,7 +27,7 @@ storyboard.json: {"title", "draft": N, "shots": [{"id", "key"?, "section", "beat
     change them. The reviewer can change it with the card's "Layout" button, which shows a small example of each
     layout that suits the number of photos (layouts/*.mp4 and *.jpg, copied to the out folder).
   - pictures: the photos on screen with these lines, in order: [{"file", "caption"?, "credit"?, "rights"?: "ok" |
-    "ask" | "no", "rightsNote"?, "lat"?, "lon"?}]. file is read from --photos, turned upright and cropped with its rectangle in
+    "ask" | "credit" | "no", "rightsNote"?, "role"?, "lat"?, "lon"?}]. file is read from --photos, turned upright and cropped with its rectangle in
     --crops ({"<file>": {x, y, w, h, why?}}, in the upright photo's pixels); the page shows the crop and lets the
     reviewer see the whole photo. A shot with pictures shows them on the stage instead of its <id>.png, unless
     "sketch" is true: then <id>.png is a sketch of the planned graphic and is shown first.
@@ -74,6 +74,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("storyboard"); ap.add_argument("out")
 ap.add_argument("--pictures"); ap.add_argument("--boxes"); ap.add_argument("--drafts")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--logo")
+ap.add_argument("--end-from", help="a previous video's project folder (with its partner.ts): the end screen starts filled in from its photo, QR code, logo, name and web address")
+ap.add_argument("--no-logos", action="store_true", help="do not offer the Wycliffe logo under + Add a photo")
 ap.add_argument("--library", action="append", default=[], help="a shared photo folder offered under + Add a photo (repeatable)")
 ap.add_argument("--library-link", help="web link to the shared photo folder, shown in the Shared photos tab")
 ap.add_argument("--no-library", action="store_true", help="leave the shared People with Bibles photos out (found on this computer by default)")
@@ -85,7 +87,9 @@ if not a.library and not a.no_library:   # the shared "People with Bibles" photo
     import shared_photos
     _shared = shared_photos.find()
     if _shared: a.library = [_shared]; a.library_link = a.library_link or shared_photos.LINK; print("shared photos:", _shared)
-    else: print("NOTE:", shared_photos.MISSING)
+    else: a.library_link = a.library_link or shared_photos.LINK; print("NOTE:", shared_photos.MISSING)
+if a.no_library and not a.library_link:   # no photos offered, but the Shared photos tab still says how to get them
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".")); import shared_photos; a.library_link = shared_photos.LINK
 base = os.path.dirname(os.path.abspath(a.storyboard))
 pictures = a.pictures or os.path.join(base, "local", "storyboard")
 drafts = a.drafts or os.path.join(base, "local", "drafts")
@@ -98,6 +102,25 @@ os.makedirs(os.path.join(a.out, "pics"), exist_ok=True)
 _lay = os.path.join(os.path.dirname(os.path.abspath(__file__)), "layouts")   # the layout chooser's example clips and stills
 if os.path.isdir(_lay): shutil.copytree(_lay, os.path.join(a.out, "layouts"), dirs_exist_ok=True)
 crops = json.load(open(a.crops, encoding="utf-8")) if a.crops else {}
+REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+PUBLIC = os.path.join(REPO, "remotion", "public")
+if a.end_from:   # a later video: the end screen starts as the last one ended (photo, QR code, logo, words)
+    _t = open(os.path.join(a.end_from, "partner.ts"), encoding="utf-8").read()
+    _g = lambda k: (re.search(k + r'\s*:\s*"([^"]*)"', _t) or [None, None])[1]
+    _crop = re.search(r"photoCrop\s*:\s*\{([^}]*)\}", _t)
+    for _sh in sb["shots"]:
+        if _sh.get("layout") != "ending" or _sh.get("pictures"): continue
+        _pics = []
+        for _role, _key in (("photo", "photo"), ("qr", "qr"), ("logo", "logo")):
+            _f = _g(_key)
+            if _f and os.path.isfile(os.path.join(PUBLIC, _f)):
+                _pics.append({"file": os.path.basename(_f), "dir": os.path.dirname(os.path.join(PUBLIC, _f)), "rights": "ok", "role": _role})
+                if _role == "photo" and _crop and os.path.basename(_f) not in crops:
+                    _n = {k: int(v) for k, v in re.findall(r"(\w+)\s*:\s*(\d+)", _crop.group(1))}
+                    if {"x", "y", "width", "height"} <= set(_n): crops[os.path.basename(_f)] = {"x": _n["x"], "y": _n["y"], "w": _n["width"], "h": _n["height"], "why": "Cropped to the card's shape, as in the last video"}
+        if _pics: _sh["pictures"] = _pics
+        if not _sh.get("screen"):
+            _sh["screen"] = [{"label": l, "text": _g(k)} for l, k in (("Heading", "headline"), ("Line 1", "name"), ("Line 2", "web")) if _g(k)]
 
 draft = sb.get("draft", 1)
 os.makedirs(drafts, exist_ok=True)
@@ -149,7 +172,11 @@ def picture(p):
         if not a.photos and not p.get("dir"): raise SystemExit("shots have pictures: pass --photos <folder>")
         src = os.path.join(p.get("dir") or a.photos, p["file"])
         if not os.path.isfile(src): raise SystemExit(f"no photo {src}")
-        whole = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+        raw = ImageOps.exif_transpose(Image.open(src)).convert("RGBA")
+        # transparent pictures (a logo, a QR code) are laid on the colour they sit on in the video: black (the page screen-blends it away) for a "logo", white otherwise
+        # end screen for a "logo", white otherwise, since the page's pictures are JPEG
+        flat = Image.new("RGB", raw.size, (0, 0, 0) if p.get("role") == "logo" else (255, 255, 255)); flat.paste(raw, mask=raw.split()[3])
+        whole = flat
         c = crops.get(p["file"])
         im = whole.crop((c["x"], c["y"], c["x"] + c["w"], c["y"] + c["h"])) if c else whole
         for name, pic, size in [(pid, im, 1600), (pid + ".t", im, 240)] + ([(pid + ".whole", whole, 1600)] if c else []):
@@ -157,7 +184,7 @@ def picture(p):
         pics_done[pid] = {"w": im.width, "h": im.height, "cropped": bool(c), "cropWhy": (c or {}).get("why", "")}
     place = {k: p[k] for k in ("lat", "lon") if isinstance(p.get(k), (int, float))}   # where it was taken, for "On a map"
     return {"id": pid, "file": p["file"], "caption": p.get("caption", ""), "credit": p.get("credit", ""),
-            "rights": p.get("rights", "ok"), "rightsNote": p.get("rightsNote", ""), **place, **pics_done[pid]}
+            "rights": p.get("rights", "ok"), "rightsNote": p.get("rightsNote", ""), **({"role": p["role"]} if p.get("role") else {}), **place, **pics_done[pid]}
 
 
 shots = []
@@ -184,9 +211,20 @@ if a.photos:   # every photo in the script's folder, for "+ Add a photo"
     for f in sorted(os.listdir(a.photos)):
         if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
             p = picture({"file": f}); library.append({k: p[k] for k in ("id", "file", "w", "h", "cropped")})
+_seen = {}   # the script's own order: each photo's first appearance across the shots
+for _s in sb["shots"]:
+    for _p in _s.get("pictures", []): _seen.setdefault(_p["file"], len(_seen))
+library.sort(key=lambda q: (0, _seen[q["file"]], "") if q["file"] in _seen else (1, 0, q["file"].lower()))   # in the script (script order), then the rest A to Z
+for q in library: q["inScript"] = q["file"] in _seen
 for folder in a.library:   # shared photos (people with Bibles...), with their caption and credit filled in
     for q in shared_library(folder):
         p = picture({**q, "dir": folder}); library.append({**{k: p[k] for k in ("id", "file", "w", "h", "cropped", "caption", "credit")}, "shared": True})
+if not a.no_logos:   # the Wycliffe logo the toolkit carries, offered for the end screen's logo box
+    _bd = os.path.join(PUBLIC, "brand")
+    for _f in (sorted(os.listdir(_bd)) if os.path.isdir(_bd) else []):
+        if _f.lower().endswith(".png") and "logo" in _f.lower():
+            _p = picture({"file": _f, "dir": _bd, "role": "logo", "caption": "Wycliffe logo (white)", "rightsNote": "Use only as Wycliffe's brand guidelines allow."})
+            if not any(q["id"] == _p["id"] for q in library): library.append({**{k: _p[k] for k in ("id", "file", "w", "h", "cropped")}, "role": "logo", "caption": "Wycliffe logo (white)", "brand": True, "inScript": False})
 keys = {s["key"] for s in shots}
 bad = [q.get("at") for q in sb.get("questions", []) if q.get("at") not in (None, *keys)]
 if bad: raise SystemExit(f"questions for unknown shots: {bad}")

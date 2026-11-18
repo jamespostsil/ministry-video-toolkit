@@ -22,6 +22,7 @@ data.json:
         # status page. "at" adds a "Show the scene" link.
     "good": ["1.1", ...],    # optional: cards marked good in the last version and unchanged since; they start folded
     "preview": "Preview copy: 720p, not HD",         # optional: the label on the video (default "Preview copy: not HD")
+    "audio": {"voice": "x-voice.m4a", "music": "x-music.m4a"},   # optional: two audio files (render-final.mjs --stems) kept in step with a video that has no sound; adds Voice + music / Voice only / Music only buttons at the top
     "mode": "detailed"       # optional: open in Detailed (every scene card, words on screen, photos) instead of
                              # Simple (the video and notes only); default "simple". A link ending #simple or #detailed opens that mode.
   }
@@ -40,7 +41,9 @@ if not a.library and not a.no_library:   # the shared "People with Bibles" photo
     import shared_photos
     _shared = shared_photos.find()
     if _shared: a.library = [_shared]; a.library_link = a.library_link or shared_photos.LINK; print("shared photos:", _shared)
-    else: print("NOTE:", shared_photos.MISSING)
+    else: a.library_link = a.library_link or shared_photos.LINK; print("NOTE:", shared_photos.MISSING)
+if a.no_library and not a.library_link:   # no photos offered, but the Shared photos tab still says how to get them
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../storyboard")); import shared_photos; a.library_link = shared_photos.LINK
 d = json.load(open(data_path, encoding="utf-8"))
 for k in ("title", "video", "version", "sentences"):
     if k not in d: raise SystemExit(f"data.json needs {k!r}")
@@ -54,7 +57,10 @@ if a.photos and a.out_pics:   # the photo thumbnails and larger copies the cards
     crops = json.load(open(a.crops, encoding="utf-8")) if a.crops else {}
     os.makedirs(a.out_pics, exist_ok=True)
     used = {p["file"] for s in d["sentences"] for p in s.get("pictures", [])}
-    files = sorted(set(used) | {f for f in os.listdir(a.photos) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))})
+    _order = {}   # the script's own order: each photo's first appearance down the scenes
+    for _s in d["sentences"]:
+        for _p in _s.get("pictures", []): _order.setdefault(_p["file"], len(_order))
+    files = sorted(set(used) | {f for f in os.listdir(a.photos) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))}, key=lambda f: (0, _order[f], "") if f in _order else (1, 0, f.lower()))
     for f in files:
         pid = pid_of(f)
         im = ImageOps.exif_transpose(Image.open(os.path.join(a.photos, f))).convert("RGB")
@@ -62,7 +68,7 @@ if a.photos and a.out_pics:   # the photo thumbnails and larger copies the cards
         if c: im = im.crop((c["x"], c["y"], c["x"] + c["w"], c["y"] + c["h"]))
         for suffix, size in ((".jpg", 1600), (".t.jpg", 240)):
             q = im.copy(); q.thumbnail((size, size)); q.save(os.path.join(a.out_pics, pid + suffix), quality=86)
-        library.append({"id": pid, "file": f, "w": im.width, "h": im.height})
+        library.append({"id": pid, "file": f, "w": im.width, "h": im.height, "inScript": f in _order})
 if a.library and a.out_pics:   # shared photos (people with Bibles...), with their caption and credit filled in
     import csv
     from PIL import Image, ImageOps
@@ -81,7 +87,7 @@ if a.library and a.out_pics:   # shared photos (people with Bibles...), with the
             library.append({"id": pid, "file": r["file"], "w": im.width, "h": im.height, "caption": r.get("caption", ""), "credit": r.get("credit", ""), "shared": True})
 page = open(os.path.join(here, "template.html"), encoding="utf-8").read()
 esc = lambda s: s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
-payload = {k: d.get(k) for k in ("version", "sentences", "changes", "general", "questions", "good", "preview", "mode")}
+payload = {k: d.get(k) for k in ("version", "sentences", "changes", "general", "questions", "good", "preview", "mode", "audio")}
 payload["library"] = library
 _lay = os.path.join(here, "..", "storyboard", "layouts")   # the layout chooser's example clips and stills
 if os.path.isdir(_lay):

@@ -40,7 +40,7 @@ made from.*
    on that scene lets you pick another.
 4. **Review the video.** Claude renders it and makes a review page. Leave notes
    on any scene until it looks right.
-5. **Finish it.** Claude renders the final video and its YouTube thumbnail.
+5. **Finish it.** Claude renders the final video, its YouTube thumbnail and a captions file (`.vtt` and `.srt`).
    Along the way it offers what usually comes next: music timed to the video,
    headings and names on screen, an end frame with a QR code, and touching up
    washed-out photos.
@@ -195,9 +195,10 @@ All run from `remotion/`. `<project>` is a folder name under `src/projects/`.
 |---|---|
 | `npm run doctor` | Checks your tools and every project, and says how to fix anything missing |
 | `npm run new -- <name>` | Starts a new project from the example |
-| `npm run example:media` | Downloads the example video's footage, photos and music (about 85 MB) |
+| `npm run example:media` | Downloads the example video's footage and photos (about 85 MB). Its music isn't included (the licence doesn't allow sharing the file), so a quiet stand-in plays instead |
 | `npm run footage -- <project>` | Cuts the recording, writes the title-card still, records the real length |
 | `npm run transcribe -- <project>` | Word-level transcript of the footage |
+| `npm run captions -- <project>` | Captions for the finished video: `out/<project>.en.vtt` (Vimeo, YouTube) and `.srt` (Facebook, editors), timed to the video from the transcript. Read it once against your script |
 | `npm run studio` | Preview in the browser: scrub, inspect, no rendering |
 | `npm run still -- <project> <thumbnail\|endframe\|seconds> [file]` | Render one frame to a PNG |
 | `npm run render -- <project> [file]` | Render the finished mp4 (frames are kept in `out/frames-<id>/` for `--skip-frames`; delete them when done) |
@@ -229,6 +230,7 @@ this folder; they are also plain Markdown, worth reading yourself.
 | `review` | Checking a render: flashes at cuts, audio clicks, sync, legibility, QR scanning |
 | `review-page` | The page a reviewer watches a version on: notes per sentence, notes pinned to a spot on the picture, what changed, Looks good |
 | `thumbnail` | The YouTube thumbnail |
+| `description` | The YouTube or Vimeo description: chapters from the storyboard's sections, a short "in this video" block kept apart from your general ministry block and links, photo credits last |
 
 [docs/finding-music.md](docs/finding-music.md) covers free places to get music
 and what their licences allow; [docs/finding-video.md](docs/finding-video.md)

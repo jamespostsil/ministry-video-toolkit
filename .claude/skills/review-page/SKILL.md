@@ -141,3 +141,9 @@ Same as the storyboard (see its SKILL.md, "Shared photos"): on by default when t
 this computer (`--out-pics` is needed for it); when it isn't, the build prints a NOTE and Claude asks the person
 whether to add it. `--library <folder>` (with `--out-pics`) adds a folder by hand, giving the **Shared photos** tab, and `--library-link <url>` links the whole folder from it. Reviewers need only the page link.
 The people-with-Bibles set: https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq
+
+## The top bar (2026-11)
+
+The title, "Notes save as you type" and the **Simple / Detailed** switch stay at the top of the screen while the page
+scrolls, so the reviewer can change mode from anywhere. "+ Add a photo" always has a **Shared photos** tab (photos, or
+steps for getting them), and permission has an **Add credit** choice for photos with no credit yet, as on the storyboard.

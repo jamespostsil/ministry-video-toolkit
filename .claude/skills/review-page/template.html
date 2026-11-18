@@ -11,7 +11,7 @@
 body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--ui);padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font-size:1.35rem;margin:0 0 12px;font-weight:700;text-wrap:balance}
 .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,430px);gap:16px;align-items:start}
-.vid{position:sticky;top:8px;min-width:0;display:grid;gap:6px}
+.vid{position:sticky;top:calc(var(--headh,0px) + 8px);min-width:0;display:grid;gap:6px}
 .frame{position:relative}
 video{width:100%;max-height:calc(100vh - 110px);background:#000;border-radius:6px;display:block}
 .overlay{position:absolute;left:0;right:0;top:0;bottom:84px;cursor:crosshair}
@@ -69,7 +69,7 @@ input.in.edited,select.rt.edited{box-shadow:inset 3px 0 0 var(--accent)}
 .handle{align-self:stretch;border:0;background:none;color:var(--muted);cursor:grab;touch-action:none;font:700 1rem var(--ui);padding:0;border-radius:4px}.handle:hover{background:var(--hl)}
 .thb{padding:0;border:0;background:none;cursor:zoom-in;line-height:0}.thb img{width:80px;height:56px;object-fit:cover;border-radius:3px}
 .fld{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center}.fld label{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-select.rt{font-weight:700}select.rt.ok{background:#e3f1e6;color:#1f5a2d}select.rt.ask{background:#fff1c7;color:#5c4500}select.rt.no{background:#f7dede;color:#7a1f1f}
+select.rt{font-weight:700}select.rt.ok{background:#e3f1e6;color:#1f5a2d}select.rt.ask,select.rt.credit{background:#fff1c7;color:#5c4500}select.rt.no{background:#f7dede;color:#7a1f1f}
 .rs{font:inherit;font-size:.75rem;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}.rs[hidden]{display:none}
 .lb{position:fixed;inset:0;background:rgb(0 0 0/.85);display:flex;align-items:center;justify-content:center;z-index:20;cursor:zoom-out;padding:16px}.lb[hidden]{display:none}
 .lb img{max-width:100%;max-height:100%;border-radius:6px}
@@ -138,15 +138,15 @@ dialog.pick::backdrop{background:rgb(0 0 0/.5)}
 .pick .pfoot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}.pick .up{font-size:.85rem;color:var(--muted)}
 /* Simple / Detailed: Simple is the video, a click to leave a note, and the list of notes; Detailed is everything above */
 .head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin:0 0 12px}.head h1{margin:0}
-.mode{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
-.mode button{font:600 .85rem var(--ui);border:0;background:var(--panel);color:var(--muted);padding:5px 12px;cursor:pointer}
-.mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.mode,.mix{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
+.mode button,.mix button{font:600 .85rem var(--ui);border:0;background:var(--panel);color:var(--muted);padding:5px 12px;cursor:pointer}
+.mode button[aria-pressed="true"],.mix button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
 body.simple .navs,body.simple .qs,body.simple #rows,body.simple #help{display:none}
 body:not(.simple) #mine{display:none}
 #mine{margin-top:4px}#mine h2{font-size:1rem;margin:0 0 6px}#mine .pinnote{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px}
 #mine .none{color:var(--muted);font-size:.9rem;margin:0}
 /* ---- 2026-11 tidy-up: fewer boxes, labels and instructions; the page explains itself ---- */
-.head{justify-content:flex-start}.head h1{margin-right:auto}
+.head{justify-content:flex-start;position:sticky;top:0;z-index:8;background:var(--bg);padding:8px 0;margin:0 0 4px;border-bottom:1px solid var(--line)}.head h1{margin-right:auto;font-size:1.25rem}
 .stat,.head .off{font-size:.8rem;color:var(--muted)}.head .off{margin:0;color:var(--chg-fg);background:var(--chg-bg);border:1px solid var(--chg-line);border-radius:4px;padding:2px 8px}
 .head .off:not([hidden])+.stat{display:none}
 .gen{font-size:.9rem;color:var(--muted)}
@@ -169,12 +169,14 @@ input.in::placeholder{color:var(--muted);font-style:italic;opacity:.8}
 select.rt{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
 .blk-h:not(:has(>:not([hidden]):not(.gsum))){display:none}.blk.good>.blk-h{display:flex}
 /* the two rows that move through the video sit on one quiet bar */
-.navs{gap:4px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.navs{gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;padding-bottom:8px}
 .snav .btn{padding:4px 9px}
 details.help{margin:0 0 8px}
-@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}.vid{position:static}.side{height:auto;overflow:visible}video{max-height:none}}
+@media (max-width:820px){.navs{top:var(--headh,0px)}.wrap{grid-template-columns:minmax(0,1fr)}.vid{position:static}.side{height:auto;overflow:visible}video{max-height:none}}
+.libgrp{grid-column:1/-1;margin:6px 0 0;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#6b6478)}
+.pinfo{grid-column:1/-1;padding:10px 4px;max-width:60ch;line-height:1.5}.pinfo ol{margin:8px 0 10px 1.2em;padding:0}.pinfo li{margin:4px 0}
 </style>
-<div class="head"><h1>__TITLE__</h1><span class="off" id="off" hidden>Notes can't be saved here. Open the published link while signed in.</span><span class="stat" id="stat">Notes save as you type. Claude reads them.</span><span class="mode" role="group" aria-label="How much to show"><button type="button" data-mode="simple" aria-pressed="false">Simple</button><button type="button" data-mode="detailed" aria-pressed="true">Detailed</button></span></div>
+<div class="head"><h1>__TITLE__</h1><span class="off" id="off" hidden>Notes can't be saved here. Open the published link while signed in.</span><span class="stat" id="stat">Notes save as you type. Claude reads them.</span><span class="mix" id="mix" role="group" aria-label="What to listen to" hidden><button type="button" data-mix="both" aria-pressed="true">Voice + music</button><button type="button" data-mix="voice" aria-pressed="false">Voice only</button><button type="button" data-mix="music" aria-pressed="false">Music only</button></span><span class="mode" role="group" aria-label="How much to show"><button type="button" data-mode="simple" aria-pressed="false">Simple</button><button type="button" data-mode="detailed" aria-pressed="true">Detailed</button></span></div>
 <div class="wrap">
   <div class="vid">
     <div id="gen" class="gen" hidden></div>
@@ -223,13 +225,29 @@ function setMode(m, remember) {
   modeHook();
 }
 document.querySelectorAll(".mode button").forEach((b) => { b.onclick = () => setMode(b.dataset.mode, true); });
+// ---- Voice + music / Voice only / Music only: the video carries no sound; the voices and the music are two audio files
+// kept in step with it, and the buttons at the top switch each on or off. Without D.audio the video plays as it is.
+if (D.audio && (D.audio.voice || D.audio.music)) {
+  const A = {}; for (const k of ["voice", "music"]) if (D.audio[k]) { const a = new Audio(D.audio[k]); a.preload = "auto"; A[k] = a; }
+  let mix = "both";   // always starts with the voices and the music together
+  const bar = $("mix"), btns = [...bar.querySelectorAll("button")]; bar.hidden = false;
+  const paint = () => { for (const k in A) A[k].muted = !(mix === "both" || mix === k); btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mix === mix))); };
+  const sync = (hard) => { for (const k in A) { const a = A[k]; if (hard || Math.abs(a.currentTime - v.currentTime) > 0.2) { try { a.currentTime = v.currentTime; } catch {} } a.playbackRate = v.playbackRate; } };
+  const go = () => { sync(true); for (const k in A) A[k].play().catch(() => {}); }, stop = () => { for (const k in A) A[k].pause(); };
+  v.addEventListener("play", go); v.addEventListener("playing", go); v.addEventListener("pause", () => { stop(); sync(true); });
+  v.addEventListener("waiting", stop); v.addEventListener("ended", stop); v.addEventListener("seeking", () => sync(true)); v.addEventListener("ratechange", () => sync(false));
+  v.addEventListener("timeupdate", () => { if (!v.paused) sync(false); });
+  btns.forEach((b) => { b.onclick = () => { mix = b.dataset.mix; paint(); }; });
+  paint();
+}
+
 { let m = D.mode === "detailed" ? "detailed" : "simple";
   try { const s = localStorage.getItem("review-mode"); if (s === "simple" || s === "detailed") m = s; } catch (e) {}
   const h = location.hash.slice(1); if (h === "simple" || h === "detailed") m = h;
   setMode(m, false); }
 const isOk = {};
 // what each scene shows (filled in by buildShown, below): photos, their order, the words on screen
-const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
+const RIGHTS = [["ok", "OK to use"], ["credit", "Add credit"], ["ask", "Ask first"], ["no", "Don't use"]];
 const PIC = {}, SCR = {}, ORDER = {}, seenGroup = new Set();
 let saveOrder = () => {}, savePicDb = () => {}, saveScr = () => {}, saveLay = () => {};
 // the layouts a reviewer can ask for: [id, name, what it does, fewest photos, most photos, has a moving preview]
@@ -431,16 +449,23 @@ function openPicker(O) {
     if (p.shared) { const c = document.createElement("span"); c.className = "pc"; c.textContent = p.credit || p.caption || ""; b.appendChild(c); }
     b.addEventListener("click", () => { O.addPhoto(p); pick.close(); }); lib.appendChild(b); };
   const mine = (D.library || []).filter((p) => !p.shared && !O.cur.includes(p.id)), shared = (D.library || []).filter((p) => p.shared && !O.cur.includes(p.id));
+
+  const noShared = !(D.library || []).some((p) => p.shared);
+  const sharedHelp = () => { const w = document.createElement("div"); w.className = "pinfo";
+    w.innerHTML = "<b>The shared photos aren't connected yet.</b><ol><li>Open the " + (D.libraryLink ? '<a href=\"' + D.libraryLink + '\" target=\"_blank\" rel=\"noopener\">shared folder</a>' : "shared folder") + " on Google Drive (SIL accounts; anyone else can ask for access).</li><li>Download it (right-click the folder, then Download), or open it with Google Drive for desktop.</li><li>Tell Claude where it is. Claude builds this page again and the photos appear here, each with its credit.</li></ol>";
+    if (D.libraryLink) { const a = document.createElement("a"); a.href = D.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Open the shared folder"; w.appendChild(a); }
+    return w; };
   const tabs = $("ptabs"), note = $("pnote"); tabs.innerHTML = "";
-  const fill = (w) => { lib.innerHTML = ""; (w === "shared" ? shared : mine).forEach(tile);
-    [...tabs.children].forEach((b) => b.setAttribute("aria-selected", String(b.dataset.w === w))); note.hidden = w !== "shared";
+  const fill = (w) => { lib.innerHTML = ""; if (w === "shared" && noShared) lib.appendChild(sharedHelp()); else if (w === "shared") shared.forEach(tile);
+    else { let last = null; mine.forEach((q) => { const g = q.inScript === undefined ? null : (q.inScript ? "In the script" : "Other photos"); if (g && g !== last) { last = g; const h = document.createElement("h4"); h.className = "libgrp"; h.textContent = g; lib.appendChild(h); } tile(q); }); }
+    [...tabs.children].forEach((b) => b.setAttribute("aria-selected", String(b.dataset.w === w))); note.hidden = w !== "shared" || noShared;
     if (!lib.children.length) lib.textContent = "Every photo is already here."; };
   const tab = (w, label) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.w = w; b.textContent = label; b.addEventListener("click", () => fill(w)); tabs.appendChild(b); };
-  tabs.hidden = !shared.length;
-  if (shared.length) { tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", "Shared photos (" + shared.length + ")"); }
+  tabs.hidden = false;
+  tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", noShared ? "Shared photos" : "Shared photos (" + shared.length + ")");
   note.textContent = "Cleared for SIL and Wycliffe videos. Keep the credit on screen. ";
   if (D.libraryLink) { const a = document.createElement("a"); a.href = D.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL accounts; anyone else can ask for access)"; note.appendChild(a); }
-  fill(mine.length || !shared.length ? "mine" : "shared");
+  fill(mine.length || noShared ? "mine" : "shared");
   $("pupst").textContent = ""; $("pup").hidden = true;
   assetsP.then((a) => { $("pup").hidden = !a; });
   pick.showModal();
@@ -512,7 +537,10 @@ const setOk =(id, on) => { isOk[id] = on; const r = el[id]; r.querySelector(".ch
 const sceneIdx = () => { const t = v.currentTime; let i = 0; S.forEach((s, k) => { if (t >= s.t - 0.3) i = k; }); return i; };
 // it skips the scenes marked good
 const isGood = (s) => !!GOOD["card-" + key(s.id)];
-const sceneTop = () => $("navs").offsetHeight + 4;
+const headH = () => (document.querySelector(".head") || { offsetHeight: 0 }).offsetHeight;
+const setHeadVar = () => document.documentElement.style.setProperty("--headh", headH() + "px");
+addEventListener("resize", setHeadVar); setHeadVar(); if ("ResizeObserver" in window) { const h = document.querySelector(".head"); if (h) new ResizeObserver(setHeadVar).observe(h); } if (document.fonts && document.fonts.ready) document.fonts.ready.then(setHeadVar);
+const sceneTop = () => (matchMedia("(max-width:820px)").matches ? headH() : 0) + $("navs").offsetHeight + 8;
 function scrollToRow(r) { side.scrollTo({ top: r.getBoundingClientRect().top - side.getBoundingClientRect().top + side.scrollTop - sceneTop(), behavior: "smooth" }); }
 const goScene = (dir) => { let i = sceneIdx() + dir; while (i >= 0 && i < S.length && isGood(S[i])) i += dir;
   if (i < 0 || i >= S.length) return; const s = S[i]; v.currentTime = Math.max(0, s.t - 0.2); scrollToRow(el[s.id]); };

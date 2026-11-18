@@ -421,9 +421,7 @@ export const BeforeAfter: React.FC<{ beat: Extract<Beat, { kind: "beforeafter" }
 const TOPO = countries110 as unknown as Topology;
 const LAND = feature(TOPO, TOPO.objects.land as GeometryCollection);
 const BORDERS = mesh(TOPO, TOPO.objects.countries as GeometryCollection, (a, b) => a !== b);
-const COL = [0, 520, 440, 360, 300]; // widest card by how many cards share a side
-// Under each map photo, not over it, so a caption never hides the people or the Bibles at the bottom.
-const MAP_CAP = (perSide: number) => (perSide >= 3 ? 58 : 66);
+const COL = [0, 900, 720, 560, 420]; // widest card by how many cards share a side
 
 export const PhotoMap: React.FC<{ beat: Extract<Beat, { kind: "map" }>; durFrames: number }> = ({ beat, durFrames }) => {
   const frame = useCurrentFrame();
@@ -433,19 +431,33 @@ export const PhotoMap: React.FC<{ beat: Extract<Beat, { kind: "map" }>; durFrame
   // Each card goes on the side nearer its place (most often by longitude), at most four a side, so a line never
   // has to cross the whole map. The side with more cards sets the card size.
   const leftN = useMemo(() => {
-    const mid = (Math.min(...photos.map((p) => p.lon)) + Math.max(...photos.map((p) => p.lon))) / 2;
-    const nearLeft = photos.filter((p) => p.lon <= mid).length;
-    return Math.min(4, Math.max(n - 4, nearLeft, n > 1 ? 1 : 0));
+    // Half the cards on each side (the leftmost places go left), so the cards stay large enough to read
+    // even when most of the places are close together and far from one outlier.
+    return Math.min(4, Math.max(n - 4, Math.ceil(n / 2), n > 1 ? 1 : 0));
   }, [photos, n]);
   const perSide = Math.max(1, leftN, n - leftN);
-  const top = beat.title ? 170 : 70;
+  const top = beat.title ? 170 : 70; // where the map starts; the cards go higher, since the title sits over the map
+  const CARD_TOP = 46;
   const GAP = perSide >= 4 ? 26 : 34;
-  const capH = photos.some((p) => p.caption || p.credit) ? MAP_CAP(perSide) : 0;
-  // The photo part is 1.6:1; the cards on the fuller side must fit the height under the title.
-  const fitPh = (1080 - top - 60 - (perSide - 1) * GAP) / perSide - capH;
-  const ph = Math.round(Math.min(COL[perSide] / 1.6, fitPh));
-  const cw = Math.round(ph * 1.6);
-  // Caption and credit shrink to fit the card's width rather than being cut off (Poppins' average advance).
+  // A caption wraps onto a second line (or a third) rather than being cut off, so the strip under each photo is
+  // as tall as the longest caption needs; the photo gets what is left.
+  const capFs = perSide >= 3 ? 27 : 31;
+  const crFs = perSide >= 3 ? 19 : 21;
+  const ASPECT = 2.2; // the photo part is wide, so the caption fits on two lines and the credit gets its own line
+  const hasCap = photos.some((p) => p.caption);
+  const hasCredit = photos.some((p) => p.credit);
+  const capFor = (lines: number) => (hasCap || hasCredit ? Math.round((hasCap ? capFs * 1.2 * lines : 0) + (hasCredit ? crFs * 1.3 + 4 : 0) + 18) : 0);
+  const avail = (1080 - CARD_TOP - 46 - (perSide - 1) * GAP) / perSide;
+  const sizeFor = (capHeight: number) => {
+    const w = Math.min(COL[perSide], (avail - capHeight) * ASPECT);
+    return { ph: Math.round(w / ASPECT), cw: Math.round(w) };
+  };
+  const linesAt = (width: number) => Math.min(3, Math.max(1, ...photos.map((p) => (p.caption ? Math.ceil((0.72 * capFs * p.caption.length) / (width - 28)) : 1))));
+  let size = sizeFor(capFor(1));
+  for (let k = 0; k < 3; k++) size = sizeFor(capFor(linesAt(size.cw)));
+  const capH = capFor(linesAt(size.cw));
+  const { ph, cw } = size;
+  // Credit shrinks to fit the card's width rather than being cut off (Poppins' average advance).
   const fit = (text: string, ideal: number, least: number, adv: number) => Math.max(least, Math.min(ideal, Math.floor((cw - 28) / (adv * text.length))));
   const ch = ph + capH;
   const mapBox: [[number, number], [number, number]] = [
@@ -480,7 +492,7 @@ export const PhotoMap: React.FC<{ beat: Extract<Beat, { kind: "map" }>; durFrame
     (["l", "r"] as const).forEach((side) => {
       const ids = (side === "l" ? byX.slice(0, leftN) : byX.slice(leftN)).sort((a, b) => geo.pins[a][1] - geo.pins[b][1]);
       const total = ids.length * ch + (ids.length - 1) * GAP;
-      const y0 = top + (1080 - top - 60 - total) / 2;
+      const y0 = CARD_TOP + (1080 - CARD_TOP - 46 - total) / 2;
       ids.forEach((id, k) => (out[id] = { x: side === "l" ? 70 : 1920 - 70 - cw, y: y0 + k * (ch + GAP), side }));
     });
     return out;
@@ -535,7 +547,7 @@ export const PhotoMap: React.FC<{ beat: Extract<Beat, { kind: "map" }>; durFrame
             <div style={{ position: "absolute", left: 0, top: 0, width: cw, height: ph, overflow: "hidden" }}>
               {/* A wide photo fills the card; a squarer or tall one is shown whole over a blurred copy of itself,
                   so heads and Bibles are never cut off. */}
-              {aspectOf(p) >= 1.3 ? (
+              {aspectOf(p) >= 1.3 && p.fit !== "whole" ? (
                 <Fill src={p.src} style={{ objectPosition: "50% 35%" }} />
               ) : (
                 <>
@@ -546,8 +558,8 @@ export const PhotoMap: React.FC<{ beat: Extract<Beat, { kind: "map" }>; durFrame
             </div>
             {capH ? (
               <div style={{ position: "absolute", left: 0, top: ph, width: cw, height: capH, boxSizing: "border-box", padding: "0 14px", display: "flex", flexDirection: "column", justifyContent: "center", backgroundColor: "rgba(12,20,24,0.92)", textAlign: "left" }}>
-                {p.caption ? <div style={{ fontFamily: FONTS.secondary, fontWeight: 600, fontSize: fit(p.caption, perSide >= 3 ? 21 : 24, 16, 0.6), color: "#fff", lineHeight: 1.2, whiteSpace: "nowrap" }}>{p.caption}</div> : null}
-                {p.credit ? <div style={{ fontFamily: FONTS.secondary, fontWeight: 500, fontSize: fit(p.credit, perSide >= 3 ? 15 : 17, 12, 0.56), color: "rgba(255,255,255,0.75)", marginTop: 2, whiteSpace: "nowrap" }}>{p.credit}</div> : null}
+                {p.caption ? <div style={{ fontFamily: FONTS.secondary, fontWeight: 600, fontSize: capFs, color: "#fff", lineHeight: 1.2, whiteSpace: "normal" }}>{p.caption}</div> : null}
+                {p.credit ? <div style={{ fontFamily: FONTS.secondary, fontWeight: 500, fontSize: fit(p.credit, crFs, 12, 0.56), color: "rgba(255,255,255,0.75)", marginTop: 2, whiteSpace: "nowrap" }}>{p.credit}</div> : null}
               </div>
             ) : null}
           </div>

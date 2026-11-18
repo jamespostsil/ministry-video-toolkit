@@ -387,7 +387,7 @@ export const ThankYou: React.FC<{ beat: Extract<Beat, { kind: "thankyou" }>; dur
     const word: React.CSSProperties = { fontFamily: FONTS.bubble, fontWeight: 700, fontSize: 118, lineHeight: 1.1, whiteSpace: "nowrap", letterSpacing: 1, display: "inline-block", padding: "0 6px" };
     return (
       <AbsoluteFill style={{ opacity: Math.min(1, pop * 1.5) * out }}>
-        <div style={{ position: "absolute", left: 92, top: 150, width: 640, textAlign: "center", transform: `scale(${0.7 + 0.3 * pop}) rotate(${-4 * pop}deg)`, transformOrigin: "50% 60%" }}>
+        <div style={{ position: "absolute", left: 300, top: 150, width: 640, textAlign: "center", transform: `scale(${0.7 + 0.3 * pop}) rotate(${-4 * pop}deg)`, transformOrigin: "50% 60%" }}>
           <div style={{ position: "relative", display: "inline-block" }}>
             <div aria-hidden style={{ ...word, position: "absolute", left: 0, top: 0, color: "#fff", WebkitTextStroke: "26px #fff", filter: "drop-shadow(0 14px 22px rgba(0,0,0,0.45))" }}>
               {beat.title}

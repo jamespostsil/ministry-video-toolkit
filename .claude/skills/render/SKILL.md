@@ -92,3 +92,11 @@ consistently-loud section rather than looping the whole file blindly.
 ## After every render
 
 Run **`review`**. A render that completes is not a render that is correct.
+
+## Captions
+
+After the final render, `npm run captions -- <project>` writes `out/<project>.en.vtt` and `.en.srt` from the project's
+transcript (the footage's word times plus the title card's length, so they line up with the video). Vimeo takes only
+WebVTT; YouTube takes either. The words are what the transcription heard: read the file once against the script before
+it is uploaded. `--stems` on the render script also writes the voices alone and the music alone (for the review page's
+"Voice only" and "Music only" buttons).

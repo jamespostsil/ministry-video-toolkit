@@ -20,7 +20,9 @@ import type { PartnerFrameProps } from "../components/PartnerFrame";
 export type BeatPhoto = GalleryPhoto & { width: number; height: number };
 
 /** A photo with its place on the map, in degrees. South and west are negative. */
-export type MapPhoto = BeatPhoto & { lat: number; lon: number };
+/** `fit: "whole"` shows the photo complete (over a blurred copy of itself) instead of filling the card's wide
+ *  shape, for a photo whose important part (a face and the Bible it holds) a wide crop would cut off. */
+export type MapPhoto = BeatPhoto & { lat: number; lon: number; fit?: "whole" };
 
 /** The part of the footage frame the speaker is in: head and shoulders, with a little room. Fractions of the
  *  footage frame, measured from its top-left corner. */

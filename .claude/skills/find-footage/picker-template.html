@@ -5,15 +5,15 @@
 /* Layout: a contact sheet of looping clips, grouped by what was searched for, with a sticky tally */
 :root{
   --bg:#f5f4f1; --surface:#fffefc; --ink:#24262b; --muted:#666a73; --line:#e1dfda;
-  --accent:#3c6b79; --use:#2f6d5e; --use-bg:#dcefe8; --maybe:#8a6514; --maybe-bg:#f6ead0;
+  --accent:#3c6b79; --use:#2f6d5e; --use-bg:#dcefe8; --maybe:#8a6514; --maybe-bg:#f6ead0; --rm:#9a3b3b; --rm-bg:#f6e0df;
   --display:"Fraunces",Georgia,serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#1a1c20; --surface:#24272c; --ink:#eceef1; --muted:#a3a8b1; --line:#353941;
-  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; color-scheme:dark}}
+  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; --rm:#e9a5a5; --rm-bg:#3d2224; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1a1c20; --surface:#24272c; --ink:#eceef1; --muted:#a3a8b1; --line:#353941;
-  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; color-scheme:dark}
+  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; --rm:#e9a5a5; --rm-bg:#3d2224; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
@@ -39,6 +39,7 @@ h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .card.use{border-color:var(--use);box-shadow:0 0 0 2px var(--use)}
 .card.maybe{border-color:var(--maybe)}
+.card.remove{border-color:var(--rm)}.card.remove .frame,.card.remove .note{opacity:.4}
 .frame{position:relative;aspect-ratio:16/9;max-width:100%;background:#111}
 .frame video{width:100%;height:100%;object-fit:cover;display:block}
 .tag{position:absolute;font:600 11px var(--body);background:rgba(20,20,24,.72);color:#fff;padding:3px 7px;border-radius:4px}
@@ -53,13 +54,14 @@ h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
 .acts button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .acts button[data-v="use"][aria-pressed="true"]{background:var(--use-bg);border-color:var(--use);color:var(--use)}
 .acts button[data-v="maybe"][aria-pressed="true"]{background:var(--maybe-bg);border-color:var(--maybe);color:var(--maybe)}
+.acts button[data-v="remove"][aria-pressed="true"]{background:var(--rm-bg);border-color:var(--rm);color:var(--rm)}
 .acts button:disabled{opacity:.5;cursor:default}
 </style>
 
 <div class="wrap">
 <header>
   <h1 id="title"></h1>
-  <p>Each clip is free to use in your video, with no credit needed. Tap <b>Use</b> or <b>Maybe</b> on the ones you like. Claude can read your choices and fetch the full-size files.</p>
+  <p>Each clip is free to use in your video, with no credit needed. Tap <b>Use</b> or <b>Maybe</b> on the ones you like and <b>Remove</b> on the ones that don’t fit. Claude can read your choices and fetch the full-size files.</p>
   <div class="terms" id="terms"></div>
 </header>
 <div class="bar" role="toolbar" aria-label="Filter clips">
@@ -90,7 +92,7 @@ function setStatus(t) { document.getElementById('status').textContent = t; }
 
 function renderChips() {
   const el = document.getElementById('chips'); el.textContent = '';
-  const names = GROUPS.length > 1 ? ['All', ...GROUPS, 'My picks'] : ['All', 'My picks'];
+  const names = GROUPS.length > 1 ? ['All', ...GROUPS, 'My picks', 'Removed'] : ['All', 'My picks', 'Removed'];
   for (const t of names) {
     const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = t;
     b.setAttribute('aria-pressed', String(t === filter));
@@ -115,7 +117,7 @@ function card(c) {
   const o = a.querySelector('.orig');
   if (c.note) o.append('“' + c.title + '” · ');
   const l = document.createElement('a'); l.href = c.page; l.target = '_blank'; l.rel = 'noopener'; l.textContent = 'Open on ' + c.src; o.append(l);
-  for (const [val, label] of [['use', 'Use'], ['maybe', 'Maybe']]) {
+  for (const [val, label] of [['use', 'Use'], ['maybe', 'Maybe'], ['remove', 'Remove']]) {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.v = val; b.textContent = label; b.disabled = !db;
     b.onclick = () => choose(c.key, picks[c.key] === val ? null : val);
     a.querySelector('.acts').appendChild(b);
@@ -129,9 +131,11 @@ function renderList() {
   if (io) io.disconnect();
   let shown = 0;
   for (const g of GROUPS) {
-    if (filter !== 'All' && filter !== 'My picks' && filter !== g) continue;
+    if (filter !== 'All' && filter !== 'My picks' && filter !== 'Removed' && filter !== g) continue;
     let items = CLIPS.filter(c => (c.group || 'Clips') === g);
-    if (filter === 'My picks') items = items.filter(c => picks[c.key]);
+    if (filter === 'My picks') items = items.filter(c => picks[c.key] === 'use' || picks[c.key] === 'maybe');
+    else if (filter === 'Removed') items = items.filter(c => picks[c.key] === 'remove');
+    else items = items.filter(c => picks[c.key] !== 'remove');
     if (!items.length) continue;
     const s = document.createElement('section');
     if (GROUPS.length > 1) { const h = document.createElement('h2'); h.textContent = g; s.appendChild(h); }
@@ -139,25 +143,25 @@ function renderList() {
     for (const c of items) { grid.appendChild(card(c)); shown++; }
     s.appendChild(grid); main.appendChild(s);
   }
-  if (!shown) { const p = document.createElement('p'); p.textContent = 'No picks yet. Tap Use or Maybe on a clip and it shows up here.'; main.appendChild(p); }
+  if (!shown) { const p = document.createElement('p'); p.textContent = filter === 'Removed' ? 'Nothing removed. Press Remove on a clip that doesn’t fit and it moves here, where you can put it back.' : 'No picks yet. Tap Use or Maybe on a clip and it shows up here.'; main.appendChild(p); }
   CLIPS.forEach(c => updateCard(c.key));
 }
 
 function updateCard(key) {
   const el = document.getElementById(key);
   if (el) {
-    const v = picks[key]; el.classList.remove('use', 'maybe'); if (v) el.classList.add(v);
+    const v = picks[key]; el.classList.remove('use', 'maybe', 'remove'); if (v) el.classList.add(v);
     el.querySelectorAll('.acts button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.v === v)); b.disabled = !db; });
   }
   const vals = Object.values(picks);
   document.getElementById('tally').innerHTML =
-    `<strong>${vals.filter(v => v === 'use').length}</strong> to use · <strong>${vals.filter(v => v === 'maybe').length}</strong> maybe`;
+    `<strong>${vals.filter(v => v === 'use').length}</strong> to use · <strong>${vals.filter(v => v === 'maybe').length}</strong> maybe · <strong>${vals.filter(v => v === 'remove').length}</strong> removed`;
 }
 
 async function choose(key, val) {
   const prev = picks[key];
   if (val) picks[key] = val; else delete picks[key];
-  updateCard(key);
+  if (filter !== 'My picks' && (val === 'remove' || prev === 'remove')) renderList(); else updateCard(key);
   try {
     const ref = db.doc('picks/' + key);
     if (val) await ref.set({ choice: val, at: new Date().toISOString() }); else await ref.delete();
@@ -176,9 +180,9 @@ renderChips(); renderList();
   db.collection('picks').onSnapshot(snap => {
     clearTimeout(timer);
     for (const k in picks) delete picks[k];
-    snap.docs.forEach(d => { const x = d.data(); if (x && (x.choice === 'use' || x.choice === 'maybe')) picks[d.id] = x.choice; });
+    snap.docs.forEach(d => { const x = d.data(); if (x && (x.choice === 'use' || x.choice === 'maybe' || x.choice === 'remove')) picks[d.id] = x.choice; });
     setStatus('Choices save automatically');
-    if (filter === 'My picks') renderList(); else CLIPS.forEach(c => updateCard(c.key));
+    renderList();
   }, () => { clearTimeout(timer); setStatus('Couldn’t load saved choices.'); });
 })();
 </script>

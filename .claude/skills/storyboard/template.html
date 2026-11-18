@@ -164,6 +164,11 @@ body.only .add-gap{display:none}body.only .grp.added .line{display:grid}
 .comp .chip{position:absolute;left:calc(14cqw/19.2);bottom:calc(14cqw/19.2);background:rgb(255 255 255/.9);color:#1c2430;border-radius:calc(8cqw/19.2);padding:calc(6cqw/19.2) calc(12cqw/19.2);font:600 calc(26cqw/19.2)/1.2 Poppins,sans-serif;text-shadow:none}
 .comp .chip span{display:block;font-weight:400;font-size:calc(20cqw/19.2)}
 .frame.under #pic{filter:blur(6px) brightness(.5)}
+.comp.endf{background:radial-gradient(90% 90% at 25% 35%,#0f6a70 0%,#08373d 60%,#052a30 100%)}
+.comp.endf::after{content:"";position:absolute;left:0;right:0;bottom:0;height:.55cqw;background:#1fb8b0}
+.comp .efill{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3em;border:.3cqw dashed rgb(255 255 255/.55);background:rgb(255 255 255/.08);color:#fff;text-align:center}.comp .efill b{letter-spacing:.06em}.comp .efill span{font-size:.62em;opacity:.8}
+.comp .eslot{position:absolute;overflow:hidden}.comp .eslot img{position:absolute;inset:0;width:100%;height:100%}
+.ovl .endt{position:absolute;color:#fff;text-align:center;font-weight:700;line-height:1.12;text-shadow:0 0 .6cqw rgb(0 0 0/.55);white-space:pre-line}
 .comp.field{background:radial-gradient(120% 90% at 50% 30%,#3c6b7966 0%,#0a1216 70%),#0a1216}
 .mini,.big{position:relative;aspect-ratio:16/9;overflow:hidden;container-type:inline-size;background:#0a1216}
 .mini{border-radius:3px}.big{width:min(94vw,calc(88vh * 16 / 9));border-radius:6px;cursor:zoom-out}
@@ -192,10 +197,10 @@ body.only .add-gap{display:none}body.only .grp.added .line{display:grid}
 .fld{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center}
 .fld label,.scr-row label{font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 input.txt,select.rights{font:inherit;font-size:.9rem;border:1px solid var(--border);border-radius:4px;padding:3px 6px;background:var(--bg);color:var(--text);width:100%;min-width:0}
-input.txt.edited,select.rights.edited{box-shadow:inset 3px 0 0 var(--changed)}
+/* an edited field is not marked with a coloured edge: the "Undo my changes" link under the photo says so */
 select.rights{font-weight:700;cursor:pointer}
 select.rights.ok{background:#e3f1e6;color:#1f5a2d;border-color:#9cc8a6}
-select.rights.ask{background:#fff1c7;color:#5c4500;border-color:#e3bd3c}
+select.rights.ask,select.rights.credit{background:#fff1c7;color:#5c4500;border-color:#e3bd3c}
 select.rights.no{background:#f7dede;color:#7a1f1f;border-color:#d99}
 .pmeta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.75rem;color:var(--muted)}
 .pmeta button{font:inherit;background:none;border:0;color:var(--changed);text-decoration:underline;cursor:pointer;padding:0}
@@ -262,7 +267,7 @@ dialog.pick::backdrop{background:rgb(0 0 0/.5)}
 .mode button[aria-pressed="true"]{background:var(--accent);color:#fff}
 .mode button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
 /* the side panel's top: Simple / Detailed at the right, then the help, then "Anything else about the video" */
-.sidehead{display:flex;justify-content:flex-end;padding:10px 0 6px}
+.sidehead{display:flex;justify-content:flex-end;padding:8px 12px;position:sticky;top:0;z-index:6;background:var(--surface);margin:0 -12px 6px;border-bottom:1px solid var(--border)}
 .genbox{border:1px solid var(--border);border-radius:6px;padding:10px;margin:0 0 10px}
 .glab{display:block;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
 body.simple .pblk,body.simple .blk:not(.notes),body.simple .gc,body.simple .qs,body.simple .add-gap,body.simple .grp.added,body.simple .filter .btn,body.simple #help,body.simple .nhead .addp{display:none}
@@ -318,8 +323,10 @@ dialog.pick.lay{width:min(980px,94vw)}.lay .x{position:absolute;top:8px;right:8p
 .grp .saved:not(.cardfoot .saved){display:none}body.simple .grp.good>.cardfoot{display:flex}
 details.help{margin:0 0 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root:not([data-theme="light"]) select.rights.ask{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root:not([data-theme="light"]) select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root:not([data-theme="light"]) .cap .beat{color:var(--text)}}
-:root[data-theme="dark"] select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root[data-theme="dark"] select.rights.ask{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root[data-theme="dark"] select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root[data-theme="dark"] .cap .beat{color:var(--text)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root:not([data-theme="light"]) select.rights.ask,:root:not([data-theme="light"]) select.rights.credit{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root:not([data-theme="light"]) select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root:not([data-theme="light"]) .cap .beat{color:var(--text)}}
+:root[data-theme="dark"] select.rights.ok{background:#1f3a26;color:#b9e3c3;border-color:#3e6b4a}:root[data-theme="dark"] select.rights.ask,:root[data-theme="dark"] select.rights.credit{background:#3d3210;color:#f6dc85;border-color:#8a7020}:root[data-theme="dark"] select.rights.no{background:#4a1d1d;color:#f3b3b3;border-color:#8a3a3a}:root[data-theme="dark"] .cap .beat{color:var(--text)}
+.libgrp{grid-column:1/-1;margin:6px 0 0;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#6b6478)}
+.pinfo{grid-column:1/-1;padding:10px 4px;max-width:60ch;line-height:1.5}.pinfo ol{margin:8px 0 10px 1.2em;padding:0}.pinfo li{margin:4px 0}
 </style>
 <header>
   <h1>{{TITLE}}: storyboard, draft {{DRAFT}}</h1>
@@ -368,7 +375,7 @@ const fit = (ta) => { ta.style.height = "auto"; ta.style.height = ta.scrollHeigh
 let db = null, cur = 0;
 const shots = DATA.shots;
 // ---- each shot's photos: the reviewer's order (order/<key>) and each photo's caption, credit, permission (pics/<id>)
-const RIGHTS = [["ok", "OK to use"], ["ask", "Ask first"], ["no", "Don't use"]];
+const RIGHTS = [["ok", "OK to use"], ["credit", "Add credit"], ["ask", "Ask first"], ["no", "Don't use"]];
 const PIC = {};   // picture id -> {caption, credit, rights, file, orig: {...}}, shared by every shot that uses it
 // cards of one moment share a group: the first one ("lead") holds the photo list, the later ones share its order
 shots.forEach((s, k) => { s.layout0 = s.layout; s.group = s.group || s.key; const lead = shots.slice(0, k).find((t) => t.group === s.group && t.pictures.length);
@@ -376,7 +383,8 @@ shots.forEach((s, k) => { s.layout0 = s.layout; s.group = s.group || s.key; cons
   s.pictures.forEach((p) => { if (!PIC[p.id]) PIC[p.id] = { ...p, orig: { caption: p.caption, credit: p.credit, rights: p.rights } }; }); });
 const picsOf = (s) => s.order.map((id) => PIC[id]).filter(Boolean);
 // the layouts a reviewer can choose: [id, name, what it does, fewest photos, most photos, has a moving preview]
-const LAYOUTS = [["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, true],
+const LAYOUTS = [["ending", "End screen", "Photo, QR code and logo on the closing screen.", 0, 9, false],
+  ["cover", "Fill the screen", "One photo, edge to edge. Its edges may be cropped.", 1, 1, true],
   ["blur", "Whole photo", "One photo with nothing cropped, over a soft blur of itself.", 1, 1, true],
   ["row", "Side by side", "The photos together, each one arriving on its own words.", 2, 3, true],
   ["slider", "One after another", "Cards drift across the screen under a title.", 2, 99, true],
@@ -399,7 +407,7 @@ const layFits = (id, n) => LAYOUTS.some((l) => l[0] === id && n >= l[3] && n <= 
 const effLayout = (s) => { const n = picsOf(s).length; return layFits(s.layout, n) ? s.layout : n <= 1 ? (s.layout === "blur" ? "blur" : "cover") : n <= 3 ? "row" : "slider"; };
 const layName = (id) => (LAYOUTS.find((l) => l[0] === id) || [0, id])[1];
 // what can be on the stage for a shot: its own picture (footage frame or sketch) unless photos replace it, then its photos in order
-const viewsOf = (s) => (s.sketch || !s.order.length ? [{ id: "frame" }] : [{ id: "screen", screen: true }]).concat(picsOf(s).map((p) => ({ id: p.id, p })));
+const viewsOf = (s) => (s.sketch || (!s.order.length && s.layout !== "ending") ? [{ id: "frame" }] : [{ id: "screen", screen: true }]).concat(picsOf(s).map((p) => ({ id: p.id, p })));
 let whole = false;
 // a photo's picture: an upload lives in the page's asset store, the rest are published next to the page
 const psrc = (p, small, wh) => p.asset ? "/_blob/" + p.asset : "pics/" + p.id + (wh && p.cropped ? ".whole" : "") + (small ? ".t" : "") + ".jpg";
@@ -528,6 +536,25 @@ function drawScreen(box = $("frame"), s = shots[cur], v = curView(), small = fal
   } else if (L === "corner" && ps[0]) {
     full(ps[0]);   // the first photo on the whole screen, the speaker in a small window
     const a = Math.min(1.5, Math.max(.8, boxOf())), ph = Math.min(500, 500 / a), pw = ph * a; speaker(1920 - 56 - pw, 1080 - 56 - ph, pw, ph, 26);
+  } else if (L === "ending") {
+    c.classList.add("endf");   // the closing screen: photo left, QR code right, logo low right; the words are drawn with the other on-screen words
+    const SL = { photo: [150, 167, 454, 588], qr: [1206, 191, 564, 564], logo: [1560, 905, 300, 130] };
+    const taken = {}, rest = [];
+    ps.forEach((p) => { const r = PIC[p.id].role || p.role; if (SL[r] && !taken[r]) taken[r] = p; else rest.push(p); });
+    for (const r of Object.keys(SL)) if (!taken[r] && rest.length) taken[r] = rest.shift();
+    for (const [r, p] of Object.entries(taken)) { const [x, y, w, h] = SL[r]; const d = document.createElement("div"); d.className = "eslot";
+      Object.assign(d.style, { left: X(x), top: X(y), width: X(w), height: X(h) });
+      if (r === "photo") Object.assign(d.style, { borderRadius: X(26), border: X(5) + " solid #1fb8b0" });
+      if (r === "qr") Object.assign(d.style, { borderRadius: X(30), background: "#fff" });
+      if (r === "logo") d.style.mixBlendMode = "screen";
+      const i = img(psrc(p, small), "", d); i.style.objectFit = r === "photo" ? "cover" : "contain";
+      if (r === "qr") Object.assign(i.style, { inset: X(24), width: "calc(100% - " + X(48) + ")", height: "calc(100% - " + X(48) + ")" });
+      c.appendChild(d); }
+    // a slot nothing has filled yet shows a filler saying what goes there; "+ Add a photo" fills the first empty slot
+    const FILL = { photo: ["YOUR PHOTO HERE", "Add it with + Add a photo"], qr: ["SAMPLE QR", "Add your QR code"], logo: ["YOUR LOGO", "transparent PNG, white"] };
+    for (const r of Object.keys(SL)) { if (taken[r]) continue; const [x, y, w, h] = SL[r]; const d = document.createElement("div"); d.className = "efill";
+      Object.assign(d.style, { left: X(x), top: X(y), width: X(w), height: X(h), borderRadius: X(r === "photo" ? 26 : 30), fontSize: X(r === "logo" ? 24 : 34) });
+      d.innerHTML = "<b></b><span></span>"; d.firstChild.textContent = FILL[r][0]; d.lastChild.textContent = FILL[r][1]; c.appendChild(d); }
   }
   box.appendChild(c);
 }
@@ -553,7 +580,7 @@ function show(i, scroll) {
   $("pic").src = viewSrc(s, v); $("pic").alt = v.p ? (PIC[v.p.id].caption || v.p.file) : s.section;
   boxesInto($("frame"), v.p ? { boxes: [] } : s); closePop(); drawSpots();
   $("frame").querySelectorAll(".badge").forEach((n) => n.remove());
-  const r = v.p && PIC[v.p.id].rights, badge = r === "ask" ? ["ask", "Permission: ask first"] : r === "no" ? ["no", "Marked: don't use"] : !v.p && s.sketch ? ["sk", "Sketch"] : null;
+  const r = v.p && PIC[v.p.id].rights, badge = r === "credit" ? ["ask", "Add a credit before using"] : r === "ask" ? ["ask", "Permission: ask first"] : r === "no" ? ["no", "Marked: don't use"] : !v.p && s.sketch ? ["sk", "Sketch"] : null;
   if (badge) { const b = document.createElement("span"); b.className = "badge " + badge[0]; b.textContent = badge[1]; $("frame").appendChild(b); }
   drawScreen(); drawOverlay(); paintLay();
   $("sec").textContent = s.section; $("beat").hidden = true; $("note").textContent = s.note || "";
@@ -570,7 +597,7 @@ function show(i, scroll) {
   groups.forEach((g, k) => g.classList.toggle("now", k === cur));
   // scroll only the card list and the strip: scrollIntoView would also scroll the page and push the header away
   const pane = $("pane-s");
-  if (scroll && groups[cur] && !pane.hidden) pane.scrollTo({ top: groups[cur].getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - $("pane-s").querySelector(".snav").offsetHeight - 8, behavior: smooth() });
+  if (scroll && groups[cur] && !pane.hidden) pane.scrollTo({ top: groups[cur].getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - $("pane-s").querySelector(".sidehead").offsetHeight - 8, behavior: smooth() });
   const th = $("thumbs").children[cur], tb = $("thumbs");
   if (th && (th.offsetLeft < tb.scrollLeft || th.offsetLeft + th.offsetWidth > tb.scrollLeft + tb.clientWidth)) tb.scrollLeft = th.offsetLeft - tb.clientWidth / 2 + th.offsetWidth / 2;
 }
@@ -590,7 +617,11 @@ function drawOverlay(box = $("frame"), s = shots[cur], v = curView()) {
     title.forEach((x, k) => { if (/top line/i.test(x.label)) el("t-eye sh", x.text, t); else if (/: title$/i.test(x.label)) { el("t-title sh", x.text, t); el("t-rule", null, t); } });
     const by = title.filter((x) => /names|date/i.test(x.label)).map((x) => x.text).join("  ·  "); if (by) el("t-by sh", by, t);
   }
-  const plate = items.filter((x) => x.g === "plate");
+  if (v.screen && effLayout(s) === "ending") {
+    const at = (x) => items.find((i) => i.label === x), put = (cls, text, l, tp, w, fs, col) => { if (!text) return; const d = el("endt " + cls, text.text || text); Object.assign(d.style, { left: X(l), top: X(tp), width: X(w), fontSize: X(fs), fontFamily: cls === "e-head" || cls === "e-name" ? "Georgia, 'Times New Roman', serif" : "inherit" }); if (col) d.style.color = col; };
+    put("e-head", at("Heading"), 640, 270, 530, 80); put("e-name", at("Line 1"), 40, 790, 670, 62); put("e-web", at("Line 2"), 1146, 790, 690, 56, "#33d1c8");
+  }
+  const plate = effLayout(s) === "ending" ? [] : items.filter((x) => x.g === "plate");
   if (plate.length) {
     const p = el("plate" + (plate.some((x) => x.at === "right") ? " right" : ""));
     for (const x of plate) {
@@ -813,16 +844,23 @@ function openPicker(s) {
     if (p.shared) { const c = document.createElement("span"); c.className = "pc"; c.textContent = p.credit || p.caption || ""; b.appendChild(c); }
     b.addEventListener("click", () => { s.addPhoto(p); pick.close(); }); lib.appendChild(b); };
   const mine = (DATA.library || []).filter((p) => !p.shared && !s.order.includes(p.id)), shared = (DATA.library || []).filter((p) => p.shared && !s.order.includes(p.id));
+
+  const noShared = !(DATA.library || []).some((p) => p.shared);
+  const sharedHelp = () => { const w = document.createElement("div"); w.className = "pinfo";
+    w.innerHTML = "<b>The shared photos aren't connected yet.</b><ol><li>Open the " + (DATA.libraryLink ? '<a href=\"' + DATA.libraryLink + '\" target=\"_blank\" rel=\"noopener\">shared folder</a>' : "shared folder") + " on Google Drive (SIL accounts; anyone else can ask for access).</li><li>Download it (right-click the folder, then Download), or open it with Google Drive for desktop.</li><li>Tell Claude where it is. Claude builds this page again and the photos appear here, each with its credit.</li></ol>";
+    if (DATA.libraryLink) { const a = document.createElement("a"); a.href = DATA.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Open the shared folder"; w.appendChild(a); }
+    return w; };
   const tabs = $("ptabs"), note = $("pnote"); tabs.innerHTML = "";
-  const fill = (w) => { lib.innerHTML = ""; (w === "shared" ? shared : mine).forEach(tile);
-    [...tabs.children].forEach((b) => b.setAttribute("aria-selected", String(b.dataset.w === w))); note.hidden = w !== "shared";
+  const fill = (w) => { lib.innerHTML = ""; if (w === "shared" && noShared) lib.appendChild(sharedHelp()); else if (w === "shared") shared.forEach(tile);
+    else { let last = null; mine.forEach((q) => { const g = q.inScript === undefined ? null : (q.inScript ? "In the script" : "Other photos"); if (g && g !== last) { last = g; const h = document.createElement("h4"); h.className = "libgrp"; h.textContent = g; lib.appendChild(h); } tile(q); }); }
+    [...tabs.children].forEach((b) => b.setAttribute("aria-selected", String(b.dataset.w === w))); note.hidden = w !== "shared" || noShared;
     if (!lib.children.length) lib.textContent = "Every photo is already here."; };
   const tab = (w, label) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.w = w; b.textContent = label; b.addEventListener("click", () => fill(w)); tabs.appendChild(b); };
-  tabs.hidden = !shared.length;
-  if (shared.length) { tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", "Shared photos (" + shared.length + ")"); }
+  tabs.hidden = false;
+  tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", noShared ? "Shared photos" : "Shared photos (" + shared.length + ")");
   note.textContent = "Cleared for SIL and Wycliffe videos. Keep the credit on screen. ";
   if (DATA.libraryLink) { const a = document.createElement("a"); a.href = DATA.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL accounts; anyone else can ask for access)"; note.appendChild(a); }
-  fill(mine.length || !shared.length ? "mine" : "shared");
+  fill(mine.length || noShared ? "mine" : "shared");
   $("pupst").textContent = ""; $("pup").hidden = true; assetsP.then((a) => { $("pup").hidden = !a; });
   pick.showModal();
 }
@@ -852,13 +890,13 @@ function savePic(pid) {
 }
 // ---- choosing a layout: layout/<group> {layout, original, photos}
 const layBtns = [];
-function paintLay() { for (const { b, s } of layBtns) { const n = picsOf(s).length; b.hidden = !n || !!s.sketch; b.parentNode.hidden = b.hidden; b.lastChild.textContent = "Layout: " + layName(effLayout(s)); } }
+function paintLay() { for (const { b, s } of layBtns) { const n = picsOf(s).length; b.hidden = !n || !!s.sketch || s.layout === "ending"; b.parentNode.hidden = b.hidden; b.lastChild.textContent = "Layout: " + layName(effLayout(s)); } }
 function openLay(s, i) {
   const n = picsOf(s).length, cur0 = effLayout(s), box = $("layopts"), still = matchMedia("(prefers-reduced-motion: reduce)").matches; box.innerHTML = "";
   $("laynote").textContent = (n === 1 ? "This scene has one photo." : "This scene has " + n + " photos. Add or remove photos to see other layouts.") + (!still && matchMedia("(hover: hover)").matches ? " Point at a layout to see it move." : "");
   let lastGrp = null;
   for (const [grp, [id, name, what, lo, hi, moves]] of LAY_SORTED) {
-    if (n < lo || n > hi) continue;
+    if (id === "ending" || n < lo || n > hi) continue;
     if (grp !== lastGrp) { lastGrp = grp; const h = document.createElement("h3"); h.className = "laygrp"; h.textContent = grp; box.appendChild(h); }
     const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.setAttribute("aria-pressed", String(id === cur0));
     const m = document.createElement(moves && !still ? "video" : "img");
@@ -990,6 +1028,8 @@ function picBlock(s, i) {
     s.removed = (Array.isArray(y.removed) ? y.removed : []).filter((id) => rowsBy[id]); [...list.children].forEach((r) => r.remove());
     (Array.isArray(y.pics) ? y.pics : orig).forEach((id) => { if (rowsBy[id] && !s.removed.includes(id)) list.appendChild(rowsBy[id]); });
     orig.forEach((id) => { if (!rowsBy[id].parentNode && !s.removed.includes(id)) list.appendChild(rowsBy[id]); });   // a photo new in this draft
+    // the end screen starts over after a reload: what was added or taken out is kept, but \"Put back\" and \"Undo photo changes\" are only for the first time
+    if (s.layout === "ending") { s.removed = []; orig.splice(0, orig.length, ...[...list.children].map((r) => r.dataset.pid)); }
     sync(); };
   sync();
   return blk;
@@ -1116,6 +1156,9 @@ shots.forEach((s, i) => {
     nx.innerHTML = '<button type="button" class="btn">Next scene ›</button>'; g.querySelector(".cardfoot").appendChild(nx); nx.firstChild.addEventListener("click", () => { for (let j = i + 1; j < shots.length; j++) if (visible(j)) return show(j, true); }); }   // the scene after this card, not after the highlighted one
   groups.push(g); $("list").appendChild(g);
 });
+// working in a card (typing, a button, a click anywhere in it) shows that scene in the main area, without scrolling the list
+{ const follow = (e) => { const g = e.target.closest && e.target.closest(".grp"), k = g ? groups.indexOf(g) : -1; if (k >= 0 && k !== cur) show(k, false); };
+  $("list").addEventListener("focusin", follow); $("list").addEventListener("pointerdown", follow); }
 // ---- questions from Claude (answers/<id> {title, answer: "ok" | "change", note}), all at the top; one with "at" (a shot key) links to that card
 const QS = {};
 for (const q of DATA.questions || []) {

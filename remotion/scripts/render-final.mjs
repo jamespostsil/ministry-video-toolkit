@@ -16,6 +16,7 @@
  * Usage: npm run render -- <project> [output.mp4] [--skip-frames] [--audio-only]
  *   --skip-frames  reuse the frames from the last run (iterate on audio/encode)
  *   --audio-only   build the mix and stop
+ *   --stems        also write <id>-voice.wav and <id>-music.wav (the voices alone, the music alone)
  *   --frames=A-B   render only frames A..B into the existing sequence, then
  *                  re-encode (for patching a short section after a small change)
  *   --clean        delete the frames once the video is encoded (they take
@@ -103,6 +104,7 @@ console.log(`speech: ${Number.isFinite(measured) ? measured.toFixed(1) + " LUFS"
 const speechChain = `[0:a]volume=${gainDb.toFixed(2)}dB,alimiter=limit=0.89:level=false,adelay=${delayMs}|${delayMs},apad[speech]`;
 let graph = speechChain;
 let mixOut = "[speech]";
+let musicChain = null;
 if (music) {
   const envPath = join(proj.dir, "musicEnvelope.json");
   const envelope = existsSync(envPath) ? JSON.parse(readFileSync(envPath, "utf8")) : {};
@@ -110,7 +112,7 @@ if (music) {
   inputs.push("-stream_loop", "-1", "-i", music);
   graph =
     `${speechChain};` +
-    `[1:a]volume='${envelopeExpr(points)}':eval=frame[music];` +
+    `${(musicChain = `[1:a]volume='${envelopeExpr(points)}':eval=frame[music]`)};` +
     `[speech][music]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[mixed]`;
   mixOut = "[mixed]";
 }
@@ -124,6 +126,16 @@ run("ffmpeg", [
   "-ac", "2", "-ar", "48000",
   audioFile,
 ]);
+// --stems: also write the voices alone and the music alone (same levels as in the mix), for a review page that lets the
+// reviewer listen to "Voice only" or "Music only" by switching the two on and off.
+if (flags.includes("--stems")) {
+  const voiceFile = join(ROOT, `out/${json.id}-voice.wav`);
+  const musicFile = join(ROOT, `out/${json.id}-music.wav`);
+  const stem = (g, label, file) => run("ffmpeg", [...FFMPEG_QUIET, "-y", ...inputs, "-filter_complex", g, "-map", label, "-t", durationSeconds.toFixed(3), "-ac", "2", "-ar", "48000", file]);
+  stem(speechChain.replace("[speech]", "[voice]"), "[voice]", voiceFile);
+  console.log(`✓ ${voiceFile}`);
+  if (music) { stem(musicChain, "[music]", musicFile); console.log(`✓ ${musicFile}`); }
+}
 if (audioOnly) {
   console.log(`\n✓ ${audioFile}`);
   process.exit(0);
