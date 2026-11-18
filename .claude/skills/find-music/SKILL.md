@@ -58,8 +58,15 @@ python -I .claude/skills/find-music/find_music.py picker <work folder> m003 m024
 - **`--voice`** adds **Play under my voice**: the track plays quietly under the first 45 seconds of the person's own
   speech, the way it will sound in the video. Use the voice track from `npm run render -- <project> <out> --stems`
   (`<id>-voice.wav`), or the review page's voice mp3. Leave it out if there is no recording yet.
-- Each preview is the track's first 45 seconds, faded out. The page shows each track's source, licence and whether
-  it needs a credit, with a link to its page.
+- Each preview is the track's first 45 seconds, faded out, with a waveform to click and jump around in. Each row
+  shows the track's source, licence and whether it needs a credit, with a link to its page.
+- **Filters:** mood (Calm, Hopeful, Uplifting, Reflective, Playful, Energetic), style (Piano, Orchestral, Ambient,
+  Acoustic, Pop, Electronic), length, credit and the person's own choices. Ticking several in one group shows any of
+  them; ticking in different groups narrows. The moods and styles come from each track's genre, instruments, title
+  and your note; add what they miss with `--tags m003="calm,piano"`.
+- **Search** narrows the list as they type, and offers **Ask Claude to find more**. Those requests are the db
+  collection `requests` (`{text, done}`): when the person says so, run those searches, rebuild the page with the
+  new tracks added, republish it to the same link, and set `done: true` on each request you ran.
 - Publish `picker/picker.html` with `capabilities: {db: {}}` and every file in `picker/a/` as a published file.
   The person's choices and notes are the db collection `picks`: `{choice: "use" | "maybe" | "remove", note}` per key.
 

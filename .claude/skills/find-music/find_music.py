@@ -16,9 +16,11 @@ search   Searches each source and keeps only tracks whose licence lets a non-pro
          Left out everywhere: ND licences (Creative Commons counts music under a video as an adaptation, which ND
          forbids), SA licences (the whole video would have to take the same licence), and tracks under a minute.
          Adds them to <work folder>/candidates.json, each with a key such as m007, with its licence and credit line.
-picker   Cuts a 45-second preview of each chosen track (from its first minute, faded out) and writes picker/picker.html:
-         play each one, optionally under the video's own voice (--voice), mark Use / Maybe / Remove and leave a note.
-         Publish it with the capability {db: {}} and the files in a/; choices are the db collection "picks".
+picker   Cuts a 45-second preview of each chosen track (from its start, faded out) and writes picker/picker.html: a
+         list to play (alone, or quietly under the video's own voice with --voice), search, filter by mood, style,
+         length and credit, mark Use / Maybe / Remove and leave a note. Publish it with the capability {db: {}} and
+         the files in a/. The db collection "picks" holds the choices and notes; "requests" holds anything the person
+         asked Claude to search for (run those searches, then rebuild and republish the page).
 fetch    Downloads the full tracks as <key>.mp3 into --to and appends each one's source, licence and credit line to
          music-licenses.csv there. Keep that file: it is the record that you may use them, and the credit lines go
          in the video's description (description skill).
@@ -123,6 +125,7 @@ def incompetech(kw):
         out.append(dict(src="Incompetech", id=p.get("isrc") or title, title=title, artist="Kevin MacLeod",
                         page="https://incompetech.com/music/royalty-free/index.html?isrc=" + (p.get("isrc") or ""),
                         audio=audio, duration=secs(p.get("length")), genre=p.get("feel", ""),
+                        instruments=p.get("instruments", ""),
                         licence="CC BY 4.0", licence_url="https://creativecommons.org/licenses/by/4.0/",
                         credit=f"{title} Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\n"
                                "https://creativecommons.org/licenses/by/4.0/", needs_credit=True))
@@ -207,6 +210,50 @@ def fmt(s):
     return f"{s // 60}:{s % 60:02d}"
 
 
+# ---------- the listening page's filters: a small, fixed vocabulary, so filters mean the same on every page ----------
+
+MOODS = {   # mood -> words in a track's genre, feel, title, search word or Claude's note that suggest it
+    "Calm": ("calm", "relax", "serene", "peace", "meditat", "gentle", "soft", "quiet", "lullaby", "rest", "zen", "chill"),
+    "Hopeful": ("hope", "inspir", "dream", "possible", "believe", "new life", "promise", "morning", "sunrise"),
+    "Uplifting": ("uplift", "bright", "joy", "happy", "positive", "triumph", "celebrat", "sun"),
+    "Reflective": ("somber", "sad", "melanchol", "tender", "emotional", "heavy", "reflect", "farewell", "miss you"),
+    "Playful": ("bouncy", "humorous", "fun", "child", "playful", "quirky"),
+    "Energetic": ("driving", "action", "epic", "intense", "edm", "rock", "dance", "energ", "upbeat"),
+}
+STYLES = {
+    "Piano": ("piano",),
+    "Orchestral": ("film score", "orchestra", "classical", "strings", "cinematic", "waltz"),
+    "Ambient": ("ambient", "new age", "minimal", "meditat", "drone", "atmospher"),
+    "Acoustic": ("folk", "acoustic", "guitar", "ukulele", "uke", "kalimba", "flute"),
+    "Pop": ("pop", "indie", "corporate", "r&b"),
+    "Electronic": ("edm", "electronic", "trap", "hip hop", "synth", "electro"),
+}
+
+
+def facets(c, note, extra):
+    hay = " ".join(str(x or "") for x in (c.get("genre"), c.get("title"), c.get("keyword"), c.get("instruments"), note)).lower()
+    pick_ = lambda vocab: [k for k, words in vocab.items() if any(w in hay for w in words)]
+    moods, styles = pick_(MOODS), pick_(STYLES)
+    for t in extra:   # Claude's own --tags win: add any word from either list
+        t = t.strip().capitalize()
+        if t in MOODS and t not in moods: moods.append(t)
+        if t in STYLES and t not in styles: styles.append(t)
+    return moods, styles
+
+
+def peaks(mp3, n=96):
+    """The preview's loudness in n bars (0-100), for the waveform you click to jump around in."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", mp3, "-ac", "1", "-ar", "4000", "-f", "s16le", "-"],
+                         capture_output=True, check=True).stdout
+    import array
+    a = array.array("h"); a.frombytes(raw[: len(raw) // 2 * 2])
+    if not a: return [0] * n
+    step = max(1, len(a) // n)
+    vals = [max((abs(x) for x in a[i * step:(i + 1) * step]), default=0) for i in range(n)]
+    top = max(vals) or 1
+    return [round(100 * (v / top) ** 0.7) for v in vals]   # a gentle curve, so quiet passages still show
+
+
 # ---------- commands ----------
 
 def cmd_search(a):
@@ -244,6 +291,7 @@ def cmd_picker(a):
     cands = load(a.work)
     chosen = pick(cands, a.keys)
     notes = dict(x.split("=", 1) for x in a.note)
+    tags = {k: v.split(",") for k, v in (x.split("=", 1) for x in a.tags)}
     out = os.path.join(a.work, "picker")
     os.makedirs(os.path.join(out, "a"), exist_ok=True)
     tracks = []
@@ -256,9 +304,11 @@ def cmd_picker(a):
         # 45 seconds from the start (where a music bed starts), faded out, small enough to publish
         ff("-i", raw, "-t", "45", "-af", "afade=t=out:st=42:d=3", "-ac", "2", "-b:a", "112k",
            os.path.join(out, "a", c["key"] + ".mp3"))
+        prev = os.path.join(out, "a", c["key"] + ".mp3")
+        moods, styles = facets(c, notes.get(c["key"], ""), tags.get(c["key"], []))
         tracks.append({k: c.get(k, "") for k in ("key", "src", "title", "artist", "page", "duration", "licence",
-                                                  "licence_url", "credit", "needs_credit", "genre", "via")}
-                      | {"note": notes.get(c["key"], ""), "group": c.get("keyword", "")})
+                                                  "licence_url", "credit", "needs_credit", "genre", "via", "instruments")}
+                      | {"note": notes.get(c["key"], ""), "moods": moods, "styles": styles, "peaks": peaks(prev)})
     voice = None
     if a.voice:
         ff("-i", a.voice, "-t", "45", "-ac", "1", "-b:a", "64k", os.path.join(out, "a", "voice.mp3"))
@@ -304,6 +354,9 @@ def main():
     k.add_argument("--title", default="Music to choose from")
     k.add_argument("--voice", help="the video's voice track (render --stems), to hear each track under it")
     k.add_argument("--note", action="append", default=[], help='KEY="why it might fit"')
+    k.add_argument("--tags", action="append", default=[],
+                   help='KEY="calm,piano": moods (Calm, Hopeful, Uplifting, Reflective, Playful, Energetic) and styles '
+                        '(Piano, Orchestral, Ambient, Acoustic, Pop, Electronic) for the filters, added to the ones found')
     k.set_defaults(fn=cmd_picker)
     f = sub.add_parser("fetch")
     f.add_argument("work")
