@@ -47,6 +47,12 @@ Licences change, so **read the current terms on the site** before you rely on an
 - Don't use clips with recognisable logos or brands, and don't use any clip in a misleading way.
 - For Claude to search it, make a free API key at [pixabay.com/api/docs](https://pixabay.com/api/docs/) and put it
   in `remotion/.env` as `PIXABAY_API_KEY=...`.
+- Pixabay's API rules: at most 100 searches a minute (Claude makes one per search word), each answer kept for 24
+  hours rather than asked again (the search saves them in the work folder's `cache/`), real searches only (no mass
+  downloading), and wherever search results are shown, say they come from Pixabay (the picker labels each clip
+  and links to its Pixabay page). Claude downloads only the clips you choose, at 1080p.
+- Pixabay has many computer-made clips (3D globes, glowing Bibles). Claude leaves out green-screen clips and ones
+  tagged as AI-made, and looks at every other clip before suggesting it.
 
 ---
 

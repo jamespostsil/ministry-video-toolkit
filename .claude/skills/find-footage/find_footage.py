@@ -116,19 +116,36 @@ def pexels(kw):
     return out
 
 
+CACHE = None   # <work folder>/cache, set by search: Pixabay asks that answers be kept for 24 hours, not asked again
+
+
 def pixabay(kw):
+    """Pixabay's rules (pixabay.com/api/docs): at most 100 requests a minute, answers cached for 24 hours, real
+    searches only (no mass downloads), and say where the clips are from wherever results are shown (the picker
+    labels each clip and links to its Pixabay page). One request per keyword here."""
     key = os.environ.get("PIXABAY_API_KEY")
     if not key:
         raise Blocked("no PIXABAY_API_KEY")
-    d = json.loads(text(f"https://pixabay.com/api/videos/?key={key}&q={urllib.parse.quote(kw)}&per_page=40&safesearch=true"))
+    kw = kw[:100]   # the API takes at most 100 characters
+    cached = os.path.join(CACHE, "pixabay-" + re.sub(r"[^a-z0-9]+", "-", kw.lower()).strip("-") + ".json") if CACHE else None
+    if cached and os.path.exists(cached) and time.time() - os.path.getmtime(cached) < 24 * 3600:
+        d = json.load(open(cached, encoding="utf-8"))
+    else:
+        d = json.loads(text(f"https://pixabay.com/api/videos/?key={key}&q={urllib.parse.quote(kw)}&per_page=40&safesearch=true"))
+        if cached:
+            os.makedirs(CACHE, exist_ok=True)
+            json.dump(d, open(cached, "w", encoding="utf-8"))
     out = []
     for v in d.get("hits", []):
         vs = v.get("videos", {})
-        full = (vs.get("large") or {}).get("url") or (vs.get("medium") or {}).get("url")
+        full = (vs.get("medium") or {}).get("url") or (vs.get("large") or {}).get("url")   # 1080p first; 4K is far bigger
         prev = (vs.get("small") or {}).get("url") or full
         thumb = next((s.get("thumbnail") for s in (vs.get("small"), vs.get("medium"), vs.get("tiny")) if s and s.get("thumbnail")), "")
         if not full:
             continue
+        tags = (v.get("tags") or "").lower()
+        if any(t in tags for t in ("green screen", "greenscreen", "chroma", "ai generated", "ai-generated")):
+            continue   # green-screen clips are for compositing, not B-roll; AI-made clips are left out as on Coverr
         out.append(dict(src="Pixabay", id=str(v["id"]), title=(v.get("tags") or f"Pixabay {v['id']}").capitalize(),
                         page=v.get("pageURL", ""), thumb=thumb, preview=prev, full=full, duration=v.get("duration")))
     return out
@@ -196,6 +213,8 @@ def pick(cands, keys):
 # ---------- commands ----------
 
 def cmd_search(a):
+    global CACHE
+    CACHE = os.path.join(a.work, "cache")
     os.makedirs(os.path.join(a.work, "sheets"), exist_ok=True)
     cands = load(a.work)
     seen = {(c["src"], c["id"]) for c in cands}

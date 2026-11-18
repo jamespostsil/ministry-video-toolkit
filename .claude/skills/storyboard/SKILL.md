@@ -189,8 +189,11 @@ after another**, **Speaker on screen**. A new layout goes into one of these list
   clip after the layout has fully arrived and end it before the beat ends, so the loop never shows the scene before
   or after. Keep each example simple: one calm photo, nothing that distracts from the layout itself. "Whole photo",
   "Fill the screen" and the eight newer layouts are not in the example video; they were rendered from temporary
-  beats in the example project. Start the two speaker layouts after the panel has moved aside (0.75s in), and a
-  layout that builds from nothing (Grid, Stack) as its first photo lands, so no example opens on an empty screen.
+  beats in the example project. Start the two speaker layouts on the full speaker shot just before
+  they move aside, so the example shows the move (and end it before they move back). Start a layout that builds
+  from nothing (Grid, Stack, Map) as its first photo lands, so no example opens on an empty screen, and the
+  one-photo-at-a-time layouts (Before and after, One at a time, Stack, Scattered cards) about halfway through the
+  first photo's time, so the first change comes within a second or two.
 
 ## Shared photos in "+ Add a photo"
 
