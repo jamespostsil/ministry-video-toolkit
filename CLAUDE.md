@@ -34,8 +34,8 @@ Offer only what applies. If they say no to something, don't keep asking at every
 once more as a light suggestion where it fits better (music when they watch the finished video, say). Useful ones:
 
 - **Music:** "Would you like music under the video?" With their own ElevenLabs key, Claude can make music timed to
-  the video's big moments (`music`); without one, [docs/finding-music.md](docs/finding-music.md) lists free music
-  they're allowed to use.
+  the video's big moments (`music`); without one, Claude can find free music they're allowed to use and give them a
+  page to listen and choose on (`find-music`, [docs/finding-music.md](docs/finding-music.md)).
 - **Photos:** if the script has few photos, offer the shared "people with Bibles" photos (README, "Shared photos")
   for SIL and Wycliffe staff: "Would you like me to suggest photos from the shared library for the scenes that have
   none?" Claude looks through them and puts its suggestions on the storyboard for the person to keep or remove

@@ -1,0 +1,242 @@
+<title>Music Picker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* A listening list: one row per track, play it (alone or under the video's voice), mark it, leave a note */
+:root{
+  --bg:#f5f4f1; --surface:#fffefc; --ink:#24262b; --muted:#666a73; --line:#e1dfda; --track:#e9e6e0;
+  --accent:#3c6b79; --use:#2f6d5e; --use-bg:#dcefe8; --maybe:#8a6514; --maybe-bg:#f6ead0; --rm:#9a3b3b; --rm-bg:#f6e0df;
+  --display:"Fraunces",Georgia,serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1a1c20; --surface:#24272c; --ink:#eceef1; --muted:#a3a8b1; --line:#353941; --track:#353941;
+  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; --rm:#e9a5a5; --rm-bg:#3d2224; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1c20; --surface:#24272c; --ink:#eceef1; --muted:#a3a8b1; --line:#353941; --track:#353941;
+  --accent:#8fc0cd; --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; --rm:#e9a5a5; --rm-bg:#3d2224; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:900px;margin:0 auto}
+header{max-width:760px;padding-top:36px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,4vw,36px);line-height:1.15;margin:0 0 10px;text-wrap:balance}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:12px 0;margin-top:20px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.under{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;cursor:pointer}
+.under input{width:18px;height:18px;accent-color:var(--accent)}
+.tally{margin-left:auto;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tally strong{color:var(--ink)}
+.status{font-size:13px;color:var(--muted)}
+section{margin-top:28px}
+h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
+.list{display:flex;flex-direction:column;gap:12px}
+.row{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;
+  grid-template-columns:48px minmax(0,1fr);gap:4px 14px;align-items:start}
+.row.use{border-color:var(--use);box-shadow:0 0 0 2px var(--use)}
+.row.maybe{border-color:var(--maybe)}
+.row.remove{border-color:var(--rm)}.row.remove .meta{opacity:.5}
+.play{grid-row:span 2;width:48px;height:48px;border-radius:50%;border:none;background:var(--accent);color:var(--surface);cursor:pointer;
+  display:grid;place-items:center}
+.play svg{width:20px;height:20px;fill:currentColor}
+.meta{min-width:0;overflow-wrap:anywhere}
+.ttl{font-weight:600;line-height:1.3}
+.by{font-size:14px;color:var(--muted)}
+.why{font-size:14px;margin-top:2px}
+.lic{font-size:13px;color:var(--muted);margin-top:4px}
+.lic a{color:var(--accent)}
+.badge{display:inline-block;font:600 11px var(--body);letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;
+  background:var(--track);color:var(--ink);margin-right:6px}
+.prog{height:6px;background:var(--track);border-radius:3px;margin-top:10px;cursor:pointer;position:relative}
+.prog i{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);border-radius:3px}
+.tm{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:3px}
+.side{grid-column:2;display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.acts{display:flex;gap:8px}
+.acts button{flex:1;font:600 14px var(--body);padding:8px 0;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.acts button:focus-visible,.chip:focus-visible,.play:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.acts button[data-v="use"][aria-pressed="true"]{background:var(--use-bg);border-color:var(--use);color:var(--use)}
+.acts button[data-v="maybe"][aria-pressed="true"]{background:var(--maybe-bg);border-color:var(--maybe);color:var(--maybe)}
+.acts button[data-v="remove"][aria-pressed="true"]{background:var(--rm-bg);border-color:var(--rm);color:var(--rm)}
+.acts button:disabled{opacity:.5;cursor:default}
+textarea{width:100%;min-height:40px;resize:vertical;font:14px/1.4 var(--body);color:var(--ink);background:transparent;
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+@media (min-width:700px){.side{grid-column:2}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1 id="title"></h1>
+  <p id="intro"></p>
+</header>
+<div class="bar" role="toolbar" aria-label="Filter tracks">
+  <div class="chips" id="chips"></div>
+  <label class="under" id="underWrap" hidden><input type="checkbox" id="under"> Play under my voice</label>
+  <div class="tally" id="tally"></div>
+  <div class="status" id="status">Connecting…</div>
+</div>
+<main id="list"></main>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const TRACKS = DATA.tracks;
+const GROUPS = [...new Set(TRACKS.map(t => t.group || 'Music'))];
+const picks = {}, notes = {};
+let db = null, filter = 'All', playing = null;
+const music = new Audio(), voice = DATA.voice ? new Audio(DATA.voice) : null;
+music.preload = 'none';
+document.getElementById('title').textContent = DATA.title;
+document.getElementById('intro').textContent = 'Each track here is allowed in a ministry video posted online. Press play to hear the first 45 seconds'
+  + (voice ? ', or tick “Play under my voice” to hear it quietly under your own words, the way it will sound in the video' : '')
+  + '. Mark Use, Maybe or Remove, and leave a note if you like. Claude can read your choices and notes.';
+if (voice) document.getElementById('underWrap').hidden = false;
+const fmt = s => { s = Math.round(s || 0); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const setStatus = t => { document.getElementById('status').textContent = t; };
+const ICON = { play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>',
+               pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>' };
+
+function renderChips() {
+  const el = document.getElementById('chips'); el.textContent = '';
+  const names = GROUPS.length > 1 ? ['All', ...GROUPS, 'My picks', 'Removed'] : ['All', 'My picks', 'Removed'];
+  for (const t of names) {
+    const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = t;
+    b.setAttribute('aria-pressed', String(t === filter));
+    b.onclick = () => { filter = t; renderChips(); renderList(); };
+    el.appendChild(b);
+  }
+}
+
+// ---- playback: one track at a time; "under my voice" plays the voice too, with the music quiet beneath it
+function stop() {
+  music.pause(); if (voice) voice.pause();
+  if (playing) { const b = document.querySelector(`#${playing} .play`); if (b) { b.innerHTML = ICON.play; b.setAttribute('aria-label', 'Play'); } }
+  playing = null;
+}
+function play(key) {
+  if (playing === key) { stop(); return; }
+  stop();
+  const under = voice && document.getElementById('under').checked;
+  music.src = `a/${key}.mp3`; music.currentTime = 0; music.volume = under ? 0.22 : 1;
+  music.play().catch(() => setStatus('Couldn’t play that track.'));
+  if (under) { voice.currentTime = 0; voice.play().catch(() => {}); }
+  playing = key;
+  const b = document.querySelector(`#${key} .play`); b.innerHTML = ICON.pause; b.setAttribute('aria-label', 'Pause');
+}
+music.addEventListener('timeupdate', () => {
+  if (!playing) return;
+  const r = document.getElementById(playing); if (!r) return;
+  const d = music.duration || 45;
+  r.querySelector('.prog i').style.width = (100 * music.currentTime / d) + '%';
+  r.querySelector('.tm').textContent = fmt(music.currentTime) + ' / ' + fmt(d) + ' preview · whole track ' + fmt(TRACKS.find(t => t.key === playing).duration);
+});
+music.addEventListener('ended', stop);
+document.getElementById('under').addEventListener('change', () => { if (playing) { const k = playing; stop(); play(k); } });
+
+function row(t) {
+  const r = document.createElement('article'); r.className = 'row'; r.id = t.key;
+  r.innerHTML = `<button class="play" type="button" aria-label="Play">${ICON.play}</button>
+    <div class="meta"><div class="ttl"></div><div class="by"></div><div class="why"></div><div class="lic"></div>
+      <div class="prog" role="presentation"><i></i></div><div class="tm"></div></div>
+    <div class="side"><div class="acts"></div><textarea rows="1" placeholder="Note (optional)" aria-label="Note"></textarea></div>`;
+  r.querySelector('.play').onclick = () => play(t.key);
+  r.querySelector('.ttl').textContent = t.title;
+  r.querySelector('.by').textContent = [t.artist, t.genre].filter(Boolean).join(' · ');
+  const why = r.querySelector('.why'); if (t.note) why.textContent = t.note; else why.remove();
+  const lic = r.querySelector('.lic');
+  const b1 = document.createElement('span'); b1.className = 'badge'; b1.textContent = t.src + (t.via ? ' / ' + t.via : ''); lic.append(b1);
+  const b2 = document.createElement('span'); b2.className = 'badge'; b2.textContent = t.needs_credit ? 'Credit needed' : 'No credit needed'; lic.append(b2);
+  const a1 = document.createElement('a'); a1.href = t.licence_url; a1.target = '_blank'; a1.rel = 'noopener'; a1.textContent = t.licence;
+  const a2 = document.createElement('a'); a2.href = t.page; a2.target = '_blank'; a2.rel = 'noopener'; a2.textContent = 'Open on ' + t.src;
+  lic.append(a1, ' · ', a2);
+  r.querySelector('.tm').textContent = 'Whole track ' + fmt(t.duration);
+  r.querySelector('.prog').onclick = (e) => {
+    if (playing !== t.key) play(t.key);
+    const box = e.currentTarget.getBoundingClientRect();
+    const go = () => { music.currentTime = (e.clientX - box.left) / box.width * (music.duration || 45); if (voice && document.getElementById('under').checked) voice.currentTime = music.currentTime; };
+    music.readyState >= 1 ? go() : music.addEventListener('loadedmetadata', go, { once: true });
+  };
+  for (const [val, label] of [['use', 'Use'], ['maybe', 'Maybe'], ['remove', 'Remove']]) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.v = val; b.textContent = label; b.disabled = !db;
+    b.onclick = () => choose(t.key, picks[t.key] === val ? null : val);
+    r.querySelector('.acts').appendChild(b);
+  }
+  const ta = r.querySelector('textarea'); ta.value = notes[t.key] || ''; ta.disabled = !db;
+  ta.addEventListener('change', () => saveNote(t.key, ta.value.trim()));
+  return r;
+}
+
+function renderList() {
+  const main = document.getElementById('list'); main.textContent = '';
+  let shown = 0;
+  for (const g of GROUPS) {
+    if (!['All', 'My picks', 'Removed'].includes(filter) && filter !== g) continue;
+    let items = TRACKS.filter(t => (t.group || 'Music') === g);
+    if (filter === 'My picks') items = items.filter(t => picks[t.key] === 'use' || picks[t.key] === 'maybe');
+    else if (filter === 'Removed') items = items.filter(t => picks[t.key] === 'remove');
+    else items = items.filter(t => picks[t.key] !== 'remove');
+    if (!items.length) continue;
+    const s = document.createElement('section');
+    if (GROUPS.length > 1) { const h = document.createElement('h2'); h.textContent = g; s.appendChild(h); }
+    const list = document.createElement('div'); list.className = 'list';
+    for (const t of items) { list.appendChild(row(t)); shown++; }
+    s.appendChild(list); main.appendChild(s);
+  }
+  if (!shown) { const p = document.createElement('p'); p.textContent = filter === 'Removed' ? 'Nothing removed. Press Remove on a track that doesn’t fit and it moves here, where you can put it back.' : 'No picks yet. Tap Use or Maybe on a track and it shows up here.'; main.appendChild(p); }
+  if (playing && !document.getElementById(playing)) stop();
+  else if (playing) { const b = document.querySelector(`#${playing} .play`); b.innerHTML = ICON.pause; }
+  TRACKS.forEach(t => updateRow(t.key));
+}
+
+function updateRow(key) {
+  const el = document.getElementById(key);
+  if (el) {
+    const v = picks[key]; el.classList.remove('use', 'maybe', 'remove'); if (v) el.classList.add(v);
+    el.querySelectorAll('.acts button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.v === v)); b.disabled = !db; });
+    const ta = el.querySelector('textarea'); ta.disabled = !db; if (document.activeElement !== ta) ta.value = notes[key] || '';
+  }
+  const vals = Object.values(picks);
+  document.getElementById('tally').innerHTML =
+    `<strong>${vals.filter(v => v === 'use').length}</strong> to use · <strong>${vals.filter(v => v === 'maybe').length}</strong> maybe · <strong>${vals.filter(v => v === 'remove').length}</strong> removed`;
+}
+
+async function write(key) {
+  const ref = db.doc('picks/' + key);
+  if (picks[key] || notes[key]) await ref.set({ choice: picks[key] || null, note: notes[key] || '', at: new Date().toISOString() });
+  else await ref.delete();
+}
+async function choose(key, val) {
+  const prev = picks[key];
+  if (val) picks[key] = val; else delete picks[key];
+  if (filter !== 'My picks' && (val === 'remove' || prev === 'remove')) renderList(); else updateRow(key);
+  try { await write(key); setStatus('Saved'); }
+  catch (e) { if (prev) picks[key] = prev; else delete picks[key]; updateRow(key); setStatus('Couldn’t save that choice. Try again.'); }
+}
+async function saveNote(key, text) {
+  const prev = notes[key];
+  if (text) notes[key] = text; else delete notes[key];
+  try { await write(key); setStatus('Saved'); }
+  catch (e) { if (prev) notes[key] = prev; else delete notes[key]; setStatus('Couldn’t save that note. Try again.'); }
+}
+
+renderChips(); renderList();
+(async () => {
+  const timer = setTimeout(() => setStatus('Choices can’t be saved in this view.'), 10000);
+  try { db = window.claude ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { clearTimeout(timer); setStatus('Choices can’t be saved in this view.'); return; }
+  db.collection('picks').onSnapshot(snap => {
+    clearTimeout(timer);
+    for (const k in picks) delete picks[k];
+    for (const k in notes) delete notes[k];
+    snap.docs.forEach(d => { const x = d.data() || {};
+      if (['use', 'maybe', 'remove'].includes(x.choice)) picks[d.id] = x.choice;
+      if (typeof x.note === 'string' && x.note) notes[d.id] = x.note; });
+    setStatus('Choices save automatically');
+    renderList();
+  }, () => { clearTimeout(timer); setStatus('Couldn’t load saved choices.'); });
+})();
+</script>

@@ -5,11 +5,19 @@ the right to use. Here are free ways to get some, and what each one's licence
 lets you do. Licences change, so **read the current terms on the site** before
 you rely on any of this.
 
-**A rule of thumb for ministry videos:** if your video asks people to give, for
-example "would you consider becoming a monthly partner?", treat it as
-fundraising rather than "non-commercial". Many free licences that say
-"non-commercial only" may not cover it. Licences with no commercial restriction
-avoid the question.
+**Non-commercial is fine for ministry videos.** A non-profit ministry's update
+video, including one that invites people to partner, can use music licensed
+"non-commercial only" (CC BY-NC, for example). If your organisation has its own
+rule about this, follow it.
+
+**A credit line is fine too.** Many free licences ask you to credit the artist.
+The `description` skill puts the music credit at the end of the video's
+description, with the photo credits.
+
+**Claude can search for you.** Ask "Can you find some music for this video?" and
+Claude searches the sources it can reach (`find-music` skill), keeps only tracks
+whose licence works for a ministry video, and gives you a page to listen, rate
+and leave notes on.
 
 ---
 
@@ -66,10 +74,36 @@ Commons licence:
 
 - **CC0**: use freely, no credit needed.
 - **CC BY**: use freely, **credit the artist**.
-- **NC** in the licence (e.g. CC BY-NC): **non-commercial only**. See the rule
-  of thumb above.
-- **ND** (no derivatives): you can't change the track. Trimming and looping it
-  for a music bed can count as changing it, so avoid ND tracks.
+- **NC** in the licence (e.g. CC BY-NC): **non-commercial only**, which is fine
+  for a ministry video (see above). Credit the artist.
+- **ND** (no derivatives): avoid. Creative Commons counts putting music under
+  a video as changing it, so an ND track can't be used as a music bed.
+- **SA** (share alike): avoid. Your whole video would have to be shared under
+  the same licence.
+
+---
+
+## Incompetech (Kevin MacLeod)
+
+**[incompetech.com](https://incompetech.com/music/royalty-free/music.html)**:
+about 1,400 tracks under **CC BY 4.0**: free, including YouTube videos that earn
+money, as long as you **credit the music in the description**. Its suggested
+credit:
+
+```
+<Track title> Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/
+```
+
+Its tracks are registered with YouTube, so a Content ID notice can appear; the
+credit in the description is what clears it.
+
+## Openverse
+
+**[openverse.org](https://openverse.org/audio)** searches Creative Commons
+music from Jamendo, Freesound and Wikimedia in one place. Each track keeps its
+own licence, so check it (see above).
 
 ---
 

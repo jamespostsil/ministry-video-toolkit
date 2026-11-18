@@ -226,6 +226,7 @@ this folder; they are also plain Markdown, worth reading yourself.
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |
+| `find-music` | Free music you're allowed to use (Mixkit, Incompetech, ccMixter): a page to listen to each track, alone or under your own voice, and choose, then the files with a licence record and credit lines |
 | `render` | Rendering and the audio mix |
 | `review` | Checking a render: flashes at cuts, audio clicks, sync, legibility, QR scanning |
 | `review-page` | The page a reviewer watches a version on: notes per sentence, notes pinned to a spot on the picture, what changed, Looks good |
