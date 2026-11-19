@@ -28,3 +28,5 @@ backups/
 !.claude/skills/storyboard/layouts/*.mp4
 remotion/public/clips/
 __pycache__/
+# set after the welcome page has opened once (npm run welcome reopens it)
+remotion/.welcome-shown

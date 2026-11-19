@@ -1,6 +1,6 @@
-"""Find open-licence stock video clips (B-roll), look at them, and fetch the chosen ones.
+"""Find open-licence stock video clips (B-roll) and photos, look at them, and fetch the chosen ones.
 
-    python -I find_footage.py search  <work folder> <keyword> [<keyword> ...] [--sources coverr,mixkit,pexels,pixabay]
+    python -I find_footage.py search  <work folder> <keyword> [<keyword> ...] [--sources coverr,mixkit,pexels,pixabay] [--photos]
     python -I find_footage.py picker  <work folder> <key> [<key> ...] [--title "..."] [--note KEY="why it fits" ...]
     python -I find_footage.py fetch   <work folder> <key> [<key> ...] --to <remotion/public/clips>
 
@@ -11,12 +11,15 @@ search   Searches each source for each keyword and keeps only clips whose licenc
            Pexels   needs PEXELS_API_KEY (free at pexels.com/api); every clip is under the Pexels License
            Pixabay  needs PIXABAY_API_KEY (free at pixabay.com/api/docs); every clip is under the Pixabay Content License
          (The two keys can be environment variables or lines in remotion/.env.)
+         --photos searches for photos instead (Pixabay, with the same key; photos only, no illustrations).
          Adds them to <work folder>/candidates.json (each with a short key such as k007) and writes numbered contact
          sheets, sheets/<keyword>-<n>.jpg, for Claude to look at. Sources that block searching are reported, not retried.
 picker   Makes a short looping preview of each chosen clip and picker/picker.html, a page where the person marks the
          clips they want (publish it with the capability {db: {}}; their choices are the db collection "picks").
 fetch    Downloads the full-size files as <key>.mp4 into --to, with a poster frame <key>.jpg, and appends each clip's
          source, page and licence to clip-licenses.csv there. Keep that file: it is the record that you may use them.
+         A photo is saved as <key>.jpg (Pixabay's largest free size, 1280 px wide) and listed in photo-licenses.csv,
+         with an on-screen credit line ("Photo: <photographer>, Pixabay").
 
 Needs ffmpeg and ffprobe on the PATH, and Pillow (pip install pillow).
 """
@@ -116,6 +119,12 @@ def pexels(kw):
     return out
 
 
+def tag_title(tags, fallback):
+    """Pixabay's tags repeat ("bible, bible, bible"): the first four different ones make a readable title."""
+    seen = list(dict.fromkeys(t.strip() for t in (tags or "").split(",") if t.strip()))
+    return ", ".join(seen[:4]).capitalize() or fallback
+
+
 CACHE = None   # <work folder>/cache, set by search: Pixabay asks that answers be kept for 24 hours, not asked again
 
 
@@ -146,8 +155,35 @@ def pixabay(kw):
         tags = (v.get("tags") or "").lower()
         if any(t in tags for t in ("green screen", "greenscreen", "chroma", "ai generated", "ai-generated")):
             continue   # green-screen clips are for compositing, not B-roll; AI-made clips are left out as on Coverr
-        out.append(dict(src="Pixabay", id=str(v["id"]), title=(v.get("tags") or f"Pixabay {v['id']}").capitalize(),
+        out.append(dict(src="Pixabay", id=str(v["id"]), title=tag_title(v.get("tags"), f"Pixabay {v['id']}"),
                         page=v.get("pageURL", ""), thumb=thumb, preview=prev, full=full, duration=v.get("duration")))
+    return out
+
+
+def pixabay_photos(kw):
+    """Photos from Pixabay, under the same rules as its videos. Photos only (no illustrations or vectors); 1280 px
+    is the largest size Pixabay's API gives without approval, which is fine in a layout but soft full screen."""
+    key = os.environ.get("PIXABAY_API_KEY")
+    if not key:
+        raise Blocked("no PIXABAY_API_KEY (photos come from Pixabay)")
+    kw = kw[:100]
+    cached = os.path.join(CACHE, "pixabay-photos-" + re.sub(r"[^a-z0-9]+", "-", kw.lower()).strip("-") + ".json") if CACHE else None
+    if cached and os.path.exists(cached) and time.time() - os.path.getmtime(cached) < 24 * 3600:
+        d = json.load(open(cached, encoding="utf-8"))
+    else:
+        d = json.loads(text(f"https://pixabay.com/api/?key={key}&q={urllib.parse.quote(kw)}&image_type=photo&per_page=40&safesearch=true"))
+        if cached:
+            os.makedirs(CACHE, exist_ok=True)
+            json.dump(d, open(cached, "w", encoding="utf-8"))
+    out = []
+    for v in d.get("hits", []):
+        tags = (v.get("tags") or "").lower()
+        if not v.get("largeImageURL") or any(t in tags for t in ("ai generated", "ai-generated")):
+            continue
+        out.append(dict(src="Pixabay", type="photo", id="p" + str(v["id"]), title=tag_title(v.get("tags"), "Pixabay photo"),
+                        page=v.get("pageURL", ""), thumb=v.get("webformatURL") or v.get("previewURL", ""),
+                        preview=v.get("webformatURL", ""), full=v["largeImageURL"], user=v.get("user", ""),
+                        width=v.get("imageWidth"), height=v.get("imageHeight"), duration=None))
     return out
 
 
@@ -182,7 +218,10 @@ def sheet(cands, path):
             im = Image.open(io.BytesIO(get(c["thumb"]))).convert("RGB") if c["thumb"] else None
         except Exception:
             im = None
-        if im:
+        if im and c.get("type") == "photo":   # photos keep their shape on the sheet
+            im.thumbnail((W, H))
+            img.paste(im, (x + (W - im.width) // 2, y + (H - im.height) // 2))
+        elif im:
             img.paste(im.resize((W, H)), (x, y))
         d.rectangle([x, y, x + 62, y + 28], fill="black")
         d.text((x + 4, y + 2), c["key"], fill="yellow", font=font)
@@ -220,13 +259,14 @@ def cmd_search(a):
     seen = {(c["src"], c["id"]) for c in cands}
     n = max((int(c["key"][1:]) for c in cands), default=0)
     blocked = set()
+    sources = {"pixabay": pixabay_photos} if a.photos else {k: SOURCES[k] for k in a.sources.split(",")}
     for kw in a.keywords:
         found = []
-        for name in a.sources.split(","):
+        for name, fn in sources.items():
             if name in blocked:
                 continue
             try:
-                for c in SOURCES[name](kw):
+                for c in fn(kw):
                     if (c["src"], c["id"]) not in seen:
                         seen.add((c["src"], c["id"]))
                         n += 1
@@ -243,7 +283,7 @@ def cmd_search(a):
             p = os.path.join(a.work, "sheets", f"{safe}-{i // 36 + 1}.jpg")
             sheet(found[i:i + 36], p)
             print(p)
-        print(f"{kw}: {len(found)} new clips")
+        print(f"{kw}: {len(found)} new " + ("photos" if a.photos else "clips"))
 
 
 def cmd_picker(a):
@@ -254,13 +294,19 @@ def cmd_picker(a):
     os.makedirs(os.path.join(out, "v"), exist_ok=True)
     clips = []
     for c in chosen:
+        v = os.path.join(out, "v", c["key"])
+        if c.get("type") == "photo":   # the 640 px preview, enough to judge it; the full file comes with fetch
+            if not os.path.exists(v + ".jpg"):
+                open(v + ".jpg", "wb").write(get(c["preview"], timeout=120))
+            clips.append({"key": c["key"], "src": c["src"], "title": c["title"], "page": c["page"], "type": "photo",
+                          "note": notes.get(c["key"], ""), "group": c.get("keyword", ""), "user": c.get("user", "")})
+            continue
         raw = os.path.join(a.work, "raw", c["key"] + ".mp4")
         os.makedirs(os.path.dirname(raw), exist_ok=True)
         if not os.path.exists(raw):
             open(raw, "wb").write(get(c["preview"], timeout=120))
         dur = duration(raw)
         ss = max(0.0, dur / 2 - 3)
-        v = os.path.join(out, "v", c["key"])
         ff("-ss", f"{ss:.2f}", "-i", raw, "-t", "6", "-an", "-vf", "scale=480:-2,fps=24", "-c:v", "libx264", "-crf", "30",
            "-preset", "slow", "-movflags", "+faststart", "-pix_fmt", "yuv420p", v + ".mp4")
         ff("-ss", f"{ss + 1:.2f}", "-i", raw, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "5", v + ".jpg")
@@ -275,16 +321,41 @@ def cmd_picker(a):
     print("Publish it with capabilities {db: {}} and every file in v/ as a published file.")
 
 
+def fetch_photos(a, photos):
+    """Photos go wherever --to says (the script's photo folder, so they show under + Add a photo), each listed in
+    photo-licenses.csv with the credit to show on screen."""
+    log = os.path.join(a.to, "photo-licenses.csv")
+    new = not os.path.exists(log)
+    with open(log, "a", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        if new:
+            w.writerow(["file", "source", "photographer", "on-screen credit", "page", "licence", "licence link", "downloaded"])
+        for c in photos:
+            dst = os.path.join(a.to, c["key"] + ".jpg")
+            open(dst, "wb").write(get(c["full"], timeout=300))
+            lic, url = LICENCES[c["src"]]
+            credit = ("Photo: " + c["user"] + ", Pixabay") if c.get("user") else "Photo: Pixabay"
+            w.writerow([c["key"] + ".jpg", c["src"], c.get("user", ""), credit, c["page"], lic, url, time.strftime("%Y-%m-%d")])
+            print(f"{dst}  ({credit})")
+
+
 def cmd_fetch(a):
     cands = load(a.work)
     os.makedirs(a.to, exist_ok=True)
+    chosen = pick(cands, a.keys)
+    photos = [c for c in chosen if c.get("type") == "photo"]
+    if photos:
+        fetch_photos(a, photos)
+    clips = [c for c in chosen if c.get("type") != "photo"]
+    if not clips:
+        return
     log = os.path.join(a.to, "clip-licenses.csv")
     new = not os.path.exists(log)
     with open(log, "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         if new:
             w.writerow(["file", "source", "title", "page", "licence", "licence link", "downloaded"])
-        for c in pick(cands, a.keys):
+        for c in clips:
             dst = os.path.join(a.to, c["key"] + ".mp4")
             open(dst, "wb").write(get(c["full"], timeout=600))
             ff("-ss", f"{min(1.0, duration(dst) / 2):.2f}", "-i", dst, "-frames:v", "1", "-q:v", "3",
@@ -303,11 +374,12 @@ def main():
     s.add_argument("work")
     s.add_argument("keywords", nargs="+")
     s.add_argument("--sources", default="coverr,mixkit,pexels,pixabay")
+    s.add_argument("--photos", action="store_true", help="search for photos (Pixabay) instead of video clips")
     s.set_defaults(fn=cmd_search)
     k = sub.add_parser("picker")
     k.add_argument("work")
     k.add_argument("keys", nargs="+")
-    k.add_argument("--title", default="Video clips to choose from")
+    k.add_argument("--title", default="Clips and photos to choose from")
     k.add_argument("--note", action="append", default=[], help='KEY="why it fits this moment"')
     k.set_defaults(fn=cmd_picker)
     f = sub.add_parser("fetch")

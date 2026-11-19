@@ -99,4 +99,5 @@ for (const { folder } of listProjects()) {
 }
 
 console.log(problems ? `\n✗ ${problems} problem(s) above.\n` : "\n✓ Everything is ready.\n");
+if (!problems) console.log("Next steps: npm run welcome\n");
 process.exit(problems ? 1 : 0);

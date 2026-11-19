@@ -317,7 +317,9 @@ const Row: React.FC<{ beat: Extract<Beat, { kind: "row" }>; durFrames: number }>
   const MAX_W = 1860;
 
   const hasCaption = photos.some((p) => p.caption);
-  const captionSpace = hasCaption ? 62 : 0;
+  const hasCredit = photos.some((p) => p.credit);
+  // the caption under each photo, and its credit under that (every photo shows its own credit)
+  const captionSpace = (hasCaption ? 62 : 0) + (hasCredit ? (hasCaption ? 34 : 50) : 0);
   // A title sits just above the photos, and the two are centred together: wide photos that the frame's width
   // keeps short would otherwise leave a big gap under a title at the top of the frame.
   const TITLE_H = 93; // 80px type at 1.16
@@ -412,6 +414,21 @@ const Row: React.FC<{ beat: Extract<Beat, { kind: "row" }>; durFrames: number }>
                   }}
                 >
                   {p.caption}
+                </div>
+              ) : null}
+              {p.credit ? (
+                <div
+                  style={{
+                    marginTop: p.caption ? 4 : 18,
+                    textAlign: "center",
+                    fontFamily: FONTS.secondary,
+                    fontWeight: 500,
+                    fontSize: 22,
+                    color: "rgba(255,255,255,0.78)",
+                    textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+                  }}
+                >
+                  {p.credit}
                 </div>
               ) : null}
             </div>

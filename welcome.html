@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ministry Video Toolkit: welcome</title>
+<style>
+:root{--bg:#f6f4ef;--panel:#fff;--fg:#1f2326;--muted:#5b6266;--line:#ddd8cf;--accent:#00676c;--on-accent:#fff;--soft:#e3f1f1;--quote:#f1eee8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#141819;--panel:#1d2224;--fg:#e8ecec;--muted:#a3adb0;--line:#30383a;--accent:#5cc9c4;--on-accent:#10292a;--soft:#1d3536;--quote:#262d2f;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:40px 20px 60px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 8px}
+.lede{color:var(--muted);margin:0 0 22px;font-size:1.08rem}
+.ask{background:var(--soft);border-left:5px solid var(--accent);border-radius:8px;padding:14px 18px;margin:0 0 30px;font-size:1.05rem}
+.ask b{color:var(--accent)}
+h2{font-size:1.2rem;margin:34px 0 12px}
+ol.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px 16px 64px;margin:0 0 12px}
+ol.steps>li::before{content:counter(s);position:absolute;left:18px;top:15px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-weight:700;display:grid;place-items:center}
+ol.steps b.t{display:inline;font-size:1.08rem}
+ol.steps p{margin:6px 0}
+ul.sub{margin:6px 0;padding-left:20px}ul.sub li{margin:6px 0}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:20px;padding:2px 9px;margin-left:6px;vertical-align:2px;background:var(--soft);color:var(--accent)}
+.say{display:flex;align-items:flex-start;gap:10px;background:var(--quote);border-radius:8px;padding:10px 12px;margin:8px 0 2px;font-style:italic}
+.say span{flex:1;min-width:0}
+button.copy{font:inherit;font-style:normal;font-size:.82rem;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:3px 10px;cursor:pointer;flex:none}
+button.copy:hover{border-color:var(--accent)}
+.muted{color:var(--muted)}
+a{color:var(--accent);font-weight:600}
+.btn{display:inline-block;padding:9px 15px;border-radius:8px;background:var(--accent);color:var(--on-accent);text-decoration:none;margin:4px 6px 2px 0}
+.btn.alt{background:var(--panel);color:var(--fg);border:1px solid var(--line)}
+footer{margin-top:36px;font-size:.92rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Welcome to the Ministry Video Toolkit</h1>
+  <p class="lede">You record yourself and write a script. Claude turns them into a finished ministry update video, with your photos, titles, music and an end screen. You don't need to know anything about video editing.</p>
+
+  <p class="ask"><b>Not sure what to do next? Just ask Claude.</b> Open Claude Code in the toolkit folder and say what you'd like, in your own words. Claude does the technical parts for you.</p>
+
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li><b class="t">See what you can make</b>
+      <p>Watch an example made with this toolkit (3 minutes).</p>
+      <a class="btn" href="https://vimeo.com/1247402795/8ba2696695">Watch the example video</a></li>
+
+    <li><b class="t">Write your script</b>
+      <p>Write what you'll say, with each picture placed just before the words it goes with. The example script gives you ideas for how to tell Claude to edit your video:</p>
+      <a class="btn" href="https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/copy">Copy the Google Doc</a>
+      <a class="btn alt" href="https://ltuse.notion.site/Example-ministry-update-script-41a598a5fd4081b5b0e3d442c76bef91">Notion version</a></li>
+
+    <li><b class="t">Record yourself</b>
+      <p>Read your script to the camera. Don't worry about pauses or false starts: Claude trims them.</p></li>
+
+    <li><b class="t">Let Claude hear your words</b><span class="tag">Highly recommended</span>
+      <p>With a free transcription key, Claude knows exactly when you say each word, so every photo and title appears right on time. It takes just a few moments. Ask Claude: <i>“Help me set up transcription.”</i></p></li>
+
+    <li><b class="t">Give Claude your recording and script</b>
+      <p>Say something like this:</p>
+      <div class="say"><span>I've recorded a ministry update. The video is at C:\Videos\update.mp4 and the script is at [link to your Google Doc or Notion page]. Make the video.</span><button class="copy" type="button">Copy</button></div></li>
+
+    <li><b class="t">Approve the storyboard</b>
+      <p>Claude makes a page showing every scene with its words and pictures. Change anything you like and leave notes. Then tell Claude you're done, and Claude makes your changes.</p></li>
+
+    <li><b class="t">Add photos, music and video clips</b><span class="tag">Optional</span>
+      <ul class="sub">
+        <li><b>Photos:</b> use your own ministry photos, photos from related work like a Bible dedication (with the owner's OK), or free photos Claude finds online. Each photo's credit shows on screen.</li>
+        <li><b>Music:</b> free music Claude finds for you to choose, or, with an ElevenLabs account, music made for your video.</li>
+        <li><b>Video clips:</b> free clips for moments with no photos, like "the whole world." A free Pixabay account gives many more.</li>
+      </ul>
+      <p class="muted">Just ask: <i>“Can you add music?”</i>, <i>“Add this photo of mine here.”</i> or <i>“Can you find a video clip for this part?”</i></p></li>
+
+    <li><b class="t">Review the video</b>
+      <p>Claude makes the video and a review page. Watch it and leave notes on anything you'd like changed, then tell Claude you're done. Claude makes a new version until it looks right.</p></li>
+
+    <li><b class="t">Finish and share</b>
+      <p>Claude makes the final video, a thumbnail for YouTube, a suggested description, and captions. Just ask for any of them.</p></li>
+  </ol>
+
+  <footer>Want to see this page again? Ask Claude to open the welcome page. The full guide is <a href="https://github.com/jamespostsil/ministry-video-toolkit#readme">on GitHub</a>.</footer>
+</main>
+<script>
+document.querySelectorAll("button.copy").forEach((b) => b.addEventListener("click", async () => {
+  const el = b.previousElementSibling;
+  try { await navigator.clipboard.writeText(el.textContent); b.textContent = "Copied"; }
+  catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "Selected"; }
+  setTimeout(() => (b.textContent = "Copy"), 1500);
+}));
+</script>
+</body>
+</html>

@@ -1,13 +1,15 @@
 ---
 name: storyboard
-description: Make the storyboard page a reviewer approves before anything is filmed, voiced or rendered: each shot's real picture (with highlight boxes if wanted) beside the lines said over it, the wording editable in place, Script and On-screen notes per line, notes pinned or arrows drawn on the picture, what changed since the last draft marked word by word, and an Approve button. Published as a claude.ai artifact whose edits and approval Claude can read back. Use when a script is ready for review, when asked for a storyboard, or before the first recording or render of a new video.
+description: Make the storyboard page a reviewer approves before anything is filmed, voiced or rendered: each shot's real picture (with highlight boxes if wanted) beside the lines said over it, the wording editable in place, Script and On-screen notes per line, notes pinned or arrows drawn on the picture, what changed since the last draft marked word by word. Published as a claude.ai artifact whose edits and approval Claude can read back. Use when a script is ready for review, when asked for a storyboard, or before the first recording or render of a new video.
 ---
 
 # Storyboard
 
 The script is approved on a storyboard, not as plain text: a reviewer can only judge a line next to a picture
 of what the viewer will see while hearing it. Nothing is recorded, voiced (with a paid voice) or rendered from
-a script until its storyboard is approved; "go ahead and record" is not script approval.
+a script until its storyboard is approved; "go ahead and record" is not script approval. The page has no Approve
+button: the reviewer leaves notes and changes, then tells Claude they're done. Apply them, and ask "Is this draft
+approved, or would you like another look?" when a new draft has changes they haven't seen.
 
 `build.py` and `template.html` belong to this toolkit; it depends on no other repository.
 
@@ -106,8 +108,7 @@ Then build the beats from the cards: one card is one screen.
 ## Read it back
 
 ArtifactData: `lines/<shot key>.<line number>` (`{text, original, note, shot}`; pages before 2026-10-27 also had `screen`: `text` is the
-reviewer's own wording when they edited it, otherwise empty), `notes/general` (`{text}`) and
-`notes/approval-draft-<N>` (`{approved, at}`), and `spots/<id>` (`{shot, x, y, text}`, plus `kind: "arrow", x2, y2`
+reviewer's own wording when they edited it, otherwise empty), `notes/general` (`{text}`), and `spots/<id>` (`{shot, x, y, text}`, plus `kind: "arrow", x2, y2`
 for an arrow: a note the reviewer pinned or an arrow drawn on that shot's picture; look at the picture there),
 `order/<group>` (`{pics, removed, added}`: the reviewer's order of that shot's photos, the ones taken out, and
 the ones added, `{id, file, w, h, asset?}`; an `asset` is an upload: fetch it with the Artifact tool's read,
@@ -117,7 +118,7 @@ answer: "ok" | "change", note}`), `pics/<picture id>`
 used; a photo marked `no` comes out, one marked `ask` needs an answer before the render), `screen/<shot key>.<n>`
 (`{label, text, original}`: their wording of a piece of on-screen text), and `scenes/<id>` (`{after, say, screen, createdAt}`: a new scene the reviewer added after shot `after`, with
 what is said and what is shown; make its picture and put it in the next draft). Apply every edit and note, then build the next draft. Record or
-render only once the newest draft is approved.
+render only once the person has said the newest draft is approved.
 
 ## Design rules for this page (2026-11 tidy-up)
 
@@ -198,16 +199,17 @@ after another**, **Speaker on screen**. A new layout goes into one of these list
 ## Shared photos in "+ Add a photo"
 
 "+ Add a photo" always has two tabs: **This video's photos** and **Shared photos**. With shared photos the Shared tab
-says they are cleared for SIL and Wycliffe videos and links to the whole folder. Without them (not on this computer, or
+says they are cleared for SIL/Wycliffe partnership videos only and links to the whole folder. Without them (not on this computer, or
 `--no-library`) the tab still shows, with three short steps for getting them and the folder link, so the person always
 knows where to find them.
 
 - **On by default.** `build.py` (and the review page's, and `export_photos.py`) look for the people-with-Bibles
   folder on this computer (`shared_photos.py`: Google Drive for desktop's My Drive or Shared drives, Downloads,
   Documents, or `SHARED_PHOTOS` in `remotion/.env`) and add it, with its link. `--no-library` leaves it out.
-- **Not on this computer:** the build prints a NOTE. Then ask the person, once, before showing the page: "Would you
-  like the shared People with Bibles photos in + Add a photo? You'd download the folder (or add a Drive shortcut)
-  from <link>." People outside SIL and Wycliffe can't open it, so for them leave it out without asking.
+- **Not on this computer:** the build prints a NOTE. That is the usual case: the folder is for SIL/Wycliffe staff and others
+  given access, and its photos are cleared for SIL/Wycliffe partnership videos only. Mention it only to someone you know is
+  SIL/Wycliffe staff ("SIL/Wycliffe staff can use the People with Bibles photos; would you like them in + Add a photo?"). Never offer
+  it to anyone else. For everyone, stock photos come from `find-footage --photos`.
 - `--library <folder>` (repeatable) adds a shared photo folder by hand. If it has a `photo-credits.csv` (columns `file`,
   `caption`, `on-screen credit`), only the photos it lists are offered, each with its caption and credit, and adding
   one saves both at once. Otherwise every photo in the folder is offered.
@@ -223,8 +225,9 @@ After approval, pass the same folder to `export_photos.py --library <folder>` so
 
 ## Suggesting shared photos
 
-When the person says yes to suggestions (CLAUDE.md, "Offer the next step"), fill scenes that have no photos, or a
-long stretch of the speaker alone, from the shared library:
+When the person says yes to suggestions (CLAUDE.md, "Offer the next step") and the shared folder is on their
+computer, fill scenes that have no photos, or a long stretch of the speaker alone, from the shared library. Without
+it, use stock photos instead (`find-footage --photos`):
 
 - **Look at every photo** in the library folder, with its caption from `photo-credits.csv`; never pick by file
   name. Without the folder on this computer, the Google Drive connector can list the shared folder and fetch

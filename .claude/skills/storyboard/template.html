@@ -13,8 +13,6 @@ body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--font);d
 header{background:var(--hero-bg);color:var(--hero-text);padding:10px 16px;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline}
 header h1{margin:0;font-size:1.2rem}
 header p{margin:0;color:var(--hero-dim);font-size:.9rem}
-.appr{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:.9rem;color:var(--hero-dim)}
-.appr .btn{background:#fff;color:#1c2430;border-color:#fff}.appr.ok #appr-state{color:#fff;font-weight:700}
 .app{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 500px}
 /* narrow screens: one page that scrolls as a whole (the fixed-height app layout collapsed to nothing here) */
 @media (max-width:1000px){html,body{overflow:auto;height:auto}body{display:block}.app{display:block}.stage{overflow:visible}.side{border-left:0;border-top:1px solid var(--border)}.pane{overflow:visible}}
@@ -258,7 +256,7 @@ dialog.pick::backdrop{background:rgb(0 0 0/.5)}
 .pick .lib .pc{line-height:1.25;font-size:.72rem;color:var(--muted);padding:3px 2px 1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
 .pick h2{font-size:1.05rem;margin:0 0 8px}.pick .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:52vh;overflow:auto;padding:2px}
-.pick .lib button{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}.pick .lib button:hover,.pick .lib button:focus-visible{border-color:var(--accent)}
+.pick .lib button{padding:0;border:2px solid transparent;border-radius:5px;background:none;cursor:pointer;line-height:0}.pick .lib button:hover,.pick .lib button:focus-visible{border-color:var(--accent)}.pick .lib button.here{cursor:default;border-color:transparent}.pick .lib button.here img{opacity:.4}
 .pick .lib img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:3px}
 .pick .pfoot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}.pick .up{font-size:.85rem;color:var(--muted)}.pick label.btn{display:inline-block;font:700 .9rem var(--font);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer}
 /* Simple / Detailed: Simple is each scene's picture, what is said, and a Note (on the card or pinned on the picture) */
@@ -310,7 +308,7 @@ select.rights{width:auto;font-size:.75rem;padding:1px 4px;border-radius:999px}
 .laybtn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:.82rem;font-weight:600;line-height:1.2;color:var(--lay);background:var(--lay-bg);border:1px solid var(--lay-line);border-radius:999px;padding:4px 11px 4px 8px;cursor:pointer}.laybtn:hover,.laybtn:focus-visible{border-color:var(--lay)}.laybtn svg{flex:none}
 .layrow{margin:6px 0 2px}
 .grp.good>.layrow{display:none}
-dialog.pick.lay{width:min(980px,94vw)}.lay .x{position:absolute;top:8px;right:8px;width:38px;height:38px;padding:0;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:1.7rem;line-height:1;cursor:pointer}.lay .x:hover,.lay .x:focus-visible{background:rgba(127,127,127,.2)}.lay h2{padding-right:44px}.lay .laygrp{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:20px 0 0;font-size:1.05rem;font-weight:700;color:var(--accent)}.lay .laygrp::before{content:"";width:5px;align-self:stretch;min-height:1.3em;border-radius:3px;background:var(--accent)}.lay .laygrp::after{content:"";flex:1;height:2px;border-radius:1px;background:var(--accent);opacity:.3}.lay .laygrp:first-child{margin-top:0}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
+dialog.pick.lay{width:min(980px,94vw)}.pick .x{position:absolute;top:8px;right:8px;width:38px;height:38px;padding:0;border:0;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:1.7rem;line-height:1;cursor:pointer}.pick .x:hover,.pick .x:focus-visible{background:rgba(127,127,127,.2)}.pick h2{padding-right:44px}.lay .laygrp{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:20px 0 0;font-size:1.05rem;font-weight:700;color:var(--accent)}.lay .laygrp::before{content:"";width:5px;align-self:stretch;min-height:1.3em;border-radius:3px;background:var(--accent)}.lay .laygrp::after{content:"";flex:1;height:2px;border-radius:1px;background:var(--accent);opacity:.3}.lay .laygrp:first-child{margin-top:0}.lay .opts{display:grid;align-items:start;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;max-height:68vh;overflow:auto;padding:2px}
 .lay .opt{font:inherit;color:var(--text);text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:6px 6px 8px;cursor:pointer;line-height:1.3}
 .lay .opt:hover,.lay .opt:focus-visible{border-color:var(--accent)}.lay .opt[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .lay .opt video,.lay .opt img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;display:block;background:#000}
@@ -331,7 +329,6 @@ details.help{margin:0 0 10px}
 <header>
   <h1>{{TITLE}}: storyboard, draft {{DRAFT}}</h1>
   <p>{{SUBTITLE}}</p>
-  <span class="appr"><span id="appr-state"></span><button type="button" class="btn" id="approve">Approve draft {{DRAFT}}</button></span>
 </header>
 <div class="app">
   <main class="stage">
@@ -364,8 +361,8 @@ details.help{margin:0 0 10px}
 </div>
 <div class="lb" id="lb" hidden><div class="wrap" id="lbwrap"></div></div>
 <dialog class="pick lay" id="lay"><button type="button" class="x" id="layclose" aria-label="Close">&times;</button><h2>Choose a layout</h2><p class="lnote" id="laynote"></p><div class="opts" id="layopts"></div></dialog>
-<dialog class="pick" id="pick"><h2>Add a photo</h2><div class="ptabs" id="ptabs" role="tablist" hidden></div><p class="pnote" id="pnote" hidden></p><div class="lib" id="plib"></div>
-  <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span><button type="button" class="btn" id="pclose">Close</button></div></dialog>
+<dialog class="pick" id="pick"><button type="button" class="x" id="pclose" aria-label="Close">&times;</button><h2>Add a photo</h2><div class="ptabs" id="ptabs" role="tablist" hidden></div><p class="pnote" id="pnote" hidden></p><div class="lib" id="plib"></div>
+  <div class="pfoot"><span class="up" id="pup"><label class="btn">Upload from your computer<input type="file" id="pfile" accept="image/*" hidden></label> <span id="pupst"></span></span></div></dialog>
 <script>
 const DATA = /*DATA*/;
 const $ = (id) => document.getElementById(id);
@@ -841,9 +838,10 @@ function openPicker(s) {
   pickFor = s; const lib = $("plib"); lib.innerHTML = "";
   const tile = (p) => { const b = document.createElement("button"); b.type = "button"; b.title = [p.caption, p.credit].filter(Boolean).join(" · ") || p.file;
     b.innerHTML = '<img alt="">'; b.querySelector("img").src = psrc(p, true); b.querySelector("img").alt = p.caption || p.file;
-    if (p.shared) { const c = document.createElement("span"); c.className = "pc"; c.textContent = p.credit || p.caption || ""; b.appendChild(c); }
-    b.addEventListener("click", () => { s.addPhoto(p); pick.close(); }); lib.appendChild(b); };
-  const mine = (DATA.library || []).filter((p) => !p.shared && !s.order.includes(p.id)), shared = (DATA.library || []).filter((p) => p.shared && !s.order.includes(p.id));
+    const here = s.order.includes(p.id);   // already on this scene: still shown, so nobody wonders where it went
+    if (here || p.shared || p.credit) { const c = document.createElement("span"); c.className = "pc"; c.textContent = here ? "Already in this scene" : p.credit || p.caption || ""; b.appendChild(c); }
+    if (here) { b.disabled = true; b.classList.add("here"); } else b.addEventListener("click", () => { s.addPhoto(p); pick.close(); }); lib.appendChild(b); };
+  const mine = (DATA.library || []).filter((p) => !p.shared), shared = (DATA.library || []).filter((p) => p.shared);
 
   const noShared = !(DATA.library || []).some((p) => p.shared);
   const sharedHelp = () => { const w = document.createElement("div"); w.className = "pinfo";
@@ -858,7 +856,7 @@ function openPicker(s) {
   const tab = (w, label) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.w = w; b.textContent = label; b.addEventListener("click", () => fill(w)); tabs.appendChild(b); };
   tabs.hidden = false;
   tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", noShared ? "Shared photos" : "Shared photos (" + shared.length + ")");
-  note.textContent = "Cleared for SIL and Wycliffe videos. Keep the credit on screen. ";
+  note.textContent = "For SIL/Wycliffe staff: cleared for SIL/Wycliffe partnership videos only. Keep the credit on screen. ";
   if (DATA.libraryLink) { const a = document.createElement("a"); a.href = DATA.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL accounts; anyone else can ask for access)"; note.appendChild(a); }
   fill(mine.length || noShared ? "mine" : "shared");
   $("pupst").textContent = ""; $("pup").hidden = true; assetsP.then((a) => { $("pup").hidden = !a; });
@@ -1231,19 +1229,6 @@ document.querySelectorAll(".mode button").forEach((b) => b.addEventListener("cli
   const h = location.hash.slice(1); if (h === "simple" || h === "detailed") m = h;
   setMode(m, false); }
 
-// ---- approval of this draft (nothing is recorded or voiced before it): notes/approval-draft-<N>
-function showAppr(a) {
-  const on = !!(a && a.approved);
-  $("appr-state").textContent = on ? "Approved " + new Date(a.at).toLocaleString() : "Not approved yet";
-  $("approve").textContent = on ? "Withdraw approval" : "Approve draft " + DATA.draft; $("approve").dataset.on = on ? "1" : "";
-  $("approve").parentElement.classList.toggle("ok", on);
-}
-$("approve").addEventListener("click", async () => {
-  if (!db) return;
-  const a = { approved: !$("approve").dataset.on, at: new Date().toISOString() };
-  try { await db.collection("notes").doc("approval-draft-" + DATA.draft).set(a); showAppr(a); } catch (e) { console.error(e); $("appr-state").textContent = "Couldn't save. Try again."; }
-});
-showAppr(null);
 
 // ---- new scenes the reviewer adds between two shots: scenes/<id> {after: shot key, say, screen, createdAt}
 let scenes = [];
@@ -1314,7 +1299,6 @@ function setupScenes(saved) {
     show(cur, false); refreshMinis();
     const g = await db.collection("notes").get();
     g.docs.forEach((d) => { if (d.id === "general" && typeof d.data().text === "string") general.value = d.data().text; });
-    showAppr((g.docs.find((d) => d.id === "approval-draft-" + DATA.draft) || { data: () => null }).data());
     (await db.collection("good").get()).docs.forEach((d) => { const x = d.data() || {}; if (typeof x.good === "boolean" && GT[d.id]) setGood(d.id, x.good, false); });
     (await db.collection("answers").get()).docs.forEach((d) => { const q = QS[d.id], x = d.data() || {}; if (q) q.set(x.answer || "", x.note || "", false); });
     const sp = await db.collection("spots").get();
