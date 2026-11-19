@@ -34,6 +34,17 @@ if (have("ffmpeg") && have("ffprobe")) {
   enc.includes("libx264") ? null : bad("your ffmpeg lacks libx264", "Install an ffmpeg build that includes libx264 (most do).");
 } else bad("ffmpeg / ffprobe not found on PATH", "See SETUP.md, step 1.");
 
+// The storyboard, review page and photo/footage skills are Python scripts that need Pillow.
+{
+  let py = null;
+  for (const cmd of ["python", "python3"]) {
+    try { py = { cmd, v: execFileSync(cmd, ["-I", "-c", "import sys, PIL; print(sys.version.split()[0], PIL.__version__)"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() }; break; }
+    catch { /* try the next name */ }
+  }
+  if (py) ok(`Python ${py.v.split(" ")[0]} with Pillow ${py.v.split(" ")[1]} (${py.cmd})`);
+  else bad("Python 3 with Pillow not found (the storyboard and review pages need it)", "See SETUP.md, step 1: install Python 3, then: python -m pip install pillow");
+}
+
 // Windows can't start a program whose full path is over 260 characters, and
 // Remotion's Chrome sits ~140 characters deep inside the repo. Past the limit
 // every render fails with "spawn ... chrome-headless-shell.exe ENOENT".

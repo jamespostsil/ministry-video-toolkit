@@ -15,6 +15,10 @@ import argparse, datetime, html, json, os, shutil, subprocess, sys
 import numpy as np
 from PIL import Image, ImageEnhance
 
+for _s in (sys.stdout, sys.stderr):   # Windows pipes are cp1252: names in other scripts must not crash a run
+    try: _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception: pass
+
 HAZY_BLACK, DIM_WHITE = 0.07, 0.92   # darkest parts lighter than this, or brightest parts darker than this: worth a look
 
 

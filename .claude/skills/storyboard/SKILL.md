@@ -1,6 +1,6 @@
 ---
 name: storyboard
-description: Make the storyboard page a reviewer approves before anything is filmed, voiced or rendered: each shot's real picture (with highlight boxes if wanted) beside the lines said over it, the wording editable in place, Script and On-screen notes per line, notes pinned or arrows drawn on the picture, what changed since the last draft marked word by word. Published as a claude.ai artifact whose edits and approval Claude can read back. Use when a script is ready for review, when asked for a storyboard, or before the first recording or render of a new video.
+description: Make the storyboard page a reviewer approves before anything is filmed, voiced or rendered: each shot's real picture (with highlight boxes if wanted) beside the lines said over it, the wording editable in place, Script and On-screen notes per line, notes pinned or arrows drawn on the picture, what changed since the last draft marked word by word. Published as a claude.ai artifact whose edits and notes Claude can read back. Use when a script is ready for review, when asked for a storyboard, or before the first recording or render of a new video.
 ---
 
 # Storyboard
@@ -198,10 +198,10 @@ after another**, **Speaker on screen**. A new layout goes into one of these list
 
 ## Shared photos in "+ Add a photo"
 
-"+ Add a photo" always has two tabs: **This video's photos** and **Shared photos**. With shared photos the Shared tab
-says they are cleared for SIL/Wycliffe partnership videos only and links to the whole folder. Without them (not on this computer, or
-`--no-library`) the tab still shows, with three short steps for getting them and the folder link, so the person always
-knows where to find them.
+"+ Add a photo" shows **This video's photos**, and a **Shared photos** tab only when the shared folder is on this
+computer. That tab says the photos are cleared for SIL/Wycliffe partnership videos only and links to the whole folder.
+Without the folder there is no Shared tab, since the photos are only for SIL/Wycliffe staff. For a staff member who
+wants them, `--library-link <url>` adds the tab with three short steps for getting them.
 
 - **On by default.** `build.py` (and the review page's, and `export_photos.py`) look for the people-with-Bibles
   folder on this computer (`shared_photos.py`: Google Drive for desktop's My Drive or Shared drives, Downloads,

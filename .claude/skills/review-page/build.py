@@ -29,6 +29,10 @@ data.json:
 With --photos, every photo in that folder is offered under "+ Add a photo" (data "library", made here).
 """
 import argparse, json, os, re, sys
+
+for _s in (sys.stdout, sys.stderr):   # Windows pipes are cp1252: names in other scripts must not crash a run
+    try: _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception: pass
 here = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser(); ap.add_argument("data"); ap.add_argument("out")
 ap.add_argument("--photos"); ap.add_argument("--crops"); ap.add_argument("--out-pics")
@@ -41,9 +45,7 @@ if not a.library and not a.no_library:   # the shared "People with Bibles" photo
     import shared_photos
     _shared = shared_photos.find()
     if _shared: a.library = [_shared]; a.library_link = a.library_link or shared_photos.LINK; print("shared photos:", _shared)
-    else: a.library_link = a.library_link or shared_photos.LINK; print("NOTE:", shared_photos.MISSING)
-if a.no_library and not a.library_link:   # no photos offered, but the Shared photos tab still says how to get them
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../storyboard")); import shared_photos; a.library_link = shared_photos.LINK
+    else: print("NOTE:", shared_photos.MISSING)   # no Shared photos tab: it is only for SIL/Wycliffe staff (--library-link adds its help)
 d = json.load(open(data_path, encoding="utf-8"))
 for k in ("title", "video", "version", "sentences"):
     if k not in d: raise SystemExit(f"data.json needs {k!r}")

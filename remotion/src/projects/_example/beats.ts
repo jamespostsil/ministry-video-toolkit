@@ -28,10 +28,10 @@ const DEDICATIONS: Record<string, GalleryPhoto> = {
   waata: { src: media("dedications/waata.jpg"), caption: "New Testament - Waata, Kenya", credit: "Photo: Wycliffe", width: 1268, height: 846 },
   zanaki: { src: media("dedications/zanaki.jpg"), caption: "New Testament - Zanaki, Tanzania", credit: "Photo: Wycliffe", width: 1100, height: 749 },
   mankon: { src: media("dedications/mankon.jpg"), caption: "New Testament - Mankon, Cameroon", credit: "Photo: Wycliffe", width: 1000, height: 667 },
-  ikizu: { src: media("dedications/ikizu.jpg"), caption: "New Testament - Ikizu, Tanzania", credit: "Photo: Peris Kiriko", width: 1186, height: 791 },
+  "binumarien-crowd": { src: media("dedications/binumarien-crowd.jpg"), caption: "Binumarien, Papua New Guinea", credit: "Photo: James Post", width: 1400, height: 934 },
   kwaya: { src: media("dedications/kwaya.jpg"), caption: "New Testament - Kwaya, Tanzania", credit: "Photo: Wycliffe", width: 950, height: 713 },
   saliba: { src: media("dedications/saliba.jpg"), caption: "New Testament - Saliba, Papua New Guinea", credit: "Photo: SIL PNG", width: 2048, height: 1152 },
-  zinza: { src: media("dedications/zinza.jpg"), caption: "New Testament - Zinza, Tanzania", credit: "Photo: Chris Gilmore", width: 477, height: 510 },
+  "binumarien-man": { src: media("dedications/binumarien-man.jpg"), caption: "Binumarien, Papua New Guinea", credit: "Photo: James Post", width: 933, height: 1400 },
   "upper-pokomo": { src: media("dedications/upper-pokomo.jpg"), caption: "Bible - Upper Pokomo, Kenya", credit: "Photo: BTL", width: 2048, height: 1365 },
 };
 const ded = (...names: string[]) => names.map((n) => DEDICATIONS[n]);
@@ -162,7 +162,7 @@ export const BEATS: Beat[] = [
 
   // --- translation accelerating ---
   // "By 2033... What a pivotal time to be involved in Bible translation!"
-  { kind: "scatter", start: 158.169, end: 171.2, title: "Scripture Dedications", photos: ded("mankon", "ikizu", "kwaya", "saliba", "zinza", "upper-pokomo") },
+  { kind: "scatter", start: 158.169, end: 171.2, title: "Scripture Dedications", photos: ded("mankon", "binumarien-crowd", "kwaya", "saliba", "binumarien-man", "upper-pokomo") },
 
   // "You are helping make this happen through your prayers and financial
   // partnership." Over the live shot, now that the photos have handed back.

@@ -31,7 +31,7 @@ export type PartnerFrameProps = {
   /** Path under public/ to a full-bleed background image. Without one the
    *  frame draws its own gradient field. */
   background?: string;
-  /** One small line along the bottom, e.g. "Photos by Wycliffe, SIL PNG and C Gilmore": the
+  /** One small line along the bottom, e.g. "Photos by Wycliffe, SIL PNG and J Smith": the
    *  script's photo credits for the whole video. Optional. */
   credits?: string;
   /** Seconds of fade-in. Defaults to 0: when this is the closing beat of a

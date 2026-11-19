@@ -19,10 +19,10 @@ console.log(`\n  Ministry Video Toolkit is installed. Next steps:\n  ${url}\n`);
 const skip = process.env.CI || process.env.NO_WELCOME || (afterInstall && existsSync(marker));
 if (!skip) {
   const [cmd, args] =
-    process.platform === "win32" ? ["cmd", ["/c", "start", "", url]] :
+    process.platform === "win32" ? ["rundll32", ["url.dll,FileProtocolHandler", url]] :   // not cmd: a folder named "A & B" would break it
     process.platform === "darwin" ? ["open", [url]] : ["xdg-open", [url]];
   try {
-    const p = spawn(cmd, args, { detached: true, stdio: "ignore" });
+    const p = spawn(cmd, args, { detached: true, stdio: "ignore", windowsHide: true });
     p.on("error", () => {});
     p.unref();
   } catch {}

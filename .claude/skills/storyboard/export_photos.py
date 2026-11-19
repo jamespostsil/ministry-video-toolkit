@@ -24,10 +24,14 @@ Writes into <out folder>:
   photo-order.json     {group: [picture ids in the reviewer's order]}: the photos each moment shows, in order
   photo-layouts.json   {group: {layout, planned, photos}}: how each moment's photos are shown ("cover", "blur", "row",
                        "slider", "scatter", "grid", "onebyone", "stack", "feature", "beforeafter", "map", "beside", "corner"): the reviewer's choice from the page's Layout button, or the planned one
-  photo-credits.txt    the end screen's line, e.g. "Photos by Wycliffe, SIL PNG, and Chris Gilmore"
+  photo-credits.txt    the end screen's line, e.g. "Photos by Wycliffe, SIL PNG, and Jane Smith"
 """
 import argparse, glob, json, os, re, sys
 from PIL import Image, ImageOps
+
+for _s in (sys.stdout, sys.stderr):   # Windows pipes are cp1252: names in other scripts must not crash a run
+    try: _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception: pass
 
 ap = argparse.ArgumentParser()
 ap.add_argument("storyboard"); ap.add_argument("photos"); ap.add_argument("out")

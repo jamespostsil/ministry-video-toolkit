@@ -462,8 +462,8 @@ function openPicker(O) {
     [...tabs.children].forEach((b) => b.setAttribute("aria-selected", String(b.dataset.w === w))); note.hidden = w !== "shared" || noShared;
     if (!lib.children.length) lib.textContent = "Every photo is already here."; };
   const tab = (w, label) => { const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.w = w; b.textContent = label; b.addEventListener("click", () => fill(w)); tabs.appendChild(b); };
-  tabs.hidden = false;
-  tab("mine", "This video's photos (" + mine.length + ")"); tab("shared", noShared ? "Shared photos" : "Shared photos (" + shared.length + ")");
+  tabs.hidden = noShared && !D.libraryLink;
+  tab("mine", "This video's photos (" + mine.length + ")"); if (!noShared || D.libraryLink) tab("shared", noShared ? "Shared photos" : "Shared photos (" + shared.length + ")");
   note.textContent = "For SIL/Wycliffe staff: cleared for SIL/Wycliffe partnership videos only. Keep the credit on screen. ";
   if (D.libraryLink) { const a = document.createElement("a"); a.href = D.libraryLink; a.target = "_blank"; a.rel = "noopener"; a.textContent = "See the whole folder (SIL accounts; anyone else can ask for access)"; note.appendChild(a); }
   fill(mine.length || noShared ? "mine" : "shared");

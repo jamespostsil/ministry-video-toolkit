@@ -10,8 +10,8 @@ thumbnail.
 
 It is built for missionaries and ministry staff, and was made for Wycliffe and
 SIL ministry updates, but nothing in it is tied to one organisation or one
-video. The editing judgement — where to cut, how long text must stay up, how to
-keep graphics off people's faces — is written down in [skills](#the-skills) so
+video. The editing judgement (where to cut, how long text must stay up, how to
+keep graphics off people's faces) is written down in [skills](#the-skills) so
 the result comes out the same way every time.
 
 ![Moments from the example video](docs/images/example-beats.jpg)
@@ -24,8 +24,7 @@ made from.*
 
 ## Your first video, in five steps
 
-1. **Record yourself** talking to the camera, reading your script.
-2. **Write the script** in Notion or a Google Doc, with each picture placed just
+1. **Write the script** in Notion or a Google Doc, with each picture placed just
    before the words it goes with. Copy an example to start from:
    [Google Doc](https://docs.google.com/document/d/1RFjGvLaoVUiRRCxXqygLKeXyG2Z3Z6iu3jb3BUuei00/copy)
    (opens a "Make a copy" prompt) or
@@ -33,6 +32,8 @@ made from.*
    (use Duplicate). Want a certain layout? Write it in square brackets above
    the pictures, like `[Grid: Scripture dedications]` or `[Map]`; the layouts
    are listed under "Beats" below. Or leave it to Claude.
+2. **Record yourself** talking to the camera, reading your script. Don't worry
+   about pauses or false starts: Claude trims them.
 3. **Approve the storyboard.** Give Claude the recording and the script link.
    Claude makes a page showing every scene with its words and pictures; change
    anything there, then tell Claude it's ready. If the script doesn't say how to show the
@@ -53,13 +54,9 @@ made from.*
 the example video. Allow about an hour, most of it waiting for installs, the
 example's download and its first render.
 
-Already set up? From the `remotion/` folder:
-
-```bash
-npm run doctor                  # is everything in place?
-npm run studio                  # preview in your browser
-npm run render -- _example      # render the example to out/Example.mp4
-```
+When it's installed, a welcome page opens with the steps above. Already set up?
+Open Claude Code in the toolkit folder and say what you'd like. Not sure what to
+do next? Just ask Claude.
 
 ---
 
@@ -88,15 +85,15 @@ the recording.
 | Takeover (`cover`) | One photo, full screen, slowly zooming | A landscape photo worth the whole frame |
 | Video clip (`clip`) | A free stock video clip, full screen and silent, while you keep talking | A moment with no photos: the whole world, Scripture, travel, an opening shot (see [docs/finding-video.md](docs/finding-video.md)) |
 | Whole photo (`blur`) | The photo shown complete over a blurred copy of itself | Portraits, or anything with words on it that must not be cropped |
-| Row (`row`) | 2–4 images side by side, each at its own shape, with an optional title above; each can come in on its own words | Comparing things, such as screenshots; a person's photos under their name |
+| Row (`row`) | 2 to 4 images side by side, each at its own shape, with an optional title above; each can come in on its own words | Comparing things, such as screenshots; a person's photos under their name |
 | Counter (`counter`) | A number counting up, with a label | A milestone worth dwelling on ("600 projects started") |
 | Globe (`globe`) | **Work in progress.** A turning globe; a Bible fades in on a chosen word | "Every language in the world" (a stock clip of a real globe usually looks better for now) |
-| Slider (`slider`) | Cards drifting across the screen | A run of 5–10 captioned photos |
+| Slider (`slider`) | Cards drifting across the screen | A run of 5 to 10 captioned photos |
 | Scatter (`scatter`) | Photos dropping onto a pile, one at a time | A list you read out, each photo on its own phrase |
-| Grid (`grid`) | 4–9 photos in neat rows, arriving one by one | A set you talk about as a whole |
+| Grid (`grid`) | 4 to 9 photos in neat rows, arriving one by one | A set you talk about as a whole |
 | One at a time (`onebyone`) | Each photo fills the screen in turn | A story told photo by photo |
 | Stack (`stack`) | Large photos landing on one pile | "And another, and another" |
-| Feature (`feature`) | One large photo, the others small beside it; the large one changes | 3–6 photos that each get a sentence |
+| Feature (`feature`) | One large photo, the others small beside it; the large one changes | 3 to 6 photos that each get a sentence |
 | Before and after photos (`beforeafter`) | Two photos; a line wipes from one to the other | Then and now |
 | On a map (`map`) | Each photo pops up joined to its place on a map | Photos from named places |
 | Beside the speaker (`beside`) | You move to one side of the screen; a photo or a few words take the other | Keeping your face on screen with a photo, a thank-you or the ask |
@@ -196,7 +193,7 @@ All run from `remotion/`. `<project>` is a folder name under `src/projects/`.
 |---|---|
 | `npm run doctor` | Checks your tools and every project, and says how to fix anything missing |
 | `npm run new -- <name>` | Starts a new project from the example |
-| `npm run example:media` | Downloads the example video's footage and photos (about 85 MB). Its music isn't included (the licence doesn't allow sharing the file), so a quiet stand-in plays instead |
+| `npm run example:media` | Downloads the example video's footage and photos (about 80 MB). Its music isn't included (the licence doesn't allow sharing the file), so a quiet stand-in plays instead |
 | `npm run footage -- <project>` | Cuts the recording, writes the title-card still, records the real length |
 | `npm run transcribe -- <project>` | Word-level transcript of the footage |
 | `npm run captions -- <project>` | Captions for the finished video: `out/<project>.en.vtt` (Vimeo, YouTube) and `.srt` (Facebook, editors), timed to the video from the transcript. Read it once against your script |
@@ -223,7 +220,7 @@ this folder; they are also plain Markdown, worth reading yourself.
 | `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked |
 | `script-to-beats` | Turning a script with images (Notion page or Google Doc) into a timed beat plan |
 | `photo-touchup` | Fixing washed-out photos gently, with a before / after page to choose from before anything is replaced |
-| `find-footage` | Free stock video clips you're allowed to use (Coverr, Mixkit, Pexels, Pixabay): a page of previews to choose from, then the full-size files with a licence record |
+| `find-footage` | Free stock video clips and photos you're allowed to use (Coverr, Mixkit, Pixabay): a page of previews to choose from, then the full-size files with a licence record |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |
@@ -255,7 +252,7 @@ remotion/
   src/components/      one file per beat type
   src/projects/        one folder per video, found automatically; only _example is tracked
   public/_example/     placeholders for new projects; the example's media downloads to media/
-  public/fonts/        Alegreya and Poppins, with their licences
+  public/fonts/        Alegreya, Poppins and Fredoka, with their licences
   public/brand/        organisation assets
 ```
 
@@ -266,12 +263,12 @@ Each video's recording, photos and renders stay out of the repository
 
 ## Licences
 
-- **This toolkit's own code and docs:** MIT — see [LICENSE](LICENSE).
+- **This toolkit's own code and docs:** MIT: see [LICENSE](LICENSE).
 - **Remotion**, the video framework this is built on, has its own licence. It is
   free for individuals, for non-profit organisations, and for companies of up
   to three people; larger for-profit companies need a company licence. Check
   [remotion.dev/license](https://www.remotion.dev/license) for your situation.
-- **Fonts:** Alegreya and Poppins are under the SIL Open Font License; the
+- **Fonts:** Alegreya, Poppins and Fredoka are under the SIL Open Font License; the
   licence texts are in `remotion/public/fonts/`.
 - **The example's footage and photos** are a real video's, not covered by the
   MIT licence. See [examples/MEDIA-NOTICE.md](examples/MEDIA-NOTICE.md).

@@ -4,6 +4,18 @@
  "tag": "example-media-v1",
  "files": [
   {
+   "asset": "dedications__binumarien-crowd.jpg",
+   "dest": "dedications/binumarien-crowd.jpg",
+   "bytes": 296956,
+   "sha256": "161e59af7a9a30585b1b8c7103285b28462a45a79f276b847d943861473fb886"
+  },
+  {
+   "asset": "dedications__binumarien-man.jpg",
+   "dest": "dedications/binumarien-man.jpg",
+   "bytes": 223248,
+   "sha256": "11e7cac4a5d5cf465f702165815fad87cf4bb3a973716b5a88c117b9bf9c3544"
+  },
+  {
    "asset": "dedications__dinka-cam.jpg",
    "dest": "dedications/dinka-cam.jpg",
    "bytes": 252941,
@@ -14,12 +26,6 @@
    "dest": "dedications/fur.jpg",
    "bytes": 179278,
    "sha256": "a029f0dcaa54d07138671fa87e5bf81e9038bd8490f30de29aba41b1328c5aed"
-  },
-  {
-   "asset": "dedications__ikizu.jpg",
-   "dest": "dedications/ikizu.jpg",
-   "bytes": 254905,
-   "sha256": "ecc4dcfd7ce24306ff45953e34bf857ba1a42e10c995314ade7a5bdda110be15"
   },
   {
    "asset": "dedications__kwaya.jpg",
@@ -62,12 +68,6 @@
    "dest": "dedications/zanaki.jpg",
    "bytes": 255412,
    "sha256": "4573158b8f6fe30a0d14296cd928a2ea29738a86e8430391d2e1ba1fa34627ff"
-  },
-  {
-   "asset": "dedications__zinza.jpg",
-   "dest": "dedications/zinza.jpg",
-   "bytes": 65485,
-   "sha256": "669f4d1e05d857ec1bb71e087c595d40c4bbafbcb7e7fd9173e609eed64b7eaa"
   },
   {
    "asset": "endframe__background.png",

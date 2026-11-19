@@ -1,6 +1,6 @@
 ---
 name: find-footage
-description: Find free stock video clips (B-roll) and photos the person is allowed to use, from Coverr, Mixkit, Pexels and Pixabay (photos from Pixabay), keeping only clips whose licence allows use in a fundraising video with no credit. Claude looks at every candidate, puts the best on a picker page with looping previews, reads back the person's choices, downloads the full-size files with a licence record, and shows them in the video as a full-screen clip while the speaker keeps talking. Use when a scene needs a photo the person doesn't have, when a video needs moving pictures for a moment with no photos (the whole world, Scripture, travel, an opening or closing shot), when the person asks for B-roll, stock footage or video clips, or instead of the drawn globe.
+description: Find free stock video clips (B-roll) and photos the person is allowed to use, from Coverr, Mixkit and Pixabay (and Pexels, for anyone who already has a key; photos from Pixabay), keeping only clips whose licence allows use in a fundraising video with no credit. Claude looks at every candidate, puts the best on a picker page with looping previews, reads back the person's choices, downloads the full-size files with a licence record, and shows them in the video as a full-screen clip while the speaker keeps talking. Use when a scene needs a photo the person doesn't have, when a video needs moving pictures for a moment with no photos (the whole world, Scripture, travel, an opening or closing shot), when the person asks for B-roll, stock footage or video clips, or instead of the drawn globe.
 ---
 
 # Find footage
@@ -20,7 +20,7 @@ holds the screen for one sentence or two, like a photo.
 ## 2. Search
 
 ```
-python -I find_footage.py search <work folder> globe "world map" bible --sources coverr,mixkit,pexels,pixabay
+python -I find_footage.py search <work folder> globe "world map" bible --sources coverr,mixkit,pixabay
 ```
 
 Use a work folder outside the repo (the project's `local/footage/`, say). Each clip gets a key (`k007`). Only clips
@@ -29,9 +29,11 @@ anyone may use in a video that asks for support, with no credit, are kept:
 - **Coverr:** free clips; Premium, AI-made and vertical clips are left out.
 - **Mixkit:** only the Mixkit Free License. Its Restricted License is for personal use only. Mixkit blocks quick
   bursts of searching; the script goes slowly and says so when it is blocked. Try that source again later.
-- **Pexels, Pixabay:** need a free API key each (`PEXELS_API_KEY`, `PIXABAY_API_KEY`, as environment variables or
-  in `remotion/.env`). Without them they are skipped. Ask the person whether they want to make the keys; it
-  takes a free account and a minute each.
+- **Pixabay:** needs a free API key (`PIXABAY_API_KEY`, as an environment variable or in `remotion/.env`); without
+  it Pixabay is skipped. Ask the person whether they want one: a free account and a minute. Claude adds the key to
+  `remotion/.env` for them. The same key finds photos.
+- **Pexels:** stopped giving out new API keys (November 2026). Use it only if `PEXELS_API_KEY` is already set (add
+  `pexels` to `--sources`); never ask anyone to sign up for it.
 
 Coverr's topic pages also list unrelated popular clips, so many candidates won't fit.
 
