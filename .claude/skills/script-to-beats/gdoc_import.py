@@ -14,6 +14,10 @@ from their alt text. Nothing is uploaded anywhere.
 import os, re, shutil, sys, zipfile
 from html.parser import HTMLParser
 
+for _s in (sys.stdout, sys.stderr):   # Windows pipes are cp1252: names in other scripts must not crash a run
+    try: _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception: pass
+
 BLOCK = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "li", "td"}
 
 

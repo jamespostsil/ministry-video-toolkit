@@ -51,7 +51,7 @@ viewer's last choice.
 - **The pin instructions sit above the video**, where the reviewer looks first, not below it.
 - **The pin layer stops 84 px above the bottom of the video**, so a click on the play button or the time bar
   works the player instead of adding a note.
-- **Pin a note to a spot:** pause, before the first play, a click plays, click the picture (or drag to draw an arrow to the spot), type. The note opens right there on the video (no mode
+- **Pin a note to a spot:** pause the video (before the first play, a click starts it), then click the picture (or drag to draw an arrow to the spot), type. The note opens right there on the video (no mode
   button, no separate tab), its number shows on the picture around that moment, and it is listed in that
   moment's sentence row. Clicking the number jumps back to it. "Delete pin" removes it.
 - **Each scene is a card**, as on the storyboard: what is said, then the words on screen (edit in place), the
@@ -77,7 +77,6 @@ viewer's last choice.
   The list stops following the video for 4 seconds after the reviewer scrolls, points or clicks in it, so a
   button never moves away from the pointer.
 - **Previous / Next scene** (or Alt + ↓ / Alt + ↑, even while typing) moves the video and the list together.
-- The instructions are a bulleted list that folds away (the page remembers).
 - **One sticky bar at the top:** Previous / Next scene with the count, and under it, only while changes are left
   to check, a small change row (◀ ▶, "2 changes to check", Auto-play). It goes away once every change looks good.
 - **Changes:** each change note is a yellow box on its sentence. ◀ ▶ jump to them and, with Auto-play on, play
@@ -103,7 +102,7 @@ send back a list of planned edits.
 ## Rules
 
 - No sentence ids or "checks passed" lists on the page: only what needs the reviewer. Sections show only as a thin
-  divider with "Mark the section good".
+  divider.
 - Short, plain change notes, one per sentence. Say when something needs a decision.
 - Every choice can be undone (untick, delete pin, clear the text).
 
@@ -138,12 +137,12 @@ as `layout-v<N>/<group>` `{layout, original, photos}`: read it with the other no
 ## Shared photos in "+ Add a photo"
 
 Same as the storyboard (see its SKILL.md, "Shared photos"): on by default when the people-with-Bibles folder is on
-this computer (`--out-pics` is needed for it); when it isn't, the build prints a NOTE and Claude asks the person
-whether to add it. `--library <folder>` (with `--out-pics`) adds a folder by hand, giving the **Shared photos** tab, and `--library-link <url>` links the whole folder from it. Reviewers need only the page link.
+this computer (`--out-pics` is needed for it); when it isn't, the build prints a NOTE. That is normal: mention the folder only to
+someone you know is SIL/Wycliffe staff; everyone else gets stock photos from `find-footage --photos`. `--library <folder>` (with `--out-pics`) adds a folder by hand, giving the **Shared photos** tab, and `--library-link <url>` links the whole folder from it. Reviewers need only the page link.
 The people-with-Bibles set: https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq
 
 ## The top bar (2026-11)
 
 The title, "Notes save as you type" and the **Simple / Detailed** switch stay at the top of the screen while the page
-scrolls, so the reviewer can change mode from anywhere. "+ Add a photo" always has a **Shared photos** tab (photos, or
-steps for getting them), and permission has an **Add credit** choice for photos with no credit yet, as on the storyboard.
+scrolls, so the reviewer can change mode from anywhere. "+ Add a photo" has a **Shared photos** tab only when the shared
+folder is on this computer (or `--library-link` is given), and permission has an **Add credit** choice for photos with no credit yet, as on the storyboard.

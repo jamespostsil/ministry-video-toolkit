@@ -23,7 +23,11 @@ fetch    Downloads the full-size files as <key>.mp4 into --to, with a poster fra
 
 Needs ffmpeg and ffprobe on the PATH, and Pillow (pip install pillow).
 """
-import argparse, csv, html, io, json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
+import argparse, csv, hashlib, html, io, json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
+
+for _s in (sys.stdout, sys.stderr):   # Windows pipes are cp1252: a photographer's name in another script must not crash a run
+    try: _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception: pass
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36"}
@@ -44,10 +48,23 @@ def load_env():
     (a .env at the toolkit's top level works too)."""
     for env in (os.path.join(HERE, "..", "..", "..", "remotion", ".env"), os.path.join(HERE, "..", "..", "..", ".env")):
         if not os.path.exists(env): continue
-        for line in open(env, encoding="utf-8"):
+        for line in open(env, encoding="utf-8-sig", errors="replace"):
             k, sep, v = line.strip().partition("=")
+            k = k.strip()
             if sep and k in ("PEXELS_API_KEY", "PIXABAY_API_KEY") and not os.environ.get(k):
                 os.environ[k] = v.strip().strip('"').strip("'")
+
+
+def slug(kw):
+    """A file name for a keyword: readable when it can be, and never empty or shared (Chinese or Russian keywords too)."""
+    base = re.sub(r"[^a-z0-9]+", "-", kw.lower()).strip("-")[:40]
+    return (base + "-" if base else "") + hashlib.sha1(kw.encode("utf-8")).hexdigest()[:8]
+
+
+def save(path, data):
+    """Write a download only once it has all arrived, so a failed one never leaves an empty file behind."""
+    open(path + ".part", "wb").write(data)
+    os.replace(path + ".part", path)
 
 
 def get(url, headers=None, timeout=30):
@@ -136,7 +153,7 @@ def pixabay(kw):
     if not key:
         raise Blocked("no PIXABAY_API_KEY")
     kw = kw[:100]   # the API takes at most 100 characters
-    cached = os.path.join(CACHE, "pixabay-" + re.sub(r"[^a-z0-9]+", "-", kw.lower()).strip("-") + ".json") if CACHE else None
+    cached = os.path.join(CACHE, "pixabay-videos-" + slug(kw) + ".json") if CACHE else None
     if cached and os.path.exists(cached) and time.time() - os.path.getmtime(cached) < 24 * 3600:
         d = json.load(open(cached, encoding="utf-8"))
     else:
@@ -167,7 +184,7 @@ def pixabay_photos(kw):
     if not key:
         raise Blocked("no PIXABAY_API_KEY (photos come from Pixabay)")
     kw = kw[:100]
-    cached = os.path.join(CACHE, "pixabay-photos-" + re.sub(r"[^a-z0-9]+", "-", kw.lower()).strip("-") + ".json") if CACHE else None
+    cached = os.path.join(CACHE, "pixabay-photos-" + slug(kw) + ".json") if CACHE else None
     if cached and os.path.exists(cached) and time.time() - os.path.getmtime(cached) < 24 * 3600:
         d = json.load(open(cached, encoding="utf-8"))
     else:
@@ -208,10 +225,13 @@ def sheet(cands, path):
     rows = (len(cands) + C - 1) // C
     img = Image.new("RGB", (W * C, H * rows), "white")
     d = ImageDraw.Draw(img)
-    try:
-        font = ImageFont.truetype("arialbd.ttf", 22)
-    except OSError:
-        font = ImageFont.load_default()
+    font = None
+    for name in ("arialbd.ttf", "Arial Bold.ttf", "DejaVuSans-Bold.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"):
+        try: font = ImageFont.truetype(name, 22); break
+        except OSError: pass
+    if font is None:   # big enough to read the keys on any computer
+        try: font = ImageFont.load_default(size=22)
+        except TypeError: font = ImageFont.load_default()
     for i, c in enumerate(cands):
         x, y = (i % C) * W, (i // C) * H
         try:
@@ -278,7 +298,7 @@ def cmd_search(a):
                 print(f"  {name} / {kw}: {e}")
         cands += found
         save(a.work, cands)
-        safe = re.sub(r"[^a-z0-9]+", "-", kw.lower()).strip("-")
+        safe = slug(kw)
         for i in range(0, len(found), 36):
             p = os.path.join(a.work, "sheets", f"{safe}-{i // 36 + 1}.jpg")
             sheet(found[i:i + 36], p)
@@ -297,14 +317,14 @@ def cmd_picker(a):
         v = os.path.join(out, "v", c["key"])
         if c.get("type") == "photo":   # the 640 px preview, enough to judge it; the full file comes with fetch
             if not os.path.exists(v + ".jpg"):
-                open(v + ".jpg", "wb").write(get(c["preview"], timeout=120))
+                save(v + ".jpg", get(c["preview"], timeout=120))
             clips.append({"key": c["key"], "src": c["src"], "title": c["title"], "page": c["page"], "type": "photo",
                           "note": notes.get(c["key"], ""), "group": c.get("keyword", ""), "user": c.get("user", "")})
             continue
         raw = os.path.join(a.work, "raw", c["key"] + ".mp4")
         os.makedirs(os.path.dirname(raw), exist_ok=True)
         if not os.path.exists(raw):
-            open(raw, "wb").write(get(c["preview"], timeout=120))
+            save(raw, get(c["preview"], timeout=120))
         dur = duration(raw)
         ss = max(0.0, dur / 2 - 3)
         ff("-ss", f"{ss:.2f}", "-i", raw, "-t", "6", "-an", "-vf", "scale=480:-2,fps=24", "-c:v", "libx264", "-crf", "30",
@@ -326,15 +346,20 @@ def fetch_photos(a, photos):
     photo-licenses.csv with the credit to show on screen."""
     log = os.path.join(a.to, "photo-licenses.csv")
     new = not os.path.exists(log)
+    listed = set() if new else {r.get("file") for r in csv.DictReader(open(log, encoding="utf-8-sig"))}
     with open(log, "a", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         if new:
             w.writerow(["file", "source", "photographer", "on-screen credit", "page", "licence", "licence link", "downloaded"])
         for c in photos:
             dst = os.path.join(a.to, c["key"] + ".jpg")
-            open(dst, "wb").write(get(c["full"], timeout=300))
+            save(dst, get(c["full"], timeout=300))
             lic, url = LICENCES[c["src"]]
-            credit = ("Photo: " + c["user"] + ", Pixabay") if c.get("user") else "Photo: Pixabay"
+            user = c.get("user", "")   # an account named after a site ("Pexels") reads like a mistake in a credit
+            credit = ("Photo: " + user + ", Pixabay") if user and user.lower() not in ("pexels", "pixabay", "unsplash") else "Photo: Pixabay"
+            if c["key"] + ".jpg" in listed:
+                print(f"{dst}  ({credit}, already listed)")
+                continue
             w.writerow([c["key"] + ".jpg", c["src"], c.get("user", ""), credit, c["page"], lic, url, time.strftime("%Y-%m-%d")])
             print(f"{dst}  ({credit})")
 
@@ -357,7 +382,7 @@ def cmd_fetch(a):
             w.writerow(["file", "source", "title", "page", "licence", "licence link", "downloaded"])
         for c in clips:
             dst = os.path.join(a.to, c["key"] + ".mp4")
-            open(dst, "wb").write(get(c["full"], timeout=600))
+            save(dst, get(c["full"], timeout=600))
             ff("-ss", f"{min(1.0, duration(dst) / 2):.2f}", "-i", dst, "-frames:v", "1", "-q:v", "3",
                os.path.join(a.to, c["key"] + ".jpg"))
             lic, url = LICENCES[c["src"]]

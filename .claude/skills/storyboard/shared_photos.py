@@ -31,7 +31,7 @@ def _bases():
                 p = f"{d}:\\{sub}"
                 if os.path.isdir(p): out.append(p)
     out += glob.glob(os.path.join(home, "Library", "CloudStorage", "GoogleDrive-*", "*"))   # macOS
-    out += [os.path.join(home, x) for x in ("Google Drive", "My Drive", "Downloads", "Documents", "Desktop")]
+    out += [os.path.join(home, x) for x in ("Google Drive", "My Drive", "Downloads", "Documents")]
     return [p for p in out if os.path.isdir(p)]
 
 

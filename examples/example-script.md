@@ -156,7 +156,7 @@ Translation work is also accelerating!
 
 `[Scatter: Scripture Dedications]`
 
-<img src="script-images/mankon.jpg" height="110" alt="New Testament - Mankon, Cameroon"> <img src="script-images/ikizu.jpg" height="110" alt="New Testament - Ikizu, Tanzania"> <img src="script-images/kwaya.jpg" height="110" alt="New Testament - Kwaya, Tanzania"> <img src="script-images/saliba.jpg" height="110" alt="New Testament - Saliba, Papua New Guinea"> <img src="script-images/zinza.jpg" height="110" alt="New Testament - Zinza, Tanzania"> <img src="script-images/upper-pokomo.jpg" height="110" alt="Bible - Upper Pokomo, Kenya">
+<img src="script-images/mankon.jpg" height="110" alt="New Testament - Mankon, Cameroon"> <img src="script-images/binumarien-crowd.jpg" height="110" alt="Binumarien, Papua New Guinea"> <img src="script-images/kwaya.jpg" height="110" alt="New Testament - Kwaya, Tanzania"> <img src="script-images/saliba.jpg" height="110" alt="New Testament - Saliba, Papua New Guinea"> <img src="script-images/binumarien-man.jpg" height="110" alt="Binumarien, Papua New Guinea"> <img src="script-images/upper-pokomo.jpg" height="110" alt="Bible - Upper Pokomo, Kenya">
 
 By 2033, we expect that every single language of the world will have access to
 at least some portion of God's Word! What a pivotal time to be involved in Bible

@@ -1,5 +1,18 @@
 # Setup
 
+## The easy way: let Claude do it
+
+1. Install **Claude Code** ([how](https://code.claude.com/docs/en/overview)).
+2. Open it in your Documents folder and say: *"Set up the Ministry Video Toolkit
+   from github.com/jamespostsil/ministry-video-toolkit and render the example
+   video."*
+
+Claude installs what's missing, downloads the toolkit, checks that everything
+works and renders the example, asking before each install. When it's done, a
+welcome page opens with the next steps.
+
+## Doing it by hand
+
 This gets you from nothing to a rendered example video. Follow the steps in
 order; each one ends with a check, so you know it worked before you move on.
 
@@ -16,7 +29,8 @@ on your computer.
 | **Node.js 20 LTS** (18 or newer) | Runs the toolkit | `node --version` |
 | **ffmpeg** with libx264 | Cuts footage and encodes the video | `ffmpeg -version` |
 | **Git** | Downloads the toolkit | `git --version` |
-| **Claude Code** (optional, recommended) | Uses the skills to do the editing with you | `claude --version` |
+| **Python 3.9+** with Pillow | Builds the storyboard and review pages | `python --version` (`python3` on a Mac) |
+| **Claude Code** (recommended) | Uses the skills to do the editing with you | `claude --version` |
 
 ### Windows
 
@@ -26,7 +40,10 @@ In PowerShell:
 winget install OpenJS.NodeJS.LTS
 winget install Gyan.FFmpeg
 winget install Git.Git
+winget install Python.Python.3.12
 ```
+
+Then, in a new PowerShell window: `python -m pip install pillow`
 
 **Close and reopen PowerShell afterwards**, so it picks up the new programs.
 
@@ -40,13 +57,13 @@ winget install Git.Git
 With [Homebrew](https://brew.sh):
 
 ```bash
-brew install node@20 ffmpeg git
+brew install node@20 ffmpeg git python pillow
 ```
 
 ### Linux (Debian / Ubuntu)
 
 ```bash
-sudo apt update && sudo apt install -y ffmpeg git
+sudo apt update && sudo apt install -y ffmpeg git python3 python3-pil
 # Node: the version in apt is often too old. Use NodeSource or nvm, e.g.
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt install -y nodejs
 ```
@@ -54,8 +71,8 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt in
 ### Claude Code
 
 See [the Claude Code docs](https://code.claude.com/docs/en/overview)
-for installing it. It is optional: everything also works with the npm commands
-alone.
+for installing it. It is what makes the toolkit easy: Claude runs the commands and
+does the editing with you. Everything also works with the npm commands alone.
 
 **Check:** `node --version` prints v18 or higher, and `ffmpeg -version` prints
 a version number rather than "not found".
@@ -250,14 +267,14 @@ See [docs/finding-video.md](docs/finding-video.md) for the licences and rules.
 
 ---
 
-## Optional: Python, for some checks
+## Optional: extra Python packages, for some checks
 
-The `review` and `partner-frame` skills include small Python snippets that
-Claude runs to measure a render, for example to confirm a QR code still scans.
-If you want those checks, install Python 3 and:
+The `review`, `partner-frame` and `photo-touchup` skills include small Python
+snippets that Claude runs to measure a render, for example to confirm a QR code
+still scans. Claude installs these when it needs them:
 
 ```bash
-pip install pillow numpy opencv-python
+python -m pip install numpy opencv-python
 ```
 
 ---

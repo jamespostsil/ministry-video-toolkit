@@ -29,6 +29,10 @@ Needs ffmpeg and ffprobe on the PATH.
 """
 import argparse, csv, html, json, os, re, shutil, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 
+for _s in (sys.stdout, sys.stderr):   # Windows pipes are cp1252: names in other scripts must not crash a run
+    try: _s.reconfigure(encoding="utf-8", errors="replace")
+    except Exception: pass
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36"}
 MIN_SECONDS = 60

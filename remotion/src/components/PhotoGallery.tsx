@@ -11,7 +11,7 @@ export type GalleryPhoto = {
   // should say (scripture-dedication labels here, something else entirely for a
   // future video) is the caller's job, in that video's own data file — keeps this
   // component reusable across subject matter, not just this one use case.
-  credit?: string; // small optional photo credit, e.g. "Photo by Chris Gilmore"
+  credit?: string; // small optional photo credit, e.g. "Photo by Jane Smith"
   // Real pixel dimensions — optional here (PhotoGallery/GallerySlider don't
   // need them), but GalleryScatter reads them to size each card to the
   // photo's own true aspect ratio rather than assuming one.
