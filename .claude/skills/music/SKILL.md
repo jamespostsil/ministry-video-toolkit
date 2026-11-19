@@ -1,6 +1,6 @@
 ---
 name: music
-description: Make a music bed with ElevenLabs Music whose style changes land exactly on the video's big moments (tender under sad news, upbeat elsewhere), with smooth joins, an eased-in opening and a final chord that ends with the video. Optional: needs the user's own ElevenLabs API key; without one, use the user's own music (docs/finding-music.md). Use when asked to make, generate or compose music for a video, to time music to scene changes, or to fix how generated music starts, ends or changes.
+description: Make a music bed with ElevenLabs Music whose style changes land exactly on the video's big moments (tender under sad news, upbeat elsewhere), with smooth joins, an eased-in opening and a final chord that ends with the video. Optional: needs the user's own ElevenLabs API key; without one, find free music with the `find-music` skill, or use the user's own (docs/finding-music.md). Use when asked to make, generate or compose music for a video, to time music to scene changes, or to fix how generated music starts, ends or changes.
 ---
 
 # Music with ElevenLabs (optional)

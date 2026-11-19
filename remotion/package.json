@@ -31,6 +31,8 @@
     "typescript": "5.9.3"
   },
   "scripts": {
+    "postinstall": "node scripts/welcome.mjs --after-install",
+    "welcome": "node scripts/welcome.mjs",
     "doctor": "node scripts/doctor.mjs",
     "example:media": "node scripts/make-example-media.mjs",
     "new": "node scripts/new-project.mjs",

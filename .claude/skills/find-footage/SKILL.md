@@ -1,6 +1,6 @@
 ---
 name: find-footage
-description: Find free stock video clips (B-roll) the person is allowed to use, from Coverr, Mixkit, Pexels and Pixabay, keeping only clips whose licence allows use in a fundraising video with no credit. Claude looks at every candidate, puts the best on a picker page with looping previews, reads back the person's choices, downloads the full-size files with a licence record, and shows them in the video as a full-screen clip while the speaker keeps talking. Use when a video needs moving pictures for a moment with no photos (the whole world, Scripture, travel, an opening or closing shot), when the person asks for B-roll, stock footage or video clips, or instead of the drawn globe.
+description: Find free stock video clips (B-roll) and photos the person is allowed to use, from Coverr, Mixkit, Pexels and Pixabay (photos from Pixabay), keeping only clips whose licence allows use in a fundraising video with no credit. Claude looks at every candidate, puts the best on a picker page with looping previews, reads back the person's choices, downloads the full-size files with a licence record, and shows them in the video as a full-screen clip while the speaker keeps talking. Use when a scene needs a photo the person doesn't have, when a video needs moving pictures for a moment with no photos (the whole world, Scripture, travel, an opening or closing shot), when the person asks for B-roll, stock footage or video clips, or instead of the drawn globe.
 ---
 
 # Find footage
@@ -79,3 +79,29 @@ may use the clip. `remotion/public/clips/` is git-ignored.
   caption?: "..." }`. It fills the screen, muted, while the speaker keeps talking. `from` skips a slow start.
   Choose a clip at least as long as the beat (it loops otherwise). Check it in a still from the middle of the beat.
 - **Credits:** none are required, so stock clips stay out of the "Photos by ..." line.
+
+## Photos
+
+For a scene that needs a photo the person doesn't have ("a Bible open on a table", "a globe", "a village
+market"), search with `--photos`:
+
+```
+python -I find_footage.py search <work folder> "open bible" "desk globe" --photos
+```
+
+Photos come from Pixabay (the same free key); only photos, never illustrations, and nothing tagged as AI-made.
+Look at every one, as for clips, leaving out the same things (brands, other faiths' rituals, anything that
+pretends to be the people they serve). Read any printed words you can make out, at full size: a Bible open to a
+page headed "Ellen G. White" (Seventh-day Adventist) or a Book of Mormon looks like any Bible in a thumbnail, and
+full screen the words are readable. The picker takes photos and clips together; a photo shows still, and
+clicking it shows it larger. Fetch the chosen ones into the script's photo folder, so they appear under
+**+ Add a photo**:
+
+```
+python -I find_footage.py fetch <work folder> k017 --to <the script's photo folder>
+```
+
+Each is saved as `<key>.jpg` (1280 px wide, the largest Pixabay's API gives) and listed in `photo-licenses.csv`
+with an on-screen credit ("Photo: Jerryblessed, Pixabay"). Show that credit with the photo in the video, as for
+any photo. 1280 px is fine in a layout (side by side, grid, a card); for a photo that fills the screen, get the
+full-size file from the photo's Pixabay page instead.

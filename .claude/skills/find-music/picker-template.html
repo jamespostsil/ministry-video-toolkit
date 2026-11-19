@@ -1,0 +1,460 @@
+<title>Music Picker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* A music library, the way the stock-music sites do it: compact rows with a clickable waveform, combinable filters,
+   a search box, and one player bar at the bottom. */
+:root{
+  --bg:#f5f4f1; --surface:#fffefc; --ink:#24262b; --muted:#666a73; --faint:#8b8f97; --line:#e4e1db; --hover:#f0eee9;
+  --wave:#cfd5d8; --accent:#2f6474; --accent-ink:#ffffff; --accent-soft:#e2eef1;
+  --use:#2f6d5e; --use-bg:#dcefe8; --maybe:#8a6514; --maybe-bg:#f6ead0; --rm:#9a3b3b; --rm-bg:#f6e0df;
+  --display:"Fraunces",Georgia,serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --barh:72px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17191c; --surface:#202327; --ink:#eceef1; --muted:#a3a8b1; --faint:#80858e; --line:#32363d; --hover:#272b30;
+  --wave:#454b53; --accent:#8fc4d2; --accent-ink:#10262c; --accent-soft:#1e3439;
+  --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; --rm:#e9a5a5; --rm-bg:#3d2224; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17191c; --surface:#202327; --ink:#eceef1; --muted:#a3a8b1; --faint:#80858e; --line:#32363d; --hover:#272b30;
+  --wave:#454b53; --accent:#8fc4d2; --accent-ink:#10262c; --accent-soft:#1e3439;
+  --use:#8fd6bf; --use-bg:#1f3a33; --maybe:#e8c26e; --maybe-bg:#3b3120; --rm:#e9a5a5; --rm-bg:#3d2224; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 calc(var(--barh) + 32px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto}
+header{padding-top:32px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 24px}
+header .lead{flex:1 1 420px;min-width:0}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(24px,3.4vw,32px);line-height:1.15;margin:0 0 6px}
+.intro{color:var(--muted);margin:0;max-width:640px}
+.tally{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tally b{color:var(--ink)}
+.status{font-size:12px;color:var(--faint)}
+
+/* search */
+.searchrow{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);padding:16px 0 12px;margin-top:12px;
+  display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line)}
+.search{flex:1;position:relative;min-width:0}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:var(--faint)}
+.search input{width:100%;font:15px var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px 10px 36px}
+.search input:focus{outline:2px solid var(--accent);border-color:transparent}
+.ftoggle{display:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;margin-top:20px}
+/* filters */
+aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);align-self:start;max-height:calc(100vh - 76px - var(--barh) - 24px);
+  overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-gutter:stable;padding:0 4px 12px 0}
+.fg{border:0;margin:0 0 18px;padding:0}
+.fg legend{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0 6px}
+.clear{margin-left:6px}
+.opt{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:14px;min-width:0}
+.opt:hover{background:var(--hover)}
+.opt input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.opt .n{margin-left:auto;padding-left:8px;font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
+.opt.zero{color:var(--faint)}
+.clear{border:0;background:none;color:var(--accent);font-weight:600;padding:0;cursor:pointer;font-size:13px}
+
+/* active filter chips above the list */
+.active{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:0;margin-bottom:10px}
+.active:empty{display:none}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--ink);border:0;border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer}
+.pill span{font-size:15px;line-height:1;color:var(--muted)}
+.count{font-size:13px;color:var(--muted);margin-right:4px}
+
+/* track rows */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:grid;grid-template-columns:40px minmax(150px,1.1fr) minmax(160px,2fr) 46px auto;gap:6px 16px;align-items:center;
+  padding:12px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row:hover{background:var(--hover)}
+.row.on{background:var(--accent-soft)}
+.row.removed .t-main,.row.removed .wave{opacity:.45}
+.play{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.row.on .play,.play:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.play svg{width:16px;height:16px;fill:currentColor}
+.t-main{min-width:0}
+.ttl{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.art{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wave{height:40px;cursor:pointer;display:block;width:100%}
+.wave .b{fill:var(--wave)}.wave .p{fill:var(--accent)}
+.dur{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.rate{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.rate button{border:0;border-left:1px solid var(--line);background:var(--surface);padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.rate button:first-child{border-left:0}
+.rate button:disabled{opacity:.5;cursor:default}
+.rate button[data-v="use"][aria-pressed="true"]{background:var(--use-bg);color:var(--use)}
+.rate button[data-v="maybe"][aria-pressed="true"]{background:var(--maybe-bg);color:var(--maybe)}
+.rate button[data-v="remove"][aria-pressed="true"]{background:var(--rm-bg);color:var(--rm)}
+.sub{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12px;color:var(--muted);min-width:0}
+.tag{background:var(--hover);border-radius:4px;padding:1px 7px;color:var(--ink)}
+.row:hover .tag,.row.on .tag{background:var(--surface)}
+.cr{font-weight:600}.cr.need{color:var(--maybe)}
+.sub a{color:var(--muted)}
+.why{flex-basis:100%;color:var(--ink);font-size:13px}
+.notebtn{border:0;background:none;color:var(--accent);font-weight:600;font-size:12px;cursor:pointer;padding:0}
+.note{grid-column:2 / -1;display:none}
+.row.noting .note{display:block}
+.note textarea{width:100%;min-height:54px;resize:vertical;font:14px/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.note textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+.empty{padding:28px 18px;color:var(--muted)}
+.ask{margin-top:14px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.ask p{margin:0;flex:1 1 260px}
+.ask button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+.ask button:disabled{opacity:.5;cursor:default}
+.reqs{margin:10px 0 0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.reqs li::before{content:"Waiting for Claude: ";font-weight:600}
+
+/* the player bar */
+.player{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);border-top:1px solid var(--line);
+  box-shadow:0 -6px 18px rgba(0,0,0,.06);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.pin{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;min-height:52px}
+.pplay{width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer}
+.pplay:disabled{opacity:.4;cursor:default}
+.pplay svg{width:18px;height:18px;fill:currentColor}
+.pnow{min-width:0}
+.pt{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbar{height:4px;background:var(--wave);border-radius:2px;margin-top:6px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:var(--accent)}
+.switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.track{width:38px;height:22px;border-radius:11px;background:var(--wave);position:relative;transition:background .15s;flex:none}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.switch input:checked + .track{background:var(--accent)}
+.switch input:checked + .track::after{transform:translateX(16px)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+.switch small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:12px}
+  aside{position:static;max-height:none;display:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 2px}
+  aside.open{display:block}
+  .ftoggle{display:block}
+  .row{grid-template-columns:40px minmax(0,1fr) auto;padding:12px}
+  .wave{grid-column:1 / -1;grid-row:2}
+  .dur{grid-column:3;grid-row:1}
+  .rate{grid-column:1 / -1;grid-row:3}
+  .rate button{flex:1}
+  .sub,.note{grid-column:1 / -1}
+  .switch small{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .track,.track::after{transition:none} }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="lead">
+    <h1 id="title"></h1>
+    <p class="intro" id="intro"></p>
+  </div>
+  <div>
+    <div class="tally" id="tally"></div>
+    <div class="status" id="status">Connecting…</div>
+  </div>
+</header>
+
+<div class="searchrow">
+  <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>
+    <input id="q" type="search" placeholder="Search these tracks, or ask Claude to find more" aria-label="Search" autocomplete="off"></label>
+  <button class="ftoggle" id="ftoggle" type="button" aria-expanded="false" aria-controls="filters">Filters</button>
+</div>
+
+<div class="layout">
+  <aside id="filters" aria-label="Filters"></aside>
+  <main>
+    <div class="active" id="active"></div>
+    <div class="list" id="list" role="list"></div>
+    <div id="askbox"></div>
+  </main>
+</div>
+</div>
+
+<div class="player" role="region" aria-label="Player">
+  <div class="pin">
+    <button class="pplay" id="pplay" type="button" aria-label="Play" disabled></button>
+    <div class="pnow"><div class="pt" id="pt">Choose a track to listen</div><div class="pm" id="pm">Each preview is the first 45 seconds</div><div class="pbar"><i id="pbar"></i></div></div>
+    <label class="switch" id="sw" hidden><input type="checkbox" id="under"><span class="track"></span><span class="lbl">Under my voice<small>Hear it quietly under your own words</small></span></label>
+  </div>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const TRACKS = DATA.tracks;
+const byKey = Object.fromEntries(TRACKS.map(t => [t.key, t]));
+const picks = {}, notes = {}; let requests = [];
+let db = null, current = null, query = '';
+const sel = { mood: new Set(), style: new Set(), length: new Set(), credit: new Set(), choice: new Set() };
+const music = new Audio(), voice = DATA.voice ? new Audio(DATA.voice) : null;
+const $ = id => document.getElementById(id);
+const fmt = s => { s = Math.round(s || 0); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const setStatus = t => { $('status').textContent = t; };
+const ICON = { play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>',
+               pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>' };
+
+$('title').textContent = DATA.title;
+$('intro').textContent = 'Every track here is allowed in a ministry video posted online. Play a few, mark the ones you like, and add a note if something is close but not quite right. Claude reads your choices and notes.';
+if (voice) $('sw').hidden = false;
+$('pplay').innerHTML = ICON.play;
+
+// ---- what each filter means
+const lenOf = t => t.duration < 120 ? 'Under 2 min' : t.duration < 240 ? '2 to 4 min' : 'Over 4 min';
+const creditOf = t => t.needs_credit ? 'Credit in the description' : 'No credit needed';
+const choiceOf = t => ({ use: 'Use', maybe: 'Maybe', remove: 'Removed' })[picks[t.key]] || 'Not rated yet';
+const GROUPS = [
+  ['mood', 'Mood', t => t.moods || [], ['Calm', 'Hopeful', 'Uplifting', 'Reflective', 'Playful', 'Energetic']],
+  ['style', 'Style', t => t.styles || [], ['Piano', 'Orchestral', 'Ambient', 'Acoustic', 'Pop', 'Electronic']],
+  ['length', 'Length', t => [lenOf(t)], ['Under 2 min', '2 to 4 min', 'Over 4 min']],
+  ['credit', 'Credit', t => [creditOf(t)], ['No credit needed', 'Credit in the description']],
+  ['choice', 'Your choices', t => [choiceOf(t)], ['Use', 'Maybe', 'Not rated yet', 'Removed']],
+];
+const textOf = t => [t.title, t.artist, t.genre, t.instruments, t.note, t.src, t.via, ...(t.moods || []), ...(t.styles || []), notes[t.key]].join(' ').toLowerCase();
+// within a group: any ticked value; across groups: all. Removed tracks stay out unless asked for.
+function matches(t, skip) {
+  if (query && !query.split(/\s+/).every(w => textOf(t).includes(w))) return false;
+  for (const [id, , vals] of GROUPS) {
+    if (id === skip || !sel[id].size) continue;
+    if (!vals(t).some(v => sel[id].has(v))) return false;
+  }
+  if (skip !== 'choice' && !sel.choice.size && picks[t.key] === 'remove') return false;
+  return true;
+}
+
+function renderFilters() {
+  const el = $('filters'); el.textContent = '';
+  for (const [id, label, vals, order] of GROUPS) {
+    const present = order.filter(v => TRACKS.some(t => vals(t).includes(v)) || id === 'choice');
+    if (present.length < 2 && id !== 'choice') continue;
+    const fs = document.createElement('fieldset'); fs.className = 'fg';
+    const lg = document.createElement('legend'); lg.textContent = label; fs.appendChild(lg);
+    for (const v of present) {
+      const n = TRACKS.filter(t => matches(t, id) && vals(t).includes(v)).length;
+      const lab = document.createElement('label'); lab.className = 'opt' + (n ? '' : ' zero');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = sel[id].has(v);
+      cb.onchange = () => { cb.checked ? sel[id].add(v) : sel[id].delete(v); refresh(); };
+      const nm = document.createElement('span'); nm.textContent = v;
+      const c = document.createElement('span'); c.className = 'n'; c.textContent = n;
+      lab.append(cb, nm, c); fs.appendChild(lab);
+    }
+    el.appendChild(fs);
+  }
+  const any = Object.values(sel).some(s => s.size);
+  if (any) { const b = document.createElement('button'); b.className = 'clear'; b.type = 'button'; b.textContent = 'Clear all filters';
+    b.onclick = () => { Object.values(sel).forEach(s => s.clear()); refresh(); }; el.appendChild(b); }
+  const n = Object.values(sel).reduce((a, s) => a + s.size, 0);
+  $('ftoggle').textContent = n ? `Filters (${n})` : 'Filters';
+}
+
+function renderActive(shown) {
+  const el = $('active'); el.textContent = '';
+  const any = query || Object.values(sel).some(s => s.size);
+  if (!any) return;
+  const c = document.createElement('span'); c.className = 'count'; c.textContent = `${shown} of ${TRACKS.length} tracks`; el.appendChild(c);
+  for (const [id] of GROUPS) for (const v of sel[id]) {
+    const p = document.createElement('button'); p.type = 'button'; p.className = 'pill'; p.setAttribute('aria-label', 'Remove filter ' + v);
+    p.append(v); const x = document.createElement('span'); x.textContent = '×'; p.appendChild(x);
+    p.onclick = () => { sel[id].delete(v); refresh(); }; el.appendChild(p);
+  }
+}
+
+// ---- the waveform: bars from the preview's loudness, the played part in the accent colour
+function waveSvg(t) {
+  const P = t.peaks || [], n = P.length || 1, w = 3, gap = 1.5, W = n * (w + gap), H = 40;
+  let d = '';
+  P.forEach((v, i) => { const h = Math.max(2, (v / 100) * (H - 4)); d += `M${(i * (w + gap)).toFixed(1)} ${((H - h) / 2).toFixed(1)}h${w}v${h.toFixed(1)}h-${w}z`; });
+  return `<svg class="wave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="slider" aria-label="Jump to a point in ${t.title.replace(/"/g, '')}" aria-valuemin="0" aria-valuemax="45" aria-valuenow="0" tabindex="0">
+    <defs><clipPath id="c-${t.key}"><rect width="0" height="${H}"/></clipPath></defs>
+    <path class="b" d="${d}"/><path class="p" d="${d}" clip-path="url(#c-${t.key})"/></svg>`;
+}
+
+function row(t) {
+  const r = document.createElement('div'); r.className = 'row'; r.id = t.key; r.setAttribute('role', 'listitem');
+  r.innerHTML = `<button class="play" type="button"></button>
+    <div class="t-main"><div class="ttl"></div><div class="art"></div></div>
+    ${waveSvg(t)}
+    <div class="dur"></div>
+    <div class="rate" role="group" aria-label="Your choice"></div>
+    <div class="sub"></div>
+    <div class="note"><textarea placeholder="What would make it better, or why it works" aria-label="Note"></textarea></div>`;
+  r.querySelector('.play').onclick = () => toggle(t.key);
+  r.querySelector('.ttl').textContent = t.title; r.querySelector('.ttl').title = t.title;
+  r.querySelector('.art').textContent = t.artist;
+  r.querySelector('.dur').textContent = fmt(t.duration);
+  const wave = r.querySelector('.wave');
+  const seekTo = f => { if (current !== t.key) start(t.key, f); else seek(f); };
+  wave.addEventListener('click', e => { const b = wave.getBoundingClientRect(); seekTo((e.clientX - b.left) / b.width); });
+  wave.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault();
+    const d = music.duration || 45, now = current === t.key ? music.currentTime : 0;
+    seekTo(Math.min(1, Math.max(0, (now + (e.key === 'ArrowRight' ? 5 : -5)) / d)));
+  });
+  for (const [v, label] of [['use', 'Use'], ['maybe', 'Maybe'], ['remove', 'Remove']]) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.v = v; b.textContent = label;
+    b.onclick = () => choose(t.key, picks[t.key] === v ? null : v);
+    r.querySelector('.rate').appendChild(b);
+  }
+  const sub = r.querySelector('.sub');
+  if (t.note) { const w = document.createElement('div'); w.className = 'why'; w.textContent = t.note; sub.appendChild(w); }
+  for (const x of [...(t.moods || []), ...(t.styles || [])]) { const s = document.createElement('span'); s.className = 'tag'; s.textContent = x; sub.appendChild(s); }
+  const cr = document.createElement('span'); cr.className = 'cr' + (t.needs_credit ? ' need' : ''); cr.textContent = t.needs_credit ? 'Credit needed' : 'No credit needed'; sub.appendChild(cr);
+  const a = document.createElement('a'); a.href = t.licence_url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = t.licence; sub.appendChild(a);
+  const pg = document.createElement('a'); pg.href = t.page; pg.target = '_blank'; pg.rel = 'noopener'; pg.textContent = t.src + (t.via ? ' / ' + t.via : ''); sub.appendChild(pg);
+  const nb = document.createElement('button'); nb.className = 'notebtn'; nb.type = 'button'; sub.appendChild(nb);
+  nb.onclick = () => { r.classList.toggle('noting'); paintRow(t.key); if (r.classList.contains('noting')) r.querySelector('textarea').focus(); };
+  const ta = r.querySelector('textarea');
+  ta.addEventListener('change', () => saveNote(t.key, ta.value.trim()));
+  return r;
+}
+
+function paintRow(key) {
+  const r = $(key); if (!r) return;
+  const v = picks[key];
+  r.classList.toggle('removed', v === 'remove');
+  r.classList.toggle('on', current === key);
+  r.querySelectorAll('.rate button').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.v === v)); b.disabled = !db; });
+  const playing = current === key && !music.paused;
+  const pb = r.querySelector('.play'); pb.innerHTML = playing ? ICON.pause : ICON.play; pb.setAttribute('aria-label', (playing ? 'Pause ' : 'Play ') + byKey[key].title);
+  const ta = r.querySelector('textarea'); ta.disabled = !db; if (document.activeElement !== ta) ta.value = notes[key] || '';
+  if (notes[key]) r.classList.add('noting');
+  r.querySelector('.notebtn').textContent = r.classList.contains('noting') ? (notes[key] ? 'Note' : 'Hide note') : 'Add a note';
+}
+
+function renderList() {
+  const list = $('list'); list.textContent = '';
+  const shown = TRACKS.filter(t => matches(t));
+  for (const t of shown) list.appendChild(row(t));
+  if (!shown.length) { const p = document.createElement('div'); p.className = 'empty';
+    p.textContent = query ? 'None of these tracks match.' : (sel.choice.has('Removed') ? 'Nothing removed.' : 'No tracks match these filters.'); list.appendChild(p); }
+  TRACKS.forEach(t => paintRow(t.key));
+  renderActive(shown.length);
+  renderAsk();
+  if (current) paintPlayer();
+}
+
+function renderAsk() {
+  const box = $('askbox'); box.textContent = '';
+  const q = $('q').value.trim();
+  if (!q && !requests.length) return;
+  const d = document.createElement('div'); d.className = 'ask';
+  if (q) {
+    const p = document.createElement('p'); p.textContent = `Not quite it? Claude can search the free music libraries for “${q}” and add what it finds to this page.`;
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Ask Claude to find more'; b.disabled = !db;
+    b.onclick = () => askFor(q);
+    d.append(p, b);
+  }
+  if (requests.length) {
+    const ul = document.createElement('ul'); ul.className = 'reqs'; ul.style.flexBasis = '100%';
+    for (const r of requests) { const li = document.createElement('li'); li.textContent = '“' + r.text + '”'; ul.appendChild(li); }
+    d.appendChild(ul);
+  }
+  box.appendChild(d);
+}
+
+function refresh() { renderFilters(); renderList(); }
+
+// ---- playback: one track at a time, from the player bar or a row; "under my voice" plays the voice with the music quiet
+function under() { return voice && $('under').checked; }
+function start(key, frac) {
+  if (current !== key) {
+    music.pause(); if (voice) voice.pause();
+    const prev = current; current = key; if (prev) { paintRow(prev); resetWave(prev); }
+    music.src = `a/${key}.mp3`;
+  }
+  music.volume = under() ? 0.22 : 1;
+  const go = () => { if (frac != null) music.currentTime = frac * (music.duration || 45); syncVoice(); music.play().catch(() => setStatus('Couldn’t play that track.')); };
+  music.readyState >= 1 ? go() : music.addEventListener('loadedmetadata', go, { once: true });
+  paintRow(key); paintPlayer();
+}
+function seek(f) { music.currentTime = f * (music.duration || 45); syncVoice(); if (music.paused) music.play().catch(() => {}); }
+function syncVoice() { if (!voice) return; if (under()) { voice.currentTime = Math.min(music.currentTime, 44); if (!music.paused) voice.play().catch(() => {}); } else voice.pause(); }
+function toggle(key) {
+  if (current === key && !music.paused) { music.pause(); return; }
+  start(key, current === key ? null : 0);
+}
+music.addEventListener('pause', () => { if (voice) voice.pause(); if (current) { paintRow(current); paintPlayer(); } });
+music.addEventListener('play', () => { syncVoice(); if (current) { paintRow(current); paintPlayer(); } });
+music.addEventListener('seeked', syncVoice);
+music.addEventListener('ended', () => { if (voice) voice.pause(); paintPlayer(); if (current) paintRow(current); });
+music.addEventListener('timeupdate', () => {
+  if (!current) return;
+  const d = music.duration || 45, f = music.currentTime / d;
+  const r = $(current);
+  if (r) { const rect = r.querySelector('clipPath rect'), svg = r.querySelector('.wave');
+    rect.setAttribute('width', (svg.viewBox.baseVal.width * f).toFixed(1)); svg.setAttribute('aria-valuenow', Math.round(music.currentTime)); }
+  $('pbar').style.width = (100 * f) + '%';
+  $('pm').textContent = `${fmt(music.currentTime)} / ${fmt(d)} preview · whole track ${fmt(byKey[current].duration)}` + (under() ? ' · under your voice' : '');
+});
+function resetWave(key) { const r = $(key); if (r) r.querySelector('clipPath rect').setAttribute('width', 0); }
+function paintPlayer() {
+  const t = byKey[current]; if (!t) return;
+  $('pplay').disabled = false;
+  const playing = !music.paused;
+  $('pplay').innerHTML = playing ? ICON.pause : ICON.play; $('pplay').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+  $('pt').textContent = t.title + ' · ' + t.artist;
+}
+$('pplay').onclick = () => { if (current) toggle(current); };
+$('under').addEventListener('change', () => { music.volume = under() ? 0.22 : 1; syncVoice(); if (!music.paused && voice && under()) voice.play().catch(() => {}); });
+document.addEventListener('keydown', e => {
+  if (e.code !== 'Space' || /INPUT|TEXTAREA|BUTTON|SELECT/.test(e.target.tagName) || e.target.closest('[role="slider"]')) return;
+  if (current) { e.preventDefault(); toggle(current); }
+});
+
+// ---- search and filters
+let qTimer;
+$('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { query = $('q').value.trim().toLowerCase(); refresh(); }, 120); });
+$('ftoggle').onclick = () => { const o = $('filters').classList.toggle('open'); $('ftoggle').setAttribute('aria-expanded', String(o)); };
+
+// ---- saving: the db collection "picks" (choice and note per track) and "requests" (searches for Claude)
+function tally() {
+  const v = Object.values(picks);
+  $('tally').innerHTML = `<b>${v.filter(x => x === 'use').length}</b> to use · <b>${v.filter(x => x === 'maybe').length}</b> maybe · <b>${v.filter(x => x === 'remove').length}</b> removed`;
+}
+async function write(key) {
+  const ref = db.doc('picks/' + key);
+  if (picks[key] || notes[key]) await ref.set({ choice: picks[key] || null, note: notes[key] || '', at: new Date().toISOString() });
+  else await ref.delete();
+}
+async function choose(key, v) {
+  const prev = picks[key];
+  if (v) picks[key] = v; else delete picks[key];
+  tally(); (v === 'remove' || prev === 'remove' || sel.choice.size) ? refresh() : paintRow(key);
+  try { await write(key); setStatus('Saved'); }
+  catch (e) { if (prev) picks[key] = prev; else delete picks[key]; tally(); refresh(); setStatus('Couldn’t save that. Try again.'); }
+}
+async function saveNote(key, text) {
+  const prev = notes[key];
+  if (text) notes[key] = text; else delete notes[key];
+  try { await write(key); setStatus('Note saved'); }
+  catch (e) { if (prev) notes[key] = prev; else delete notes[key]; setStatus('Couldn’t save that note. Try again.'); }
+}
+async function askFor(text) {
+  const id = 'r' + Date.now();
+  requests.push({ id, text }); renderAsk();
+  try { await db.doc('requests/' + id).set({ text, at: new Date().toISOString(), done: false }); setStatus('Request saved for Claude'); }
+  catch (e) { requests = requests.filter(r => r.id !== id); renderAsk(); setStatus('Couldn’t save that request. Try again.'); }
+}
+
+tally(); refresh();
+(async () => {
+  const timer = setTimeout(() => setStatus('Choices can’t be saved in this view.'), 10000);
+  try { db = window.claude ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { clearTimeout(timer); setStatus('Choices can’t be saved in this view.'); return; }
+  db.collection('picks').onSnapshot(snap => {
+    clearTimeout(timer);
+    for (const k in picks) delete picks[k];
+    for (const k in notes) delete notes[k];
+    snap.docs.forEach(d => { const x = d.data() || {};
+      if (['use', 'maybe', 'remove'].includes(x.choice)) picks[d.id] = x.choice;
+      if (typeof x.note === 'string' && x.note) notes[d.id] = x.note; });
+    setStatus('Choices save automatically'); tally(); refresh();
+  }, () => { clearTimeout(timer); setStatus('Couldn’t load saved choices.'); });
+  db.collection('requests').onSnapshot(snap => {
+    requests = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) })).filter(r => r.text && !r.done);
+    renderAsk();
+  }, () => {});
+})();
+</script>

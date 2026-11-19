@@ -51,6 +51,8 @@ Licences change, so **read the current terms on the site** before you rely on an
   hours rather than asked again (the search saves them in the work folder's `cache/`), real searches only (no mass
   downloading), and wherever search results are shown, say they come from Pixabay (the picker labels each clip
   and links to its Pixabay page). Claude downloads only the clips you choose, at 1080p.
+- With the same key, Claude can also find Pixabay **photos** for scenes that have none, and you choose them on
+  the same kind of page. Each is saved with its credit, which is shown with the photo.
 - Pixabay has many computer-made clips (3D globes, glowing Bibles). Claude leaves out green-screen clips and ones
   tagged as AI-made, and looks at every other clip before suggesting it.
 

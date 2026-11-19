@@ -1,7 +1,7 @@
 """Build the storyboard page: every shot's real picture with its highlight boxes, the lines said over it (editable
 in place), the photos shown with those lines (drag to reorder, each with its caption, credit and permission), the
 words that appear on screen (editable), one Note box per card, notes pinned (click) or arrows drawn
-(drag) on the picture, what changed since the last draft marked word by word, and an Approve button. Published as
+(drag) on the picture, what changed since the last draft marked word by word, Published as
 an artifact with the db capability.
 
   python -I build.py <storyboard.json> <out folder> [--pictures DIR] [--photos DIR] [--crops FILE] [--boxes FILE]
@@ -51,7 +51,7 @@ order/<shot key> {pics: [picture ids in the reviewer's order]}, pics/<picture id
 original: {caption, credit, rights}} (the reviewer's version of a picture's on-screen words and permission; the
 picture id is the file name made safe, shared by every shot that uses that file), screen/<shot key>.<n> {label,
 text, original} (the reviewer's wording of an on-screen text),
-notes/general {text}, notes/approval-draft-<N> {approved, at}, spots/<id> {shot (key), x, y, text, kind?: "arrow",
+notes/general {text}, spots/<id> {shot (key), x, y, text, kind?: "arrow",
 x2, y2} (a note pinned to a spot on the shot's picture, or an arrow from x, y to the tip x2, y2; fractions of the picture),
 scenes/<id> {after (shot key), say, screen, createdAt} (a new scene the reviewer added after that shot: make its picture
 and add it to the next draft), good/<doc> {good} (the reviewer's "Looks good": card-<key>),
@@ -208,9 +208,14 @@ for s in sb["shots"]:
 
 library = []
 if a.photos:   # every photo in the script's folder, for "+ Add a photo"
+    _lic = {}   # stock photos fetched by find-footage: their on-screen credit, filled in when one is added
+    _lp = os.path.join(a.photos, "photo-licenses.csv")
+    if os.path.isfile(_lp):
+        import csv
+        _lic = {r["file"]: r.get("on-screen credit", "") for r in csv.DictReader(open(_lp, encoding="utf-8-sig"))}
     for f in sorted(os.listdir(a.photos)):
         if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
-            p = picture({"file": f}); library.append({k: p[k] for k in ("id", "file", "w", "h", "cropped")})
+            p = picture({"file": f}); library.append({**{k: p[k] for k in ("id", "file", "w", "h", "cropped")}, **({"credit": _lic[f]} if _lic.get(f) else {})})
 _seen = {}   # the script's own order: each photo's first appearance across the shots
 for _s in sb["shots"]:
     for _p in _s.get("pictures", []): _seen.setdefault(_p["file"], len(_seen))

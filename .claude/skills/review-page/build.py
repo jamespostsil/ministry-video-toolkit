@@ -61,6 +61,11 @@ if a.photos and a.out_pics:   # the photo thumbnails and larger copies the cards
     for _s in d["sentences"]:
         for _p in _s.get("pictures", []): _order.setdefault(_p["file"], len(_order))
     files = sorted(set(used) | {f for f in os.listdir(a.photos) if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))}, key=lambda f: (0, _order[f], "") if f in _order else (1, 0, f.lower()))
+    _lic = {}   # stock photos fetched by find-footage: their on-screen credit, filled in when one is added
+    _lp = os.path.join(a.photos, "photo-licenses.csv")
+    if os.path.isfile(_lp):
+        import csv
+        _lic = {r["file"]: r.get("on-screen credit", "") for r in csv.DictReader(open(_lp, encoding="utf-8-sig"))}
     for f in files:
         pid = pid_of(f)
         im = ImageOps.exif_transpose(Image.open(os.path.join(a.photos, f))).convert("RGB")
@@ -68,7 +73,7 @@ if a.photos and a.out_pics:   # the photo thumbnails and larger copies the cards
         if c: im = im.crop((c["x"], c["y"], c["x"] + c["w"], c["y"] + c["h"]))
         for suffix, size in ((".jpg", 1600), (".t.jpg", 240)):
             q = im.copy(); q.thumbnail((size, size)); q.save(os.path.join(a.out_pics, pid + suffix), quality=86)
-        library.append({"id": pid, "file": f, "w": im.width, "h": im.height, "inScript": f in _order})
+        library.append({"id": pid, "file": f, "w": im.width, "h": im.height, "inScript": f in _order, **({"credit": _lic[f]} if _lic.get(f) else {})})
 if a.library and a.out_pics:   # shared photos (people with Bibles...), with their caption and credit filled in
     import csv
     from PIL import Image, ImageOps

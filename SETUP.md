@@ -79,6 +79,10 @@ render fail with `chrome-headless-shell.exe ENOENT`. `npm run doctor` checks thi
 The first time you preview or render, Remotion also downloads its own copy of
 Chrome (about 110 MB), which it uses to draw each frame.
 
+When `npm ci` finishes, a welcome page opens in your browser with the next steps
+(the terminal also prints a link to it). Open it again any time with
+`npm run welcome`.
+
 **Check:** `npm run doctor`. It should pass every check under **This machine**.
 Under **Project _example** it will say the footage is not built yet. That is
 expected; step 3 builds it.
@@ -190,7 +194,7 @@ Graphics are timed to the words you say, which needs a word-by-word transcript.
 `npm run transcribe -- <project>` makes one using a Whisper speech-to-text
 service. Get a key from **one** of:
 
-- **Groq** (recommended: fast and inexpensive): [console.groq.com/keys](https://console.groq.com/keys)
+- **Groq** (recommended: a free key, fast): [console.groq.com/keys](https://console.groq.com/keys)
 - **OpenAI**: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
 Then create a file called `.env` in the `remotion/` folder containing one line:
@@ -226,6 +230,23 @@ ELEVENLABS_API_KEY=your-key-here
 
 Check what your plan's licence allows before publishing (free plans are
 non-commercial and need a credit). Each run spends credits from your account.
+
+---
+
+## Optional: a Pixabay key, for more video clips
+
+For moments with no photos (the whole world, Scripture, travel), Claude can find
+free stock video clips. It searches Coverr and Mixkit without a key; a free
+Pixabay key adds a much larger library. Make a free account at
+[pixabay.com](https://pixabay.com/), then open
+[pixabay.com/api/docs](https://pixabay.com/api/docs/) while signed in: your key
+is shown there. Add it to the same `remotion/.env` file:
+
+```
+PIXABAY_API_KEY=your-key-here
+```
+
+See [docs/finding-video.md](docs/finding-video.md) for the licences and rules.
 
 ---
 

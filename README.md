@@ -35,7 +35,7 @@ made from.*
    are listed under "Beats" below. Or leave it to Claude.
 3. **Approve the storyboard.** Give Claude the recording and the script link.
    Claude makes a page showing every scene with its words and pictures; change
-   anything there, then press Approve. If the script doesn't say how to show the
+   anything there, then tell Claude it's ready. If the script doesn't say how to show the
    pictures, Claude chooses a layout for each scene, and the **Layout** button
    on that scene lets you pick another.
 4. **Review the video.** Claude renders it and makes a review page. Leave notes
@@ -166,17 +166,18 @@ replace those paths as you add your own. To hear a music change without
 rendering any frames: `npm run render -- my-video --audio-only` writes
 `out/my-video-mix.wav`.
 
-**Shared photos of people with Bibles.** SIL and Wycliffe staff can use a set of
-photos already cleared for partnership videos, each with its on-screen credit:
-[People with Bibles: photos for partnership videos](https://drive.google.com/drive/folders/1-H_TnNHrNl6CV8D1xkK8dZi33O7p4Fyq)
-(sign in with your SIL account; anyone else can press **Request access**).
-Download the folder once, or add a shortcut to it in Google Drive for desktop. Claude
-finds it there (in Google Drive, Downloads or Documents) and the storyboard and review
-pages offer the photos under **+ Add a photo > Shared photos**, with the caption and
-credit filled in. If the folder isn't on your computer, Claude asks whether you'd like
-to add it. Kept somewhere else? Add a line `SHARED_PHOTOS=<folder>` to `remotion/.env`. Claude
-can also suggest photos from the set for scenes that have none; you keep or
-remove each one on the storyboard.
+**Photos.** Use your own ministry photos, or photos from related work (a Bible
+dedication, a colleague's photos) with the owner's OK and a credit: put them in
+your script, or add them on the storyboard with **+ Add a photo**. For a scene with no photo at all, Claude can
+search Pixabay for free photos (with the same free key as video clips) and give
+you a page to choose on; each one is saved with its credit and licence.
+
+*For SIL/Wycliffe staff:* if the "People with Bibles" photo folder
+(SIL Google Drive) is on your computer, through Google Drive for desktop or a
+download, the storyboard and review pages also offer those photos under
+**+ Add a photo**, with each caption and credit filled in. They are cleared for
+SIL/Wycliffe partnership videos only. Kept somewhere unusual? Add a line
+`SHARED_PHOTOS=<folder>` to `remotion/.env`.
 
 **Keeping your own project under version control.** Project folders are
 git-ignored here so nobody's video ends up in the shared toolkit. To track a
@@ -219,13 +220,14 @@ this folder; they are also plain Markdown, worth reading yourself.
 | Skill | Covers |
 |---|---|
 | `footage-prep` | Trimming the opening hold and teleprompter pauses; where it is safe to cut |
-| `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked, Approve |
+| `storyboard` | The storyboard page a reviewer approves before filming or rendering: a picture beside each shot's lines, editable wording, notes, changes marked |
 | `script-to-beats` | Turning a script with images (Notion page or Google Doc) into a timed beat plan |
 | `photo-touchup` | Fixing washed-out photos gently, with a before / after page to choose from before anything is replaced |
 | `find-footage` | Free stock video clips you're allowed to use (Coverr, Mixkit, Pexels, Pixabay): a page of previews to choose from, then the full-size files with a licence record |
 | `beat-library` | Which beat suits which content, card sizes, headings, read time, keeping text off faces |
 | `partner-frame` | The closing frame: cropping the photo, checking the QR code, contrast |
 | `music` | Optional, with your own ElevenLabs key: music made for the video, changing style exactly at its big moments |
+| `find-music` | Free music you're allowed to use (Mixkit, Incompetech, ccMixter): a page to listen to each track, alone or under your own voice, and choose, then the files with a licence record and credit lines |
 | `render` | Rendering and the audio mix |
 | `review` | Checking a render: flashes at cuts, audio clicks, sync, legibility, QR scanning |
 | `review-page` | The page a reviewer watches a version on: notes per sentence, notes pinned to a spot on the picture, what changed, Looks good |

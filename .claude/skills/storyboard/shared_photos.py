@@ -56,5 +56,5 @@ def find(depth=4):
 
 
 MISSING = ('The shared "People with Bibles" photos are not on this computer, so "+ Add a photo" offers only this '
-           "video's photos. Ask the person whether they'd like them added (storyboard SKILL.md, \"Shared photos\"): "
-           "get the folder from " + LINK + ", then build again.")
+           "video's photos. That is normal: the folder is for SIL/Wycliffe staff and others given access. Mention it only if "
+           "the person is SIL/Wycliffe staff (storyboard SKILL.md, \"Shared photos\"); never offer it to anyone else.")

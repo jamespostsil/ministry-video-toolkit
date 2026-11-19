@@ -1,4 +1,4 @@
-<title>Video Clip Picker</title>
+<title>Clip and Photo Picker</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap">
 <style>
@@ -41,7 +41,8 @@ h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
 .card.maybe{border-color:var(--maybe)}
 .card.remove{border-color:var(--rm)}.card.remove .frame,.card.remove .note{opacity:.4}
 .frame{position:relative;aspect-ratio:16/9;max-width:100%;background:#111}
-.frame video{width:100%;height:100%;object-fit:cover;display:block}
+.frame video{width:100%;height:100%;object-fit:cover;display:block}.frame img{width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;cursor:zoom-out}#lb img{max-width:100%;max-height:100%}#lb[hidden]{display:none}
 .tag{position:absolute;font:600 11px var(--body);background:rgba(20,20,24,.72);color:#fff;padding:3px 7px;border-radius:4px}
 .src{left:8px;top:8px;letter-spacing:.05em;text-transform:uppercase}
 .dur{right:8px;bottom:8px;font-variant-numeric:tabular-nums}
@@ -61,7 +62,8 @@ h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
 <div class="wrap">
 <header>
   <h1 id="title"></h1>
-  <p>Each clip is free to use in your video, with no credit needed. Tap <b>Use</b> or <b>Maybe</b> on the ones you like and <b>Remove</b> on the ones that don’t fit. Claude can read your choices and fetch the full-size files.</p>
+  <p>Each one is free to use in your video. Tap <b>Use</b> or <b>Maybe</b> on the ones you like and <b>Remove</b> on the ones that don’t fit. Claude can read your choices and fetch the full-size files. Click a photo to see it larger.</p>
+  <p>Not finding what you want? Tell Claude what you're looking for (“a Bible on a wooden table,” “more globes”), and Claude will search for more.</p>
   <div class="terms" id="terms"></div>
 </header>
 <div class="bar" role="toolbar" aria-label="Filter clips">
@@ -71,6 +73,7 @@ h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0 0 12px}
 </div>
 <main id="list"></main>
 </div>
+<div id="lb" hidden><img alt=""></div>
 
 <script id="data" type="application/json">__DATA__</script>
 <script>
@@ -108,21 +111,25 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function card(c) {
   const a = document.createElement('article'); a.className = 'card'; a.id = c.key;
-  a.innerHTML = `<div class="frame"><video muted loop playsinline preload="none"></video><span class="tag src"></span><span class="tag dur"></span></div>
+  const photo = c.type === 'photo';
+  a.innerHTML = `<div class="frame">${photo ? '<img alt="" loading="lazy">' : '<video muted loop playsinline preload="none"></video>'}<span class="tag src"></span><span class="tag dur"></span></div>
     <div class="info"><div class="note"></div><div class="orig"></div><div class="acts"></div></div>`;
-  const v = a.querySelector('video'); v.poster = `v/${c.key}.jpg`; v.src = `v/${c.key}.mp4`;
+  const v = a.querySelector(photo ? 'img' : 'video');
+  if (photo) { v.src = `v/${c.key}.jpg`; v.alt = c.note || c.title.split(',').slice(0, 3).join(','); v.onclick = () => { const lb = document.getElementById('lb'); lb.querySelector('img').src = v.src; lb.hidden = false; }; }
+  else { v.poster = `v/${c.key}.jpg`; v.src = `v/${c.key}.mp4`; }
   a.querySelector('.src').textContent = c.src;
-  a.querySelector('.dur').textContent = fmt(c.duration);
+  a.querySelector('.dur').textContent = photo ? 'Photo' : fmt(c.duration);
   const note = a.querySelector('.note'); note.textContent = c.note || c.title; if (!c.note) note.style.fontWeight = 500;
   const o = a.querySelector('.orig');
   if (c.note) o.append('“' + c.title + '” · ');
+  if (photo && c.user) o.append('by ' + c.user + ' · ');
   const l = document.createElement('a'); l.href = c.page; l.target = '_blank'; l.rel = 'noopener'; l.textContent = 'Open on ' + c.src; o.append(l);
   for (const [val, label] of [['use', 'Use'], ['maybe', 'Maybe'], ['remove', 'Remove']]) {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.v = val; b.textContent = label; b.disabled = !db;
     b.onclick = () => choose(c.key, picks[c.key] === val ? null : val);
     a.querySelector('.acts').appendChild(b);
   }
-  if (io && !still) io.observe(v);
+  if (io && !still && !photo) io.observe(v);
   return a;
 }
 
@@ -172,6 +179,8 @@ async function choose(key, val) {
   }
 }
 
+document.getElementById('lb').onclick = (e) => { e.currentTarget.hidden = true; };
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('lb').hidden = true; });
 renderChips(); renderList();
 (async () => {
   const timer = setTimeout(() => setStatus('Choices can’t be saved in this view.'), 10000);
