@@ -156,14 +156,14 @@ Translation work is also accelerating!
 
 `[Scatter: Scripture Dedications]`
 
-<img src="script-images/mankon.jpg" height="110" alt="New Testament - Mankon, Cameroon"> <img src="script-images/binumarien-crowd.jpg" height="110" alt="Binumarien, Papua New Guinea"> <img src="script-images/kwaya.jpg" height="110" alt="New Testament - Kwaya, Tanzania"> <img src="script-images/saliba.jpg" height="110" alt="New Testament - Saliba, Papua New Guinea"> <img src="script-images/binumarien-man.jpg" height="110" alt="Binumarien, Papua New Guinea"> <img src="script-images/upper-pokomo.jpg" height="110" alt="Bible - Upper Pokomo, Kenya">
+<img src="script-images/mankon.jpg" height="110" alt="New Testament - Mankon, Cameroon"> <img src="script-images/binumarien-crowd.jpg" height="110" alt="Binumarien, Papua New Guinea"> <img src="script-images/kwaya.jpg" height="110" alt="New Testament - Kwaya, Tanzania"> <img src="script-images/saliba.jpg" height="110" alt="New Testament - Saliba, Papua New Guinea"> <img src="script-images/upper-pokomo.jpg" height="110" alt="Bible - Upper Pokomo, Kenya">
 
 By 2033, we expect that every single language of the world will have access to
 at least some portion of God's Word! What a pivotal time to be involved in Bible
 translation! You are helping make this happen through your prayers and financial
 partnership.
 
-> **Became:** a second `scatter`, then, back on the live shot, a heading with
+> **Became:** a second `scatter` (the video has one more photo, a second one from Binumarien), then, back on the live shot, a heading with
 > bullets: *You are helping through your: · Prayers · Financial Partnership*.
 
 `[video]`
