@@ -129,6 +129,24 @@ resolves before shipping.
 
 ---
 
+## Splitting the review across models
+
+Watching frames floods the context, so run the checks as subagents, and match
+each stage to the model it needs rather than putting everything on the most
+expensive one:
+
+- **Pass 1, technical checks** (the measurements above: flashes, stretched or
+  missing images, judder, off-brand colour, bad tail frames): a faster model
+  (Sonnet). Each agent reports its clear findings and, separately, the
+  borderline calls it is unsure about.
+- **Borderline calls**: send just those to one stronger-model (Opus) agent,
+  which rules on each one, real or not.
+- **Pass 2, composition and tone** (does a graphic cheapen a moment, is
+  something cramped, does the pacing read end to end): the strongest model.
+- **The main session** (putting it together, deciding fixes, editing code), and
+  any planning that learns from earlier work or other skills, stays on the
+  strongest model. Don't drop taste, rulings or planning to a cheaper one.
+
 ## Reporting
 
 Lead every finding with what a viewer would notice, in plain language, and put

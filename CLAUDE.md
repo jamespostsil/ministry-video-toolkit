@@ -69,6 +69,14 @@ once more as a light suggestion where it fits better (music when they watch the 
   finds them on their website and offers them, and saves them for the next video), then a newsletter paragraph to
   go with it if they want one.
 
+## Improving the toolkit as you go
+
+While making a video, keep a list of every kind of thing the person asks for: a kind of scene, a layout option, a
+storyboard or review-page feature, a review rule. If the toolkit doesn't have it yet, add it in a general, reusable
+form (a component, a skill, a doc), so the next person gets it too. That one video's own data stays in its
+git-ignored project folder. At the end of each round, check the list against the toolkit and say what was added.
+Commit or push only when they ask.
+
 ## Before anything leaves their computer
 
 Ask before using photos of people outside their own family, before spending credits on a paid service, and before

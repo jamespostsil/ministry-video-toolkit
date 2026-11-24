@@ -69,6 +69,16 @@ partnership is fundraising, which a "non-commercial only" licence may not
 cover. Never copy a downloaded track into the repository or hand the file on:
 most free licences allow use in a video but not redistribution.
 
+**Measure sync in the final file, not the parts.** FFmpeg's `adelay` for lead-in
+silence has gone wrong two ways: delaying only one channel (the voice played twice,
+a second apart), and turning the silence into a timestamp gap that players skip
+(each line ran early, the drift growing through the video). The render script
+delays the speech with `adelay` on both channels plus `apad`; after any change to
+the mix, check the finished mp4 as a player decodes it: picture changes (frame
+differences) against speech starts, decoded audio length equal to the stream
+duration, and left and right matching. When building a soundtrack yourself, lay it
+out as one array with real zeros for the silence, then mux.
+
 **Check the bed for quiet stretches before using it.** Ambient tracks often have
 a near-silent passage where they were meant to end. If the loop puts that
 passage under your closing card, the lift there does nothing. Profile the track

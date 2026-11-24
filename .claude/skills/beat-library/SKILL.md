@@ -100,6 +100,10 @@ lands near 1:1, and let the caption carry the meaning.
   (Was fixed in scatter/slider only at first; row, blur and PhotoGallery kept
   the old style until a thumbnail with a light cover image showed the line.)
 - Secondary text below ~28–30px is suspect. Check at real size.
+  On a 1920x1080 frame that goes for captions, citations, subtitles and credit lines, and for a thin weight too:
+  bump the size or the weight rather than leave it "technically readable" (the classic slide-deck mistake of
+  small print as an afterthought). Titles and quotes go larger still. Any words that look like a grey smudge in
+  a rendered still are a defect, even if nobody has said so yet.
 
 ---
 
@@ -115,6 +119,22 @@ lands near 1:1, and let the caption carry the meaning.
 - Beats that abut should abut exactly — the engine then holds the outgoing beat
   underneath while the next fades in, so the presenter never flashes between two
   graphics.
+- **That hold only works when both beats fill the whole frame.** If the incoming beat
+  has gaps (floating cards, a collage), the outgoing beat shows through them for the
+  whole fade: a ghost of the last scene. If the outgoing one has gaps and the incoming
+  one is full-frame, the half-faded photo washes over everything as a haze. Between a
+  beat with gaps and a full-frame one, use a plain hard cut. When building a new beat
+  or transition, treat "fills the frame or not" as a property from the start.
+- **End several layers together with one shared scrim**, not with separate fades tuned
+  to match. Fades with identical timing still look out of step when each one reveals
+  something different underneath. Once one covering layer is fully opaque, nothing
+  else needs to stay in sync (the engine's closing scrim works this way).
+- **Inside a time-shifted `<Sequence>`, frame numbers are local** (0 is that
+  Sequence's start). Convert any absolute time computed elsewhere before using it
+  there; mixing the two never errors, it just shifts a fade or cut by the offset.
+- **Check fades by measuring rendered frames** (brightness across the fade), not by
+  re-deriving the maths. A fade that was "proved" correct on paper still measured
+  about 30 points of brightness wrong at its midpoint.
 
 ---
 
@@ -167,6 +187,13 @@ Beyond headings, add text when **a spoken idea has a shape the ear misses**:
   beat's `style: "bubble"` draws the words alone in big rounded letters filled with
   the brand gradient (Fredoka); the default is the words on a gradient panel.
 
+**"Colourful" means the brand's own colours, turned up.** When a script asks for something
+colourful, bright or festive (a thank-you, a counter, a celebration), build the range from
+the project's brand colours: a gradient between two of them, brighter tints of the same
+hues. Never a rainbow or a social-media-template gradient, and no confetti or loose dots:
+keep the festive energy in the gradient and the type, so the beat still belongs to the
+same video.
+
 Do not caption what the speaker is already saying plainly. Overlay text is for
 structure and emphasis, not subtitles.
 
@@ -186,6 +213,11 @@ Rough minimums: **1.5s** for two or three words, **3s** for a short line, **4s+*
 for a line plus sub-items. If the last element falls short, extend the beat —
 an overlay may hold past the sentence it illustrates, since the speaker stays
 on screen underneath.
+
+**Readable beats snappy.** When a beat carries words the viewer must read (a title, a
+caption, a number), hold it longer than feels just enough, and treat a review note that
+read time is tight as a defect to fix. When you lengthen a hold, extend it to the next
+natural cut point (a word boundary in the transcript) rather than to an arbitrary number.
 
 Two overlays must never share the screen. Check every pair of overlay beats for
 overlapping time ranges; they occupy the same corner and will collide.
